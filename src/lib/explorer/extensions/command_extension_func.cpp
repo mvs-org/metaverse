@@ -45,6 +45,7 @@
 #include <metaverse/explorer/extensions/commands/importkeyfile.hpp>
 #include <metaverse/explorer/extensions/commands/importaccount.hpp>
 #include <metaverse/explorer/extensions/commands/importaddress.hpp>
+#include <metaverse/explorer/extensions/commands/importcontract.hpp>
 #include <metaverse/explorer/extensions/commands/getnewaccount.hpp>
 #include <metaverse/explorer/extensions/commands/getaccount.hpp>
 #include <metaverse/explorer/extensions/commands/deleteaccount.hpp>
@@ -125,6 +126,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<dumpkeyfile>());
     func(make_shared<importkeyfile>());
     func(make_shared<importaddress>());
+    func(make_shared<importcontract>());
 
     os <<"\r\n";
     // system
@@ -243,7 +245,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<importkeyfile>();
     if (symbol == importaddress::symbol())
         return make_shared<importaddress>();
-
+    if (symbol == importcontract::symbol())
+        return make_shared<importcontract>();
     // system
     if (symbol == shutdown::symbol())
         return make_shared<shutdown>();
