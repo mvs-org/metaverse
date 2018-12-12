@@ -415,6 +415,27 @@ bool operation::is_sign_multisig_pattern(const operation::stack& ops)
     return std::all_of(ops.begin()+1, ops.end()-1, found);
 }
 
+
+bool operation::is_pay_delegate_pattern(const operation::stack& ops)
+{
+    return ops.size() == 13
+        && ops[0 ].code == opcode::dup
+        && ops[1 ].code == opcode::hash160
+        && ops[2 ].code == opcode::special
+        && ops[2 ].data.size() == short_hash_size
+        && ops[3 ].code == opcode::equal
+        && ops[4 ].code == opcode::if_
+        && ops[5 ].code == opcode::checksigverify
+        && ops[6 ].code == opcode::checksequenceverify
+        && ops[7 ].code == opcode::else_
+        && ops[8 ].code == opcode::dup
+        && ops[9 ].code == opcode::hash160
+        && ops[10].code == opcode::special
+        && ops[10].code == opcode::hash160
+        && ops[11].code == opcode::equalverify
+        && ops[12].code == opcode::checksigverify;
+}
+
 bool operation::is_sign_public_key_pattern(const operation::stack& ops)
 {
     return ops.size() == 1 && is_push_only(ops);
@@ -631,6 +652,27 @@ operation::stack operation::to_pay_key_hash_with_sequence_lock_pattern(const sho
         { opcode::checksig, {} }
     };
 }
+
+operation::stack operation::to_pay_delegate_pattern(const ec_compressed& delegated, const ec_compressed& owner)
+{
+    return operation::stack
+    {
+        { opcode::dup, {} },
+        { opcode::hash160, {} },
+        { opcode::special, to_chunk(delegated) },
+        { opcode::equal, {} },
+        { opcode::if_, {} },
+        { opcode::checksigverify, {} },
+        { opcode::checksequenceverify, {} },
+        { opcode::else_, {} },
+        { opcode::dup, {} },
+        { opcode::hash160, {} },
+        { opcode::special, to_chunk(owner) },
+        { opcode::equalverify, {} },
+        { opcode::checksigverify, {} }
+    };
+}
+
 
 
 bool operation::operator==(const operation& other) const

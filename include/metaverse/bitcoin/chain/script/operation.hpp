@@ -103,6 +103,12 @@ enum class script_pattern
     /// Signature script: <sig> <pubkey>
     pay_key_hash_with_sequence_lock,
 
+    ///Pay to delegate
+    /// Pubkey script: OP_DUP OP_HASH16 <B PubKeyHash> OP_CHECKEQUAL OP_IF OP_CHECKSIG OP_CHECKSEQUENCEVERIFY
+    ///                OP_ELSE OP_DUP OP_HASH160 <A PubKeyHash> OP_EQUALVERIFY OP_CHECKSIGVERIFY OP_ENDIF
+    /// Signature script: <sig> <pubkey>
+    pay_delegate
+
 };
 
 class BC_API operation
@@ -130,6 +136,7 @@ public:
     static bool is_pay_blackhole_pattern(const operation::stack& ops);
     static bool is_pay_key_hash_with_attenuation_model_pattern(const operation::stack& ops);
     static bool is_pay_key_hash_with_sequence_lock_pattern(const operation::stack& ops);
+    static bool is_pay_delegate_pattern(const operation::stack& ops);
 
     /// signature script patterns (standard)
     static bool is_sign_multisig_pattern(const operation::stack& ops);
@@ -158,6 +165,7 @@ public:
     static stack to_pay_key_hash_with_attenuation_model_pattern(
             const short_hash& hash, const std::string& model_param, const point& input_point);
     static stack to_pay_key_hash_with_sequence_lock_pattern(const short_hash& hash, uint32_t sequence_lock);
+    static stack to_pay_delegate_pattern(const ec_compressed& delegated, const ec_compressed& owner);
 
     static operation from_raw_data(const data_chunk& data);
 
