@@ -74,6 +74,10 @@ BC_CONSTEXPR size_t relative_locktime_min_version = 2;
  * relative lock-time. */
 BC_CONSTEXPR uint32_t relative_locktime_disabled = (1 << 31);
 
+/* If this flag set, input::sequence is NOT interpreted as a
+ * delegate limited usage. */
+BC_CONSTEXPR uint32_t delegate_disabled = (1 << 30);
+
 /* If input::sequence encodes a relative lock-time and this flag
  * is set, the relative lock-time has units of 32 seconds,
  * otherwise it specifies blocks with a granularity of 1. */

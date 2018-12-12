@@ -1983,5 +1983,10 @@ bool script::verify(const script& input_script, const script& output_script,
     return true;
 }
 
+bool script::operator==(const script& other) const
+{
+    return operations == other.operations;
+}
+
 } // namspace chain
 } // namspace libbitcoin

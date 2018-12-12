@@ -191,7 +191,8 @@ enum error_code_t
     extra_coinstakes,
     coinstake_version_invalid,
     cointstake_signature_invalid,
-    check_pos_genesis_error
+    check_pos_genesis_error,
+    delegate_mismatch_error
 
 };
 

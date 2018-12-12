@@ -137,6 +137,8 @@ public:
     uint64_t satoshi_content_size() const;
     uint64_t serialized_size(bool prefix) const;
 
+    bool operator==(const script& other) const;
+
     operation::stack operations;
 
 private:

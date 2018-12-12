@@ -32,7 +32,7 @@ def to_string(s):
 
 def to_bin(ss):
     global char2i
-    bin_lst = [chr(char2i[ss[i]] * 16 + char2i[ss[i + 1]]) for i in range(0, len(ss), 2)]
+    bin_lst = [chr(char2i[ss[i]] * 16 + char2i[ss[i + 1]]) for i in xrange(0, len(ss), 2)]
     bin_lst.reverse()
     return ''.join( bin_lst )
 
@@ -72,7 +72,7 @@ class Header:
         invalid_offset = '\xFF' * self.size_of_offset
         bucket_array = []
         if need_bucket:
-            for i in range(self.bucket_size):
+            for i in xrange(self.bucket_size):
                 offset_str = f.read(self.size_of_offset)
                 if offset_str == invalid_offset:
                     continue
@@ -220,7 +220,7 @@ class account_table:
         if type == 1:  # multisig account
             vec_size = str2int(ff.read(4))
             #print '\tvec_size', vec_size
-            for i in range(vec_size):
+            for i in xrange(vec_size):
                 hd = str2int(ff.read(4))
                 id = str2int(ff.read(4))
                 m = ord(ff.read(1))
@@ -228,7 +228,7 @@ class account_table:
                 l = get_var_len(ff, extra_padding.append)
                 pubkey = ff.read(l)
                 size_ = ord(ff.read(1))
-                for j in range(size_):
+                for j in xrange(size_):
                     l = get_var_len(ff, extra_padding.append)
                     cosigner_pubkey = ff.read(l)
                 desc = ff.read(get_var_len(ff, extra_padding.append))
@@ -549,7 +549,7 @@ class transaction_table(account_table):
         assert (version < 5)
         input_size = get_var_len(ff, extra_padding.append)
         assert (input_size < 700) # max input ~ 667 ?
-        for i in range(input_size):
+        for i in xrange(input_size):
             #previous_output
             utxo_hash_ = ff.read(32)
             utxo_index = str2int( ff.read(4) )
@@ -563,7 +563,7 @@ class transaction_table(account_table):
 
         output_size = get_var_len(ff, extra_padding.append)
         assert (output_size < 70)
-        for i in range(output_size):
+        for i in xrange(output_size):
             amount = str2int( ff.read(8) )
             script_len = get_var_len(ff, extra_padding.append)
             assert (script_len < 256)
@@ -615,7 +615,7 @@ class block_table(account_table):
         tx_count32 = str2int( ff.read(4) )
 
         # transactions
-        for i in range(tx_count32):
+        for i in xrange(tx_count32):
             tx_hash = ff.read(32)
 
         end = ff.tell()
@@ -662,6 +662,8 @@ class address_did_table:
 
                 fr_table.seek(self.header.offset_begin + next * self.record.record_size)
                 key = fr_table.read(self.record.size_of_key)
+                import pdb
+                pdb.set_trace()
                 next = str2int( fr_table.read(self.record.size_of_next) )
 
                 value = fr_table.read(self.record.size_of_value)
@@ -797,7 +799,7 @@ if __name__ == "__main__":
     #data = at.query("422e2ea8ac1d333b61672044ad7e83b384c7ee621632fbe83dca0510278f7616", mainnet_dir)
     #print to_string(data)
 
-    for table in all_tables: #[address_asset_table]:
+    for table in [history_table]:
         t = table()
         print "begin to re_arrage: ", t.__class__
         t.re_arrange(mainnet_dir)

@@ -1438,6 +1438,35 @@ code validate_transaction::check_sequence_locks() const
         return error::sequence_locked;
     }
 
+    // check delegate limited usage utxo
+    const int base = tx.is_coinstake() ? 1:0;
+    for (int i=0; i < tx.inputs.size(); ++i) {
+        const auto& nSequence = tx.inputs[i].sequence;
+        if (nSequence & delegate_disabled) {
+            continue;
+        }
+
+        const int j = base + i; //output_index
+
+        if (j >= tx.outputs.size() ) {
+            return error::delegate_mismatch_error;
+        }
+
+        chain::transaction prev_tx;
+        uint64_t prev_height{0};
+        if (!get_previous_tx(prev_tx, prev_height, tx.inputs[i])) {
+            log::error(LOG_BLOCKCHAIN) << "check_sequence_locks: input not found: "
+                                       << encode_hash(tx.inputs[i].previous_output.hash);
+            return error::input_not_found;
+        }
+
+        const auto& prev_output = prev_tx.outputs[tx.inputs[i].previous_output.index];
+
+        if (std::make_tuple(tx.outputs[j].script, tx.outputs[j].value) != std::make_tuple(prev_output.script, prev_output.value)) {
+            return error::delegate_mismatch_error;
+        }
+    }
+
     return error::success;
 }
 
