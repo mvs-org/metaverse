@@ -119,6 +119,15 @@ $ ./configure --enable-module-recovery
 $ make -j4
 $ sudo make install && sudo ldconfig
 ```
+Sometimes we may meet the following compile error
+```
+undefined reference to '__gmpn_sub_n' ...
+```
+we may disable bignum in secp256k1 in this situation, use
+```
+$ ./configure --enable-module-recovery --with-bignum=no
+```
+and see more information here [#issue209](https://github.com/mvs-org/metaverse/issues/209)
 
 ## miniupnpc
 Modules blockchain/network with UPnP function required.
