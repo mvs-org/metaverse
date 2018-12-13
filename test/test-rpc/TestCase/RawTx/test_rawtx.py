@@ -14,14 +14,14 @@ class TestRawTx(MVSTestCaseBase):
 
         # invalid senders address
         ec, message = mvs_rpc.create_rawtx(0, {Alice.mainaddress() + "1"}, single_receiver,);
-        self.assertEqual(ec, code.fromaddress_invalid_exception, message)
+        self.assertEqual(ec, code.did_symbol_notfound_exception, message)
 
         # invalid receiver address
         ec, message = mvs_rpc.create_rawtx(0,
             {Alice.mainaddress()},
             {Bob.mainaddress()+"1" : 10},
             mychange=Alice.mainaddress());
-        self.assertEqual(ec, code.toaddress_invalid_exception, message)
+        self.assertEqual(ec, code.did_symbol_notfound_exception, message)
 
         # invalid receiver amount
         ec, message = mvs_rpc.create_rawtx(0,
@@ -32,7 +32,7 @@ class TestRawTx(MVSTestCaseBase):
 
         # invalid mychange address
         ec, message = mvs_rpc.create_rawtx(0, senders, single_receiver, mychange=Alice.mainaddress()+"1");
-        self.assertEqual(ec, code.toaddress_invalid_exception, message)
+        self.assertEqual(ec, code.did_symbol_notfound_exception, message)
 
         # invalid symbol for deposit etp
         ec, message = mvs_rpc.create_rawtx(1, senders, single_receiver, symbol="ABC");

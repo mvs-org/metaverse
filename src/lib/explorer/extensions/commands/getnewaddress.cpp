@@ -114,7 +114,7 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
         const auto derive_private_key = bc::wallet::hd_private(hk, prefixes);
 
 #ifdef PRIVATE_CHAIN
-        test_vrf(derive_private_key);
+        // test_vrf(derive_private_key);
 #endif
 
         auto pk = encode_base16(derive_private_key.secret());
