@@ -20,6 +20,7 @@
 
 
 #pragma once
+#include <metaverse/macros_define.hpp>
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -101,11 +102,13 @@ public:
             value<std::string>(&option_.message),
             "Message/Information attached to this transaction"
         )
+#ifdef ENABLE_LOCKTIME
         (
             "locktime,x",
             value<uint32_t>(&option_.locktime)->default_value(0),
             "Locktime. defaults to 0"
         )
+#endif
         (
             "fee,f",
             value<uint64_t>(&option_.fee)->default_value(10000),

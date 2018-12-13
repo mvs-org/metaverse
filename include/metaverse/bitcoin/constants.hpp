@@ -67,7 +67,7 @@ BC_CONSTEXPR uint32_t min_fee_percentage_to_miner  = 20;
 // otherwise as UNIX timestamp. [Tue Nov 5 00:53:20 1985 UTC]
 BC_CONSTEXPR uint32_t locktime_threshold = 500000000;
 
-BC_CONSTEXPR size_t relative_locktime_min_version = 2;
+extern const size_t relative_locktime_min_version;
 
 /* Below flags apply in the context of BIP 68*/
 /* If this flag set, input::sequence is NOT interpreted as a

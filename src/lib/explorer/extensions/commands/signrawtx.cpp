@@ -28,44 +28,51 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
+
 using payment_address = wallet::payment_address;
 
 console_result signrawtx::invoke(Json::Value& jv_output,
-                                 libbitcoin::server::server_node& node) {
+                                 libbitcoin::server::server_node& node)
+{
     auto &blockchain = node.chain_impl();
     const auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     tx_type tx_ = argument_.transaction;
 
     std::map<uint32_t, std::map<std::string, std::string> > script_sig_map;
+
     // sign tx
     {
         uint32_t index = 0;
         chain::transaction tx_temp;
         uint64_t tx_height;
 
-        for (auto &fromeach : tx_.inputs) {
-            if (!(blockchain.get_transaction(fromeach.previous_output.hash, tx_temp, tx_height)))
+        for (auto& fromeach : tx_.inputs) {
+            if (!(blockchain.get_transaction(fromeach.previous_output.hash, tx_temp, tx_height))) {
                 throw argument_legality_exception{
-                        "invalid transaction hash " + encode_hash(fromeach.previous_output.hash)};
+                    "invalid transaction hash " + encode_hash(fromeach.previous_output.hash)};
+            }
 
             auto output = tx_temp.outputs.at(fromeach.previous_output.index);
 
             // get address private key
             auto address = payment_address::extract(output.script);
+
             // script address : maybe multisig
-            if (!address || (address.version() == 0x5)) {
-                const auto scirpt_vec = acc->get_script(address.encoded());
-                if (!scirpt_vec || scirpt_vec->empty()) {
+            if (!address || (address.version() == payment_address::mainnet_p2sh)) {
+                const auto script_vec = acc->get_script(address.encoded());
+                if (!script_vec || script_vec->empty()) {
                     throw argument_legality_exception{"invalid script: " + config::script(output.script).to_string()};
                 }
-                const auto &scirpt = scirpt_vec->begin();
+
+                const auto& script = script_vec->begin();
 
                 // watch-only address
-                const data_chunk &bin_script = scirpt->get_script();
+                const data_chunk& bin_script = script->get_script();
                 if (bin_script.empty()) {
                     throw argument_legality_exception{"watch-only script address: " + config::script(output.script).to_string()};
-                } else {
+                }
+                else {
                     bc::explorer::config::script config_contract(bin_script);
 
                     bc::chain::script redeem_script;
@@ -89,6 +96,7 @@ console_result signrawtx::invoke(Json::Value& jv_output,
                         if (!acc_addr) {
                             continue;
                         }
+
                         data_chunk public_key_data;
                         bc::endorsement&& edsig = sign(node, tx_, index, acc_addr->get_address(), config_contract, public_key_data);
                         pk_sig[encode_base16(public_key_data)] = encode_base16(edsig);
@@ -96,7 +104,8 @@ console_result signrawtx::invoke(Json::Value& jv_output,
 
                     script_sig_map[index] = pk_sig;
                 }
-            } else {
+            }
+            else {
                 bc::explorer::config::script config_contract(output.script); // previous output script
 
                 data_chunk public_key_data;
@@ -119,7 +128,6 @@ console_result signrawtx::invoke(Json::Value& jv_output,
             }
             index++;
         }// end for
-
     }
 
     if (script_sig_map.empty()) {
@@ -129,12 +137,11 @@ console_result signrawtx::invoke(Json::Value& jv_output,
         //}
 
         jv_output = config::json_helper(get_api_version()).prop_list_of_rawtx(tx_, true);
-
-
-    } else {
-        for (auto iter1=script_sig_map.begin(); iter1 != script_sig_map.end(); ++iter1) {
+    }
+    else {
+        for (auto iter1 = script_sig_map.begin(); iter1 != script_sig_map.end(); ++iter1) {
             Json::Value pk_sig;
-            for (auto iter2=iter1->second.begin(); iter2!=iter1->second.end(); ++iter2) {
+            for (auto iter2 = iter1->second.begin(); iter2 != iter1->second.end(); ++iter2) {
                 pk_sig[iter2->first] = iter2->second;
             }
             jv_output[std::to_string(iter1->first)] = pk_sig;
@@ -143,6 +150,7 @@ console_result signrawtx::invoke(Json::Value& jv_output,
 
     return console_result::okay;
 }
+
 bc::endorsement signrawtx::sign(libbitcoin::server::server_node& node, tx_type tx_, const uint32_t& index, const std::string& address, const bc::explorer::config::script& config_contract, data_chunk& public_key_data)
 {
     auto &blockchain = node.chain_impl();

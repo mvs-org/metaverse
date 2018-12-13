@@ -33,13 +33,27 @@ using namespace bc::explorer::config;
 
 /************************ getnewaccount *************************/
 
+//76066276 is HD private key version
+const uint64_t prefixes = bc::wallet::hd_private::to_prefixes(76066276, 0);
+
 console_result getnewaccount::invoke(Json::Value& jv_output,
-    libbitcoin::server::server_node& node)
+    bc::server::server_node& node)
+{
+    if (auth_.name.empty() && auth_.auth.empty()) {
+        return create_address(jv_output, node);
+    }
+
+    return create_account(jv_output, node);
+}
+
+console_result getnewaccount::create_account(Json::Value& jv_output,
+    bc::server::server_node& node)
 {
 #ifdef NDEBUG
     if (auth_.name.length() > 128 || auth_.name.length() < 3 ||
-        auth_.auth.length() > 128 || auth_.auth.length() < 6)
+        auth_.auth.length() > 128 || auth_.auth.length() < 6) {
         throw argument_legality_exception{"name length in [3, 128], password length in [6, 128]"};
+    }
 #endif
 
     auto& blockchain = node.chain_impl();
@@ -86,6 +100,55 @@ console_result getnewaccount::invoke(Json::Value& jv_output,
     return console_result::okay;
 }
 
+console_result getnewaccount::create_address(Json::Value& jv_output,
+    bc::server::server_node& node)
+{
+    auto& blockchain = node.chain_impl();
+
+    // mainnet payment address version
+    auto payment_version = wallet::payment_address::mainnet_p2kh;
+    if (blockchain.chain_settings().use_testnet_rules) {
+        // testnet payment address version
+        payment_version = 127;
+    }
+
+    // create mnemonic words
+    bc::explorer::config::language opt_language(option_.language);
+    auto&& words = get_mnemonic_new(opt_language, get_seed());
+    std::string mnemonic = bc::join(words);
+
+    // create master hd private
+    const auto seed = wallet::decode_mnemonic(words);
+    bc::config::base16 bs(seed);
+    const data_chunk& ds = static_cast<const data_chunk&>(bs);
+    const bc::wallet::hd_private master_hd_private(ds, prefixes);
+
+    // create derive hd private at index 0
+    const auto derive_hd_private = master_hd_private.derive_private(0);
+    std::string hk = derive_hd_private.encoded();
+    const auto derive_private_key = bc::wallet::hd_private(hk, prefixes);
+
+    // get public key and payment address
+    ec_secret secret = derive_private_key.secret();
+    ec_compressed point;
+    bc::secret_to_public(point, secret);
+    wallet::ec_public ep = wallet::ec_public(point, true);
+    wallet::payment_address pay_address(ep, payment_version);
+
+    // encode
+    std::string prv_key = encode_base16(secret);
+    std::string prv_key_wif = encode_base58(secret);
+    std::string pub_key = ep.encoded();
+    std::string addr = pay_address.encoded();
+
+    // output
+    jv_output["mnemonic"] = mnemonic;
+    jv_output["private_key"] = prv_key_wif;
+    jv_output["public_key"] = pub_key;
+    jv_output["address"] = addr;
+
+    return console_result::okay;
+}
 
 } // namespace commands
 } // namespace explorer

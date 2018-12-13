@@ -84,7 +84,7 @@ public:
     bool script_hash_signature_operations_count(size_t &count, const chain::input& input,
         std::vector<transaction_ptr>& transactions);
     transaction_ptr create_coinbase_tx(const wallet::payment_address& pay_address,
-        uint64_t value, uint64_t block_height, int lock_height, uint32_t reward_lock_time);
+        uint64_t value, uint64_t block_height, int lock_height);
     transaction_ptr create_coinstake_tx(
         const ec_secret& private_key,
         const wallet::payment_address& pay_address,

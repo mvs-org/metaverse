@@ -1367,14 +1367,19 @@ uint64_t median_time_past(const uint64_t &height, const block_chain_impl& chain)
 
 code validate_transaction::check_final_tx() const
 {
-    block_chain_impl& chain = blockchain_;
+    const chain::transaction& tx = *tx_;
+    if (tx.version < relative_locktime_min_version) {
+        return error::success;
+    }
 
     uint64_t height = 0;
     uint64_t median_time_past_ = 0;
     if (validate_block_) {
         height = validate_block_->get_height();
         median_time_past_ = validate_block_->median_time_past();
-    } else {
+    }
+    else {
+        block_chain_impl& chain = blockchain_;
         chain.get_last_height(height);
         median_time_past_ = median_time_past(height, chain);
         ++height; // the next block's height
@@ -1386,16 +1391,18 @@ code validate_transaction::check_final_tx() const
 code validate_transaction::check_sequence_locks() const
 {
     const chain::transaction& tx = *tx_;
-    block_chain_impl& chain = blockchain_;
-    if (tx.version < relative_locktime_min_version || tx_->is_coinbase())
+    if (tx.version < relative_locktime_min_version || tx_->is_coinbase()) {
         return error::success;
+    }
 
+    block_chain_impl& chain = blockchain_;
     uint64_t last_height = 0;
     uint64_t median_time_past_ = 0;
     if (validate_block_) {
         last_height = validate_block_->get_height();
         median_time_past_ = validate_block_->median_time_past();
-    } else {
+    }
+    else {
         chain.get_last_height(last_height);
         median_time_past_ = median_time_past(last_height, chain);
         ++last_height; // the next block's height
@@ -1425,7 +1432,8 @@ code validate_transaction::check_sequence_locks() const
                 return error::not_found;
             }
             min_time = std::max(min_time, header.timestamp + uint64_t((nSequence & relative_locktime_mask) << relative_locktime_seconds_shift) - 1);
-        } else {
+        }
+        else {
             min_height = std::max(min_height, prev_height + (nSequence & relative_locktime_mask) - 1);
         }
     }
@@ -1556,7 +1564,7 @@ code validate_transaction::check_transaction_basic() const
                                                << encode_hash(input.previous_output.hash);
                     return error::input_not_found;
                 }
-                
+
                 // since unlock script for p2sh pattern are so complex, that is_sign_key_hash_with_lock_height_pattern cannot be well dealed.
                 if ( chain::operation::is_pay_script_hash_pattern( prev_tx.outputs[input.previous_output.index].script.operations ) )
                     continue;
@@ -1975,8 +1983,8 @@ bool validate_transaction::is_nova_feature_activated(block_chain_impl& chain)
 #ifdef PRIVATE_CHAIN
     return true;
 #endif
-    if (chain.chain_settings().use_testnet_rules)
-    {
+
+    if (chain.chain_settings().use_testnet_rules) {
         return true;
     }
 

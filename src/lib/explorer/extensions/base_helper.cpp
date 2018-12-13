@@ -18,8 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <metaverse/explorer/extensions/base_helper.hpp>
 #include <metaverse/macros_define.hpp>
+#include <metaverse/explorer/extensions/base_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/consensus/libdevcore/SHA3.h>
@@ -1879,10 +1879,14 @@ void base_transfer_common::send_tx()
 
 void base_transfer_common::populate_tx_header()
 {
+#ifdef ENABLE_LOCKTIME
     tx_.locktime = locktime_;
+#endif
+
     if (validate_transaction::is_nova_feature_activated(blockchain_)) {
         tx_.version = transaction_version::check_nova_feature;
-    } else {
+    }
+    else {
         tx_.version = transaction_version::check_output_script;
     }
 }

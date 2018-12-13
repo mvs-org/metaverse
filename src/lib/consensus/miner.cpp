@@ -305,7 +305,7 @@ miner::block_ptr miner::create_genesis_block(bool is_mainnet)
 
 miner::transaction_ptr miner::create_coinbase_tx(
     const wallet::payment_address& pay_address, uint64_t value,
-    uint64_t block_height, int lock_height, uint32_t reward_lock_time)
+    uint64_t block_height, int lock_height)
 {
     transaction_ptr ptransaction = make_shared<message::transaction_message>();
 
@@ -317,7 +317,6 @@ miner::transaction_ptr miner::create_coinbase_tx(
 
     ptransaction->outputs.resize(1);
     ptransaction->outputs[0].value = value;
-    ptransaction->locktime = reward_lock_time;
     if (lock_height > 0) {
         ptransaction->outputs[0].script.operations = chain::operation::to_pay_key_hash_with_lock_height_pattern(short_hash(pay_address), lock_height);
     } else {
@@ -447,7 +446,7 @@ bool miner::get_block_transactions(
     }
 
     // Create coinbase tx
-    pblock->transactions.push_back(*create_coinbase_tx(pay_address_, 0, current_block_height + 1, 0, 0));
+    pblock->transactions.push_back(*create_coinbase_tx(pay_address_, 0, current_block_height + 1, 0));
 
     // Largest block you're willing to create:
     uint32_t block_max_size = blockchain::max_block_size / 2;
@@ -503,7 +502,6 @@ bool miner::get_block_transactions(
     make_heap(transaction_prioritys.begin(), transaction_prioritys.end(), sort_func);
 
     transaction_priority *next_transaction_priority = NULL;
-    uint32_t reward_lock_time = last_height - 1;
     while (!transaction_prioritys.empty() || next_transaction_priority)
     {
         transaction_priority temp_priority;
@@ -542,7 +540,7 @@ bool miner::get_block_transactions(
                 int lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
                 coinage_reward_coinbase = create_coinbase_tx(wallet::payment_address::extract(ptx->outputs[0].script),
                                           calculate_lockblock_reward(lock_height, output.value),
-                                          last_height + 1, lock_height, reward_lock_time);
+                                          last_height + 1, lock_height);
                 uint32_t tx_sig_length = get_tx_sign_length(coinage_reward_coinbase);
                 if (total_tx_sig_length + tx_sig_length >= blockchain::max_block_script_sigops) {
                     continue;
@@ -551,7 +549,6 @@ bool miner::get_block_transactions(
                 total_tx_sig_length += tx_sig_length;
                 serialized_size += coinage_reward_coinbase->serialized_size(1);
                 coinage_reward_coinbases.push_back(coinage_reward_coinbase);
-                --reward_lock_time;
             }
         }
 
@@ -651,7 +648,7 @@ miner::block_ptr miner::create_new_block_pow(const wallet::payment_address& pay_
     pblock->header.bits = get_next_target_required(pblock->header, prev_header, false);
 
     // Create coinbase tx
-    transaction_ptr coinbase = create_coinbase_tx(pay_address, 0, block_height, 0, 0);
+    transaction_ptr coinbase = create_coinbase_tx(pay_address, 0, block_height, 0);
     uint32_t total_tx_sig_length = get_tx_sign_length(coinbase);
 
     // Get txs
@@ -728,7 +725,7 @@ miner::block_ptr miner::create_new_block_dpos(const wallet::payment_address& pay
     pblock->header.bits = prev_header.bits;
 
     // Create coinbase tx
-    transaction_ptr coinbase = create_coinbase_tx(pay_address, 0, block_height, 0, 0);
+    transaction_ptr coinbase = create_coinbase_tx(pay_address, 0, block_height, 0);
     uint32_t total_tx_sig_length = get_tx_sign_length(coinbase);
 
     // Get txs
@@ -838,7 +835,7 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
     pblock->header.bits = get_next_target_required(pblock->header, prev_header, true);
 
     // create coinbase tx
-    transaction_ptr coinbase = create_coinbase_tx(pay_address, 0, block_height, 0, 0);
+    transaction_ptr coinbase = create_coinbase_tx(pay_address, 0, block_height, 0);
     uint32_t total_tx_sig_length = get_tx_sign_length(coinbase);
 
     // create coinstake

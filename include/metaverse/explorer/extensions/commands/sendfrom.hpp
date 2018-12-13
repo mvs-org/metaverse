@@ -20,6 +20,7 @@
 
 
 #pragma once
+#include <metaverse/macros_define.hpp>
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -106,11 +107,13 @@ public:
             value<std::string>(&option_.memo)->default_value(""),
             "The memo to descript transaction"
         )
+#ifdef ENABLE_LOCKTIME
         (
             "locktime,x",
             value<uint32_t>(&option_.locktime)->default_value(0),
             "Locktime. defaults to 0"
         )
+#endif
         (
             "exclude,e",
             value<colon_delimited2_item<uint64_t, uint64_t>>(&option_.exclude),

@@ -65,7 +65,7 @@ void test_vrf(const bc::wallet::hd_private& private_key)
 /************************ getnewaddress *************************/
 
 console_result getnewaddress::invoke(Json::Value& jv_output,
-    libbitcoin::server::server_node& node)
+    bc::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -90,13 +90,13 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
     std::vector<std::shared_ptr<account_address>> account_addresses;
     account_addresses.reserve(option_.count);
     const auto seed = wallet::decode_mnemonic(words);
-    libbitcoin::config::base16 bs(seed);
+    bc::config::base16 bs(seed);
     const data_chunk& ds = static_cast<const data_chunk&>(bs);
     const auto prefixes = bc::wallet::hd_private::to_prefixes(76066276, 0);//76066276 is HD private key version
     const bc::wallet::hd_private private_key(ds, prefixes);
 
     // mainnet payment address version
-    auto payment_version = 50;
+    auto payment_version = wallet::payment_address::mainnet_p2kh;
     if (blockchain.chain_settings().use_testnet_rules) {
         // testnetpayment address version
         payment_version = 127;
@@ -122,7 +122,7 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
 
         // not store public key now
         ec_compressed point;
-        libbitcoin::secret_to_public(point, derive_private_key.secret());
+        bc::secret_to_public(point, derive_private_key.secret());
 
         // Serialize to the original compression state.
         auto ep =  wallet::ec_public(point, true);

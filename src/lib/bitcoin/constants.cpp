@@ -30,6 +30,8 @@ const uint64_t pos_genesis_reward        = 50000000 * 100000000ul;
 uint32_t coinbase_maturity = 1000;
 const uint64_t future_blocktime_fork_height = 1030000;
 
+const size_t relative_locktime_min_version = 5;
+
 // PoS
 const uint64_t pos_enabled_height        = max_uint64;
 const uint32_t pos_coinstake_max_utxos   = 10;
@@ -45,6 +47,8 @@ const uint32_t block_timespan_window     = 28;
 
 uint32_t coinbase_maturity = 10;
 const uint64_t future_blocktime_fork_height = 10;
+
+const size_t relative_locktime_min_version = 2;
 
 // PoS
 const uint64_t pos_enabled_height        = 350;
