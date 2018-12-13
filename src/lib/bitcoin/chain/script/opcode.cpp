@@ -523,9 +523,10 @@ script_context get_script_context()
 #ifdef ENABLE_LOCKTIME
     return script_context::all_enabled;
 #else
-    auto context = script_context::all_enabled;
+    uint32_t context = script_context::all_enabled;
     context &= ~bip65_enabled;  // disable nLocktime
     context &= ~bip112_enabled; // disable nSequence
+    return static_cast<script_context>(context);
 #endif
 }
 
