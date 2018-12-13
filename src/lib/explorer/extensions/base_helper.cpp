@@ -2472,6 +2472,9 @@ attachment transferring_mit::populate_output_attachment(const receiver_record& r
 chain::operation::stack lock_sending::get_script_operations(const receiver_record& record) const
 {
     if (record.is_lock_seq_) {
+        if ((chain::get_script_context() & chain::script_context::bip112_enabled) == 0) {
+            throw argument_legality_exception{"lock sequence(bip112) is not enabled"};
+        }
         const wallet::payment_address payment(record.target);
         if (!payment) {
             throw toaddress_invalid_exception{"invalid target address"};

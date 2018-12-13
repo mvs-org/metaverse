@@ -159,7 +159,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
     }
 
     history::list utxo_list;
-    std::vector<uint32_t> sequence_lst;
+    std::unordered_map<input_point, uint32_t> utxo_seq_map; //((hash, index), sequence)
     for (const std::string utxo : option_.utxos) {
         const auto utxo_stru = bc::split(utxo, ":");
         if ((utxo_stru.size() != 2) && (utxo_stru.size() != 3)) {
@@ -175,11 +175,21 @@ console_result createrawtx::invoke(Json::Value& jv_output,
             throw tx_notfound_exception{"transaction[" + utxo_stru[0] + "] does not exist!"};
         }
 
-        const uint32_t utxo_index = std::strtoul(utxo_stru[1].c_str(), NULL, 10);
+        const uint32_t utxo_index = std::stoul(utxo_stru[1]);
         if ( !(utxo_index < tx.outputs.size()) ) {
             throw tx_notfound_exception{"output index[" + utxo_stru[1] + "] of transaction[" + utxo_stru[0] + "] is out of range!"};
         }
-        const uint32_t utxo_sequence = (utxo_stru.size() == 3) ? std::strtoul(utxo_stru[2].c_str(), NULL, 10) : max_uint32;
+        if (utxo_stru.size() == 3) {
+            if ((chain::get_script_context() & chain::script_context::bip112_enabled) == 0) {
+                throw argument_legality_exception{"invalid utxo: " + utxo + ", lock sequence(bip112) is not enabled"};
+            }
+            input_point utxo_point(hash, utxo_index);
+            if (utxo_seq_map.count(utxo_point)) {
+                throw argument_legality_exception{"duplicate utxo: " + utxo};
+            }
+            const uint32_t utxo_sequence = std::stoul(utxo_stru[2]);
+            utxo_seq_map[utxo_point] = utxo_sequence;
+        }
 
         history h;
         h.output.hash = tx.hash();
@@ -187,7 +197,6 @@ console_result createrawtx::invoke(Json::Value& jv_output,
         h.output_height = tx_height;
         h.value = tx.outputs[utxo_index].value;
         utxo_list.push_back(h);
-        sequence_lst.push_back(utxo_sequence);
     }
 
     if (!utxo_list.empty())
@@ -197,12 +206,15 @@ console_result createrawtx::invoke(Json::Value& jv_output,
 
     // set sequence
     auto&& tx = sp_send_helper->get_transaction();
-    for (size_t i=0; i<sequence_lst.size(); ++i) {
-        // maybe conflict with nlocktime, so when the sequence(by rpc) is invalid, we will not change it.
-        if (sequence_lst[i] == max_uint32) {
+    for (auto& input : tx.inputs) {
+        if (!utxo_seq_map.count(input.previous_output)) {
             continue;
         }
-        tx.inputs[i].sequence = sequence_lst[i];
+        if ((input.sequence & bc::relative_locktime_disabled) ||
+            input.sequence == 0 ||
+            input.sequence == bc::max_input_sequence) {
+            input.sequence = utxo_seq_map[input.previous_output];
+        }
     }
 
     // output json
