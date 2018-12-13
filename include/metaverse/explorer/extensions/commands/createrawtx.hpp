@@ -74,12 +74,12 @@ public:
         (
             "senders,s",
             value<std::vector<std::string>>(&option_.senders),
-            "Send from addresses"
+            "Send from dids/addresses"
         )
         (
             "receivers,r",
             value<std::vector<std::string>>(&option_.receivers)->required(),
-            "Send to [address:amount]. amount is asset number if sybol option specified"
+            "Send to [did/address:amount]. amount is asset number if symbol option specified"
         )
         (
             "symbol,n",
@@ -94,7 +94,7 @@ public:
         (
             "mychange,m",
             value<std::string>(&option_.mychange_address),
-            "Mychange to this address, includes etp and asset change"
+            "Mychange to this did/address, includes etp and asset change"
         )
         (
             "message,i",

@@ -35,28 +35,40 @@ console_result createrawtx::invoke(Json::Value& jv_output,
                                    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    blockchain.uppercase_symbol(option_.symbol);
 
-    if (!option_.mychange_address.empty() 
-        && !blockchain.is_valid_address(option_.mychange_address)) {
-        throw toaddress_invalid_exception{"invalid address " + option_.mychange_address};
+    // check mychange
+    std::string change_address;
+    if (!option_.mychange_address.empty()) {
+        change_address = get_address(option_.mychange_address, blockchain);
     }
-
-
 
     // check senders
     if (option_.senders.empty() && option_.utxos.empty()) {
-        throw fromaddress_invalid_exception{"senders and utxos can not be empty!"};
+        throw fromaddress_invalid_exception{"senders and utxos can not both be empty!"};
     }
 
-    for (auto& each : option_.senders) {
-        if (!blockchain.is_valid_address(each)) {
-            throw fromaddress_invalid_exception{"invalid sender address " + each};
-        }
+    std::vector<std::string> senders;
+    std::set<std::string> senders_set;
+    std::string from_did;
 
+    for (auto& each : option_.senders) {
+        auto addr = get_address(each, blockchain);
         // filter script address
-        if (blockchain.is_script_address(each)) {
-            throw fromaddress_invalid_exception{"invalid sender address " + each};
+        if (blockchain.is_script_address(addr)) {
+            throw fromaddress_invalid_exception{"invalid sender did/address " + each};
+        }
+        if (senders_set.insert(addr).second) {
+            senders.emplace_back(addr);
+            if (from_did.empty() && !blockchain.is_valid_address(each)) {
+                from_did = each;
+            }
+        }
+    }
+
+    // from did is meaningful only when there is exact one sender
+    if (!from_did.empty()) {
+        if (!(senders.size() == 1 && option_.utxos.empty())) {
+            from_did = "";
         }
     }
 
@@ -79,17 +91,23 @@ console_result createrawtx::invoke(Json::Value& jv_output,
     }
 
     // receiver
-    receiver_record record;
     std::vector<receiver_record> receivers;
     for ( auto& each : option_.receivers) {
         colon_delimited2_item<std::string, uint64_t> item(each);
-        record.target = item.first();
-        // address check
-        if (!blockchain.is_valid_address(record.target)) {
-            throw toaddress_invalid_exception{"invalid receiver address " + record.target};
+
+        attachment attach;
+        auto addr = get_address(item.first(), attach, false, blockchain);
+        if (!from_did.empty()) {
+            attach.set_from_did(from_did);
+            attach.set_version(DID_ATTACH_VERIFY_VERSION);
         }
 
+        receiver_record record;
+        record.target = addr;
+        record.attach_elem = std::move(attach);
+        record.type = type;
         record.symbol = option_.symbol;
+
         if (record.symbol.empty()) {
             record.amount = item.second(); // etp amount
             record.asset_amount = 0;
@@ -103,7 +121,6 @@ console_result createrawtx::invoke(Json::Value& jv_output,
                 throw argument_legality_exception{"invalid asset amount parameter " + each};
         }
 
-        record.type = type;
         receivers.push_back(record);
     }
 
@@ -118,8 +135,8 @@ console_result createrawtx::invoke(Json::Value& jv_output,
     case utxo_attach_type::asset_transfer: {
         sp_send_helper = std::make_shared<base_transaction_constructor>(
                              blockchain, type,
-                             std::move(option_.senders), std::move(receivers),
-                             std::move(option_.symbol), std::move(option_.mychange_address),
+                             std::move(senders), std::move(receivers),
+                             std::move(option_.symbol), std::move(change_address),
                              std::move(option_.message),
                              option_.fee, option_.locktime);
         break;
@@ -128,8 +145,8 @@ console_result createrawtx::invoke(Json::Value& jv_output,
     case utxo_attach_type::deposit: {
         sp_send_helper = std::make_shared<depositing_etp_transaction>(
                              blockchain, type,
-                             std::move(option_.senders), std::move(receivers),
-                             option_.deposit, std::move(option_.mychange_address),
+                             std::move(senders), std::move(receivers),
+                             option_.deposit, std::move(change_address),
                              std::move(option_.message),
                              option_.fee, option_.locktime);
         break;
