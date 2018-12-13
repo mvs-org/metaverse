@@ -96,6 +96,11 @@ public:
         : type(type), version(version), attach(attach_data)
     {}
 
+    attachment(attachment&& other);
+    attachment(const attachment& other);
+    attachment& operator=(attachment&& other);
+    attachment& operator=(const attachment& other);
+
     static uint64_t satoshi_fixed_size();
 
     bool from_data_t(reader& source);
