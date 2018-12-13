@@ -175,7 +175,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
             throw tx_notfound_exception{"transaction[" + utxo_stru[0] + "] does not exist!"};
         }
 
-        const uint32_t utxo_index = std::stoul(utxo_stru[1]);
+        const auto utxo_index = to_uint32_throw(utxo_stru[1], "wrong utxo index!");
         if ( !(utxo_index < tx.outputs.size()) ) {
             throw tx_notfound_exception{"output index[" + utxo_stru[1] + "] of transaction[" + utxo_stru[0] + "] is out of range!"};
         }
@@ -187,7 +187,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
             if (utxo_seq_map.count(utxo_point)) {
                 throw argument_legality_exception{"duplicate utxo: " + utxo};
             }
-            const uint32_t utxo_sequence = std::stoul(utxo_stru[2]);
+            const auto utxo_sequence = to_uint32_throw(utxo_stru[2], "wrong utxo sequence!");
             utxo_seq_map[utxo_point] = utxo_sequence;
         }
 

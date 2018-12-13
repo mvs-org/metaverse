@@ -40,9 +40,9 @@ console_result submitwork::invoke(Json::Value& jv_output,
 {
     auto& miner = node.miner();
 
-    const uint64_t nounce_mask = (get_api_version() == 3) ? 0 : 0x6675636b6d657461;
+    const uint64_t nounce_mask = (get_api_version() >= 3) ? 0 : 0x6675636b6d657461;
     //Note: submitwork does not starts with 0x, while eth_submitWork does!
-    if (get_api_version() == 3) {
+    if (get_api_version() >= 3) {
         if ( !startswith(argument_.nonce, "0x") ) {
             throw argument_legality_exception{"nonce should start with \"0x\" for eth_submitWork"};
         }

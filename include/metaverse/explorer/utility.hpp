@@ -246,6 +246,13 @@ BCX_API data_chunk wrap(const wallet::wrapped_data& data);
 BCX_API std::ostream& write_stream(std::ostream& output, const Json::Value& tree,
     encoding_engine engine=encoding_engine::info);
 
+/**
+ * convert text to number, throw logic_error with specified description if failed
+ * eg. auto number = to_uint32_throw("1234", "wrong number format!")
+ */
+BCX_API uint32_t to_uint32_throw(const std::string& text, const std::string& except_desc);
+BCX_API uint64_t to_uint64_throw(const std::string& text, const std::string& except_desc);
+
 } // namespace explorer
 } // namespace libbitcoin
 

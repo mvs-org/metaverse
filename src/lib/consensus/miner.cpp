@@ -1306,12 +1306,18 @@ bool miner::put_result(const std::string& nonce, const std::string& mix_hash,
     }
 
     if (header_hash == "0x" + to_string(HeaderAux::hashHead(new_block_->header))) {
-        uint64_t n_nonce = std::stoull(nonce, 0, 16);
-        // nounce_mask defination is moved to the caller by chengzhiping 2018-3-15.
-        uint64_t nonce_t = n_nonce ^ nounce_mask;
-        new_block_->header.nonce = (u64) nonce_t;
-        new_block_->header.mixhash = (FixedHash<32>::Arith)h256(mix_hash);
-        uint64_t height = store_block(new_block_);
+        uint64_t height = 0;
+        try {
+            uint64_t n_nonce = std::stoull(nonce, 0, 16);
+            // nounce_mask defination is moved to the caller
+            uint64_t nonce_t = n_nonce ^ nounce_mask;
+            new_block_->header.nonce = (u64) nonce_t;
+            new_block_->header.mixhash = (FixedHash<32>::Arith)h256(mix_hash);
+            height = store_block(new_block_);
+        } catch (const std::exception& e) {
+            log::debug(LOG_HEADER) << "put_result caught exception: " << e.what();
+        }
+
         if (height != 0) {
             log::debug(LOG_HEADER) << "put_result nonce:" << nonce << " mix_hash:"
                                    << mix_hash << " success with height:" << height;
@@ -1362,7 +1368,7 @@ bool miner::get_block_header(chain::header& block_header, const string& para)
             height = 0;
         }
         else if (para[0] >= '0' && para[0] <= '9') {
-            height = atol(para.c_str());
+            height = std::stoull(para);
         }
         else {
             return false;

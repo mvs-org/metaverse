@@ -287,7 +287,9 @@ void executor::handle_running(const code& ec)
 {
     if (ec)
     {
-        log::info(LOG_SERVER) << format(BS_NODE_START_FAIL) % ec.message();
+        if (ec.value() != error::service_stopped) {
+            log::info(LOG_SERVER) << format(BS_NODE_START_FAIL) % ec.message();
+        }
         stop(ec);
         return;
     }
