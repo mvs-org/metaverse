@@ -204,16 +204,20 @@ console_result createrawtx::invoke(Json::Value& jv_output,
 
     sp_send_helper->exec();
 
-    // set sequence
     auto&& tx = sp_send_helper->get_transaction();
-    for (auto& input : tx.inputs) {
-        if (!utxo_seq_map.count(input.previous_output)) {
-            continue;
-        }
-        if ((input.sequence & bc::relative_locktime_disabled) ||
-            input.sequence == 0 ||
-            input.sequence == bc::max_input_sequence) {
-            input.sequence = utxo_seq_map[input.previous_output];
+
+
+    // set sequence
+    if (!utxo_seq_map.empty()) {
+        for (auto& input : tx.inputs) {
+            if (!utxo_seq_map.count(input.previous_output)) {
+                continue;
+            }
+            if ((input.sequence & bc::relative_locktime_disabled) ||
+                input.sequence == 0 ||
+                input.sequence == bc::max_input_sequence) {
+                input.sequence = utxo_seq_map[input.previous_output];
+            }
         }
     }
 
