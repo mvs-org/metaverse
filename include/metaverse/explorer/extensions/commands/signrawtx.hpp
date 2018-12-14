@@ -40,8 +40,6 @@ public:
     bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
     const char* description() override { return "signrawtx "; }
 
-    bc::endorsement sign(libbitcoin::server::server_node& node, tx_type tx_, const uint32_t& index, const std::string& address, const bc::explorer::config::script& config_contract, data_chunk& public_key_data);
-
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
@@ -93,7 +91,7 @@ public:
     }
 
     console_result invoke (Json::Value& jv_output,
-                           libbitcoin::server::server_node& node) override;
+                           bc::server::server_node& node) override;
 
     struct argument
     {
@@ -103,6 +101,16 @@ public:
     struct option
     {
     } option_;
+
+private:
+    std::string get_private_key(blockchain::block_chain_impl& blockchain, const std::string& address);
+
+    bc::endorsement sign(
+        const std::string& private_key,
+        tx_type tx_,
+        const uint32_t& index,
+        const bc::explorer::config::script& config_contract,
+        data_chunk& public_key_data);
 
 };
 

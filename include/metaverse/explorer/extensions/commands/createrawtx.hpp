@@ -70,7 +70,7 @@ public:
         (
             "utxos,u",
             value<std::vector<std::string>>(&option_.utxos),
-            "Use the specific UTXO as input. format: \"tx-hash:output-index[:sequence]\""
+            "Use the specific UTXO as input. format: \"tx-hash:output-index\""
         )
         (
             "senders,s",

@@ -32,7 +32,7 @@ namespace commands {
 using payment_address = wallet::payment_address;
 
 console_result signrawtx::invoke(Json::Value& jv_output,
-                                 libbitcoin::server::server_node& node)
+                                 bc::server::server_node& node)
 {
     auto &blockchain = node.chain_impl();
     const auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -97,8 +97,10 @@ console_result signrawtx::invoke(Json::Value& jv_output,
                             continue;
                         }
 
+                        std::string prv_key_str = acc_addr->get_prv_key(auth_.auth);;
+
                         data_chunk public_key_data;
-                        bc::endorsement&& edsig = sign(node, tx_, index, acc_addr->get_address(), config_contract, public_key_data);
+                        bc::endorsement&& edsig = sign(prv_key_str, tx_, index, config_contract, public_key_data);
                         pk_sig[encode_base16(public_key_data)] = encode_base16(edsig);
                     }
 
@@ -106,10 +108,11 @@ console_result signrawtx::invoke(Json::Value& jv_output,
                 }
             }
             else {
+                std::string prv_key_str = get_private_key(blockchain, address.encoded());
                 bc::explorer::config::script config_contract(output.script); // previous output script
 
                 data_chunk public_key_data;
-                bc::endorsement&& edsig = sign(node, tx_, index, address.encoded(), config_contract, public_key_data);
+                bc::endorsement&& edsig = sign(prv_key_str, tx_, index, config_contract, public_key_data);
 
                 // do script
                 bc::chain::script ss;
@@ -151,22 +154,31 @@ console_result signrawtx::invoke(Json::Value& jv_output,
     return console_result::okay;
 }
 
-bc::endorsement signrawtx::sign(libbitcoin::server::server_node& node, tx_type tx_, const uint32_t& index, const std::string& address, const bc::explorer::config::script& config_contract, data_chunk& public_key_data)
+std::string signrawtx::get_private_key(blockchain::block_chain_impl& blockchain, const std::string& address)
 {
-    auto &blockchain = node.chain_impl();
     auto acc_addr = blockchain.get_account_address(auth_.name, address);
+    if (!acc_addr) {
+        throw argument_legality_exception{"Address " + address + " is not owned."};
+    }
 
-    if (!acc_addr)
-        throw argument_legality_exception{"not own address " + address};
+    return acc_addr->get_prv_key(auth_.auth);
+}
 
+bc::endorsement signrawtx::sign(
+    const std::string& prv_key_str,
+    tx_type tx_,
+    const uint32_t& index,
+    const bc::explorer::config::script& config_contract,
+    data_chunk& public_key_data)
+{
     // paramaters
     explorer::config::hashtype sign_type;
     uint8_t hash_type = (chain::signature_hash_algorithm)sign_type;
 
-    bc::explorer::config::ec_private config_private_key(acc_addr->get_prv_key(auth_.auth)); // address private key
-    const ec_secret& private_key =    config_private_key;
-    bc::wallet::ec_private ec_private_key(private_key, 0u, true);
+    bc::explorer::config::ec_private config_private_key(prv_key_str);
+    const ec_secret& secret = config_private_key;
 
+    bc::wallet::ec_private ec_private_key(secret);
     auto&& public_key = ec_private_key.to_public();
     public_key.to_data(public_key_data);
 
@@ -174,7 +186,7 @@ bc::endorsement signrawtx::sign(libbitcoin::server::server_node& node, tx_type t
 
     // gen sign
     bc::endorsement endorse;
-    if (!bc::chain::script::create_endorsement(endorse, private_key,
+    if (!bc::chain::script::create_endorsement(endorse, secret,
             contract, tx_, index, hash_type))
     {
         throw tx_sign_exception{"signrawtx sign failure"};
@@ -182,6 +194,7 @@ bc::endorsement signrawtx::sign(libbitcoin::server::server_node& node, tx_type t
 
     return endorse;
 }
+
 
 } // namespace commands
 } // namespace explorer
