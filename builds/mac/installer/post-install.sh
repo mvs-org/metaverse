@@ -1,7 +1,7 @@
 #!/bin/bash - 
 #===============================================================================
 #
-#          FILE: pre-install.sh
+#          FILE: post-install.sh
 # 
 #         USAGE: ./post-install.sh 
 # 
