@@ -59,7 +59,7 @@ static const auto time_stamp_window = asio::seconds(2 * 60 * 60);
 static const auto time_stamp_window_future_blocktime_fix = asio::seconds(24);
 
 // The nullptr option is for backward compatibility only.
-validate_block::validate_block(size_t height, const block& block, bool testnet,
+validate_block::validate_block(uint64_t height, const block& block, bool testnet,
                                const config::checkpoint::list& checks, stopped_callback callback)
     : testnet_(testnet),
       height_(height),
@@ -102,8 +102,8 @@ code validate_block::check_coinbase(const chain::header& prev_header, bool check
     const auto is_block_version_dpos = header.is_proof_of_dpos();
     const auto is_begin_of_epoch = consensus::witness::is_begin_of_epoch(height_);
 
-    size_t coinbase_count = 0, coinstake_count = 0;
-    for (size_t index = 0; index < transactions.size(); ++index) {
+    uint64_t coinbase_count = 0, coinstake_count = 0;
+    for (uint64_t index = 0; index < transactions.size(); ++index) {
         RETURN_IF_STOPPED();
 
         auto& tx = transactions[index];
@@ -341,7 +341,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
             ec = validate_tx->check_transaction_connect_input(header.number);
         }
 
-        for (size_t i = 0; (!ec) && (i < tx.outputs.size()); ++i) {
+        for (uint64_t i = 0; (!ec) && (i < tx.outputs.size()); ++i) {
             const auto& output = tx.outputs[i];
             if (output.is_asset_issue()) {
                 auto r = assets.insert(output.get_asset_symbol());
@@ -496,10 +496,10 @@ inline uint8_t decode_op_n(opcode code)
 }
 
 // TODO: move to bc::chain::operation::stack.
-inline size_t count_script_sigops(const operation::stack& operations,
+inline uint64_t count_script_sigops(const operation::stack& operations,
                                   bool accurate)
 {
-    size_t total_sigs = 0;
+    uint64_t total_sigs = 0;
     opcode last_opcode = opcode::bad_operation;
     for (const auto& op : operations)
     {
@@ -524,9 +524,9 @@ inline size_t count_script_sigops(const operation::stack& operations,
 }
 
 // TODO: move to bc::chain::transaction.
-size_t validate_block::legacy_sigops_count(const transaction& tx)
+uint64_t validate_block::legacy_sigops_count(const transaction& tx)
 {
-    size_t total_sigs = 0;
+    uint64_t total_sigs = 0;
     for (const auto& input : tx.inputs)
     {
         const auto& operations = input.script.operations;
@@ -542,9 +542,9 @@ size_t validate_block::legacy_sigops_count(const transaction& tx)
     return total_sigs;
 }
 
-size_t validate_block::legacy_sigops_count(const transaction::list& txs)
+uint64_t validate_block::legacy_sigops_count(const transaction::list& txs)
 {
-    size_t total_sigs = 0;
+    uint64_t total_sigs = 0;
     for (const auto& tx : txs)
         total_sigs += legacy_sigops_count(tx);
 
@@ -591,7 +591,7 @@ u256 validate_block::work_required(bool is_testnet) const
         current_block_.header, last_header, llast_header, is_pos);
 }
 
-bool validate_block::is_valid_coinbase_height(size_t height, const block& block, size_t index)
+bool validate_block::is_valid_coinbase_height(uint64_t height, const block& block, uint64_t index)
 {
     // There must be a transaction with an input.
     if (block.transactions.size() < index + 1 || block.transactions[index].inputs.empty()) {
@@ -644,19 +644,19 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
     }
 
     uint64_t fees = 0;
-    size_t total_sigops = 0;
+    uint64_t total_sigops = 0;
     const auto count = transactions.size();
     uint32_t version = current_block_.header.version;
     bool is_pos = current_block_.header.is_proof_of_stake();
-    size_t coinage_reward_coinbase_index = !is_pos ? 1 : 2;
-    size_t get_coinage_reward_tx_count = 0;
+    uint64_t coinage_reward_coinbase_index = !is_pos ? 1 : 2;
+    uint64_t get_coinage_reward_tx_count = 0;
 
     if (!check_block_signature(chain)) {
         return error::cointstake_signature_invalid;
     }
 
     ////////////// TODO: parallelize. //////////////
-    for (size_t tx_index = 0; tx_index < count; ++tx_index)
+    for (uint64_t tx_index = 0; tx_index < count; ++tx_index)
     {
         auto is_coinstake = false;
 
@@ -711,7 +711,7 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
     }
 
     auto check_reward_count = [=] {
-        size_t coinage_reward_count = BC_MAX_SIZE;
+        uint64_t coinage_reward_count = BC_MAX_SIZE;
         switch (version){
         case block_version_pow:
         case block_version_dpos:
@@ -776,12 +776,12 @@ bool validate_block::is_spent_duplicate(const transaction& tx) const
 }
 
 bool validate_block::validate_inputs(const transaction& tx,
-                                     size_t index_in_parent, uint64_t& value_in, size_t& total_sigops) const
+                                     uint64_t index_in_parent, uint64_t& value_in, uint64_t& total_sigops) const
 {
     BITCOIN_ASSERT(!tx.is_coinbase());
 
     ////////////// TODO: parallelize. //////////////
-    for (size_t input_index = 0; input_index < tx.inputs.size(); ++input_index)
+    for (uint64_t input_index = 0; input_index < tx.inputs.size(); ++input_index)
         if (!connect_input(index_in_parent, tx, input_index, value_in,
                            total_sigops))
         {
@@ -794,7 +794,7 @@ bool validate_block::validate_inputs(const transaction& tx,
     return true;
 }
 
-bool validate_block::script_hash_signature_operations_count(size_t& out_count,
+bool validate_block::script_hash_signature_operations_count(uint64_t& out_count,
         const script& output_script, const script& input_script)
 {
     using namespace chain;
@@ -819,7 +819,7 @@ bool validate_block::script_hash_signature_operations_count(size_t& out_count,
 }
 
 bool validate_block::get_transaction(const hash_digest& tx_hash,
-                                     chain::transaction& prev_tx, size_t& prev_height) const
+                                     chain::transaction& prev_tx, uint64_t& prev_height) const
 {
     return fetch_transaction(prev_tx, prev_height, tx_hash);
 }
@@ -830,14 +830,14 @@ bool validate_block::get_header(chain::header& out_header, uint64_t height) cons
     return true;
 }
 
-bool validate_block::connect_input(size_t index_in_parent,
-                                   const transaction& current_tx, size_t input_index, uint64_t& value_in,
-                                   size_t& total_sigops) const
+bool validate_block::connect_input(uint64_t index_in_parent,
+                                   const transaction& current_tx, uint64_t input_index, uint64_t& value_in,
+                                   uint64_t& total_sigops) const
 {
     BITCOIN_ASSERT(input_index < current_tx.inputs.size());
 
     // Lookup previous output
-    size_t previous_height;
+    uint64_t previous_height;
     transaction previous_tx;
     const auto& input = current_tx.inputs[input_index];
     const auto& previous_output = input.previous_output;
@@ -855,7 +855,7 @@ bool validate_block::connect_input(size_t index_in_parent,
     const auto& previous_tx_out = previous_tx.outputs[previous_output.index];
 
     // Signature operations count if script_hash payment type.
-    size_t count;
+    uint64_t count;
     if (!script_hash_signature_operations_count(count,
             previous_tx_out.script, input.script))
     {

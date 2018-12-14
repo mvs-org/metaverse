@@ -51,10 +51,10 @@ public:
 
     /// Required to call before calling accept_block or connect_block.
     void initialize_context();
-    static size_t legacy_sigops_count(const chain::transaction& tx);
-    static bool script_hash_signature_operations_count(size_t& out_count, const chain::script& output_script, const chain::script& input_script);
+    static uint64_t legacy_sigops_count(const chain::transaction& tx);
+    static bool script_hash_signature_operations_count(uint64_t& out_count, const chain::script& output_script, const chain::script& input_script);
 
-    bool get_transaction(const hash_digest& tx_hash, chain::transaction& prev_tx, size_t& prev_height) const;
+    bool get_transaction(const hash_digest& tx_hash, chain::transaction& prev_tx, uint64_t& prev_height) const;
     bool get_header(chain::header& out_header, uint64_t height) const;
 
     virtual std::string get_did_from_address_consider_orphan_chain(const std::string& address, const std::string& did_symbol) const = 0;
@@ -64,7 +64,7 @@ public:
     virtual bool is_asset_cert_in_orphan_chain(const std::string& symbol, asset_cert_type cert_type) const = 0;
     virtual bool is_asset_mit_in_orphan_chain(const std::string& symbol) const = 0;
 
-    virtual size_t get_fork_index() const { return max_size_t; }
+    virtual uint64_t get_fork_index() const { return max_uint64; }
     const uint64_t get_height() const {return height_;}
     virtual uint64_t median_time_past() const = 0;
 
@@ -74,30 +74,30 @@ protected:
     typedef std::vector<uint8_t> versions;
     typedef std::function<bool()> stopped_callback;
 
-    validate_block(size_t height, const chain::block& block,
+    validate_block(uint64_t height, const chain::block& block,
         bool testnet, const config::checkpoint::list& checks,
         stopped_callback stop_callback);
 
     virtual bool check_get_coinage_reward_transaction(const chain::transaction& coinage_reward_coinbase, const chain::output& tx) const = 0;
     virtual u256 previous_block_bits() const = 0;
-    virtual uint64_t actual_time_span(size_t interval) const = 0;
-    virtual versions preceding_block_versions(size_t count) const = 0;
-    virtual chain::header fetch_block(size_t fetch_height) const = 0;
+    virtual uint64_t actual_time_span(uint64_t interval) const = 0;
+    virtual versions preceding_block_versions(uint64_t count) const = 0;
+    virtual chain::header fetch_block(uint64_t fetch_height) const = 0;
     virtual chain::header::ptr get_last_block_header(const chain::header& parent_header, bool is_staking) const = 0;
     virtual bool transaction_exists(const hash_digest& tx_hash) const = 0;
-    virtual bool fetch_transaction(chain::transaction& tx, size_t& tx_height,
+    virtual bool fetch_transaction(chain::transaction& tx, uint64_t& tx_height,
         const hash_digest& tx_hash) const = 0;
     virtual bool is_output_spent(const chain::output_point& outpoint) const = 0;
     virtual bool is_output_spent(const chain::output_point& previous_output,
-        size_t index_in_parent, size_t input_index) const = 0;
+        uint64_t index_in_parent, uint64_t input_index) const = 0;
 
     // These have default implementations that can be overriden.
-    virtual bool connect_input(size_t index_in_parent,
-        const chain::transaction& current_tx, size_t input_index,
-        uint64_t& value_in, size_t& total_sigops) const;
+    virtual bool connect_input(uint64_t index_in_parent,
+        const chain::transaction& current_tx, uint64_t input_index,
+        uint64_t& value_in, uint64_t& total_sigops) const;
     virtual bool validate_inputs(const chain::transaction& tx,
-        size_t index_in_parent, uint64_t& value_in,
-        size_t& total_sigops) const;
+        uint64_t index_in_parent, uint64_t& value_in,
+        uint64_t& total_sigops) const;
 
     // These are protected virtual for testability.
     bool stopped() const;
@@ -118,9 +118,9 @@ protected:
     virtual bool check_work(const chain::block& block) const = 0;
 
     static bool is_distinct_tx_set(const chain::transaction::list& txs);
-    static bool is_valid_coinbase_height(size_t height, const chain::block& block, size_t index);
-    //static size_t legacy_sigops_count(const chain::transaction& tx);
-    static size_t legacy_sigops_count(const chain::transaction::list& txs);
+    static bool is_valid_coinbase_height(uint64_t height, const chain::block& block, uint64_t index);
+    //static uint64_t legacy_sigops_count(const chain::transaction& tx);
+    static uint64_t legacy_sigops_count(const chain::transaction::list& txs);
 
 private:
     bool testnet_;

@@ -176,7 +176,7 @@ void validate_transaction::handle_duplicate_check(
                                      shared_from_this(), _1, _2));
 }
 
-void validate_transaction::reset(size_t last_height)
+void validate_transaction::reset(uint64_t last_height)
 {
     // Used for checking coinbase maturity
     last_block_height_ = last_height;
@@ -189,7 +189,7 @@ void validate_transaction::reset(size_t last_height)
 }
 
 void validate_transaction::set_last_height(const code& ec,
-        size_t last_height)
+        uint64_t last_height)
 {
     if (ec)
     {
@@ -218,7 +218,7 @@ void validate_transaction::next_previous_transaction()
 }
 
 void validate_transaction::previous_tx_index(const code& ec,
-        size_t parent_height)
+        uint64_t parent_height)
 {
     if (ec)
     {
@@ -248,7 +248,7 @@ bool validate_transaction::get_previous_tx(chain::transaction& prev_tx,
         }
     }
     else {
-        size_t temp_height = 0;
+        uint64_t temp_height = 0;
         if (validate_block_ &&
             validate_block_->get_transaction(input.previous_output.hash, prev_tx, temp_height)) {
             prev_height = temp_height;
@@ -274,13 +274,13 @@ void validate_transaction::search_pool_previous_tx()
 
     // parent_height ignored here as mempool transactions cannot be coinbase.
     BITCOIN_ASSERT(!previous_tx.is_coinbase());
-    static constexpr size_t parent_height = 0;
+    static constexpr uint64_t parent_height = 0;
     handle_previous_tx(error::success, previous_tx, parent_height);
     unconfirmed_.push_back(current_input_);
 }
 
 void validate_transaction::handle_previous_tx(const code& ec,
-        const transaction& previous_tx, size_t parent_height)
+        const transaction& previous_tx, uint64_t parent_height)
 {
     if (ec) {
         log::debug(LOG_BLOCKCHAIN) << "handle_previous_tx failed: error: "
@@ -875,8 +875,8 @@ code validate_transaction::check_asset_mit_transaction() const
 
     std::string asset_symbol;
     std::string asset_address;
-    size_t num_mit_transfer = 0;
-    size_t num_mit_register = 0;
+    uint64_t num_mit_transfer = 0;
+    uint64_t num_mit_register = 0;
     for (auto& output : tx.outputs)
     {
         if (output.is_asset_mit_register()) {
@@ -1272,7 +1272,7 @@ code validate_transaction::connect_attachment_from_did(const output& output) con
     return error::did_address_not_match;
 }
 
-code validate_transaction::check_transaction_connect_input(size_t last_height)
+code validate_transaction::check_transaction_connect_input(uint64_t last_height)
 {
     if (last_height == 0 || tx_->is_coinbase()) {
         return error::success;
@@ -1353,7 +1353,7 @@ uint64_t median_time_past(const uint64_t &height, const block_chain_impl& chain)
 
     header header;
     std::vector<uint64_t> times;
-    for (size_t i = 1; i <= count; ++i) {
+    for (uint64_t i = 1; i <= count; ++i) {
         if (!chain.get_header(header, height - count + i)) {
             return MAX_UINT64;
         }
@@ -1594,7 +1594,7 @@ code validate_transaction::check_transaction_basic() const
 
 // Validate script consensus conformance based on flags provided.
 bool validate_transaction::check_consensus(const script& prevout_script,
-        const transaction& current_tx, size_t input_index, uint32_t flags)
+        const transaction& current_tx, uint64_t input_index, uint32_t flags)
 {
     BITCOIN_ASSERT(input_index <= max_uint32);
     BITCOIN_ASSERT(input_index < current_tx.inputs.size());
@@ -1647,7 +1647,7 @@ bool validate_transaction::check_consensus(const script& prevout_script,
     return valid;
 }
 
-bool validate_transaction::connect_input( const transaction& previous_tx, size_t parent_height)
+bool validate_transaction::connect_input( const transaction& previous_tx, uint64_t parent_height)
 {
     const auto& input = tx_->inputs[current_input_];
     const auto& previous_outpoint = input.previous_output;
@@ -1943,7 +1943,7 @@ bool validate_transaction::check_asset_certs(const transaction& tx) const
 
 bool validate_transaction::check_asset_mit(const transaction& tx) const
 {
-    size_t num_mit = 0;
+    uint64_t num_mit = 0;
     for (const auto& output : tx.outputs) {
         if (output.is_asset_mit_transfer()) {
             if (++num_mit > 1) {

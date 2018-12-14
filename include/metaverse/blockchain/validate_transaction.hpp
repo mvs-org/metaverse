@@ -56,10 +56,10 @@ public:
     void start(validate_handler handler);
 
     static bool check_consensus(const chain::script& prevout_script,
-        const chain::transaction& current_tx, size_t input_index,
+        const chain::transaction& current_tx, uint64_t input_index,
         uint32_t flags);
 
-    code check_transaction_connect_input(size_t last_height);
+    code check_transaction_connect_input(uint64_t last_height);
     code check_transaction() const;
     code check_transaction_basic() const;
     code check_sequence_locks() const;
@@ -75,7 +75,7 @@ public:
     code check_attachment_to_did(const output& output) const;
     code connect_attachment_from_did(const output& output) const;
 
-    bool connect_input(const chain::transaction& previous_tx, size_t parent_height);
+    bool connect_input(const chain::transaction& previous_tx, uint64_t parent_height);
 
     static bool tally_fees(block_chain_impl& chain,
         const chain::transaction& tx, uint64_t value_in, uint64_t& fees, bool is_coinstake = false);
@@ -104,19 +104,19 @@ private:
     code basic_checks() const;
     bool is_standard() const;
     void handle_duplicate_check(const code& ec);
-    void reset(size_t last_height);
+    void reset(uint64_t last_height);
 
     // Last height used for checking coinbase maturity.
-    void set_last_height(const code& ec, size_t last_height);
+    void set_last_height(const code& ec, uint64_t last_height);
 
     // Begin looping through the inputs, fetching the previous tx
     void next_previous_transaction();
-    void previous_tx_index(const code& ec, size_t parent_height);
+    void previous_tx_index(const code& ec, uint64_t parent_height);
 
     // If previous_tx_index didn't find it then check in pool instead
     void search_pool_previous_tx();
     void handle_previous_tx(const code& ec,
-        const chain::transaction& previous_tx, size_t parent_height);
+        const chain::transaction& previous_tx, uint64_t parent_height);
 
     // After running connect_input, we check whether this validated previous
     // output was not already spent by another input in the blockchain.
@@ -136,7 +136,7 @@ private:
     const validate_block* const validate_block_;
 
     const hash_digest tx_hash_;
-    size_t last_block_height_;
+    uint64_t last_block_height_;
     uint64_t value_in_;
     uint64_t asset_amount_in_;
     std::vector<asset_cert_type> asset_certs_in_;

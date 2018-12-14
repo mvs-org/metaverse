@@ -38,9 +38,9 @@ class BCB_API validate_block_impl
   : public validate_block
 {
 public:
-    validate_block_impl(block_chain_impl& chain, size_t fork_index,
-        const block_detail::list& orphan_chain, size_t orphan_index,
-        size_t height, const chain::block& block, bool testnet,
+    validate_block_impl(block_chain_impl& chain, uint64_t fork_index,
+        const block_detail::list& orphan_chain, uint64_t orphan_index,
+        uint64_t height, const chain::block& block, bool testnet,
         const config::checkpoint::list& checkpoints,
         stopped_callback stopped);
 
@@ -58,32 +58,32 @@ public:
     virtual bool is_asset_cert_in_orphan_chain(const std::string& symbol, asset_cert_type cert_type) const override;
     virtual bool is_asset_mit_in_orphan_chain(const std::string& symbol) const override;
 
-    virtual size_t get_fork_index() const override { return fork_index_; }
+    virtual uint64_t get_fork_index() const override { return fork_index_; }
     uint64_t median_time_past() const;
 
 protected:
     u256 previous_block_bits() const;
-    uint64_t actual_time_span(size_t interval) const;
-    versions preceding_block_versions(size_t maximum) const;
-    chain::header fetch_block(size_t fetch_height) const;
+    uint64_t actual_time_span(uint64_t interval) const;
+    versions preceding_block_versions(uint64_t maximum) const;
+    chain::header fetch_block(uint64_t fetch_height) const;
     chain::header::ptr get_last_block_header(const chain::header& parent_header, bool is_staking) const;
-    bool fetch_transaction(chain::transaction& tx, size_t& tx_height,
+    bool fetch_transaction(chain::transaction& tx, uint64_t& tx_height,
         const hash_digest& tx_hash) const;
     bool is_output_spent(const chain::output_point& outpoint) const;
     bool is_output_spent(const chain::output_point& previous_output,
-        size_t index_in_parent, size_t input_index) const;
+        uint64_t index_in_parent, uint64_t input_index) const;
     bool transaction_exists(const hash_digest& tx_hash) const;
 
 private:
     bool fetch_orphan_transaction(chain::transaction& tx,
-        size_t& previous_height, const hash_digest& tx_hash) const;
+        uint64_t& previous_height, const hash_digest& tx_hash) const;
     bool orphan_is_spent(const chain::output_point& previous_output,
-        size_t skip_tx, size_t skip_input) const;
+        uint64_t skip_tx, uint64_t skip_input) const;
 
     block_chain_impl& chain_;
-    size_t height_;
-    size_t fork_index_;
-    size_t orphan_index_;
+    uint64_t height_;
+    uint64_t fork_index_;
+    uint64_t orphan_index_;
     const block_detail::list& orphan_chain_;
 };
 

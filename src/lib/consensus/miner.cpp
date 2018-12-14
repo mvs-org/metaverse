@@ -216,7 +216,7 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
     return transactions.empty() == false;
 }
 
-bool miner::script_hash_signature_operations_count(size_t &count, const chain::input& input, vector<transaction_ptr>& transactions)
+bool miner::script_hash_signature_operations_count(uint64_t &count, const chain::input& input, vector<transaction_ptr>& transactions)
 {
     const auto& previous_output = input.previous_output;
     transaction previous_tx;
@@ -241,12 +241,12 @@ bool miner::script_hash_signature_operations_count(size_t &count, const chain::i
 }
 
 bool miner::script_hash_signature_operations_count(
-    size_t &count, const chain::input::list& inputs, vector<transaction_ptr>& transactions)
+    uint64_t &count, const chain::input::list& inputs, vector<transaction_ptr>& transactions)
 {
     count = 0;
     for (const auto& input : inputs)
     {
-        size_t c = 0;
+        uint64_t c = 0;
         if (script_hash_signature_operations_count(c, input, transactions) == false)
             return false;
         count += c;
@@ -574,7 +574,7 @@ bool miner::get_block_transactions(
             make_heap(transaction_prioritys.begin(), transaction_prioritys.end(), sort_func);
         }
 
-        size_t c;
+        uint64_t c;
         if (!miner::script_hash_signature_operations_count(c, ptx->inputs, transactions)
                 && total_tx_sig_length + tx_sig_length + c >= blockchain::max_block_script_sigops)
             continue;
@@ -949,7 +949,7 @@ bool miner::sign_coinstake_tx(
 {
     const uint8_t hash_type = chain::signature_hash_algorithm::all;
 
-    for (size_t i = 0; i < coinstake->inputs.size(); ++i) {
+    for (uint64_t i = 0; i < coinstake->inputs.size(); ++i) {
         const chain::script& contract = coinstake->inputs[i].script;
         // gen sign
         endorsement endorse;
