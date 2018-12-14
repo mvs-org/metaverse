@@ -265,22 +265,22 @@ class Role:
         return message["hash"]
 
     def mining(self, times=1):
-        '''
-        use the mainaddress to mining x times.
-        do mining to get the main address rich.
+
+        #use the mainaddress to mining x times.
+        #do mining to get the main address rich.
 
         result, (height_origin, _) = mvs_rpc.get_info()
         assert (result == 0)
         mvs_rpc.start_mining(self.name, self.password, self.mainaddress(), times)
-        for i in range(times+10):
-            time.sleep(0.1)
+        for i in range(times * 2 + 10):
+            time.sleep(0.5)
             result, (height_new, _) = mvs_rpc.get_info()
             assert (result == 0)
             if height_new == (height_origin + times):
                 break
 
         mvs_rpc.stop_mining()
-        time.sleep(0.2)
+        time.sleep(1)
         return
         '''
         from ethereum.pow.ethpow import mine
@@ -315,6 +315,7 @@ class Role:
             if result != 0:
                 print('failed to submit work:[%s, %s, %s] -> %s' % (bin_nonce, header_hash, mix_hash, message))
             assert (result == 0)
+        '''
 
     def new_multisigaddress(self, description, others, required_key_num):
         '''

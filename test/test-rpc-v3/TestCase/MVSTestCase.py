@@ -26,8 +26,6 @@ class MVSTestCaseBase(unittest.TestCase):
                     Alice.send_etp(role.mainaddress(), 10 ** 8)
                     Alice.mining()
                 ec, message = role.register_did()
-                self.assertEqual(
-                    ec, 0, "error: {}, message: {}".format(ec, message))
                 Alice.mining()
 
         if self.need_mine:

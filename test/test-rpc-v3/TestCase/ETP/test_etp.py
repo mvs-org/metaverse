@@ -169,7 +169,7 @@ class TestSendETP(MVSTestCaseBase):
         # invalid address!
         invalid_address = common.gen_invalid_address( Alice.addresslist[1] )
         ec, message = mvs_rpc.deposit(Alice.name, Alice.password, 10**8, address=invalid_address)
-        self.assertEqual(ec, 4010, message)
+        self.assertEqual(ec, 7006, message)
 
         # invalid deposit
         deposits = [7, 30, 90, 182, 365]

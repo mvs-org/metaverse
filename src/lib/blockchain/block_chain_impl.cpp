@@ -1275,7 +1275,7 @@ std::shared_ptr<account> block_chain_impl::is_account_passwd_valid
 {
     //added by chengzhiping to protect accounts from brute force password attacks.
     auto *ass = account_security_strategy::get_instance();
-    ass->check_locked(name);
+    // ass->check_locked(name);
 
     auto account = get_account(name);
     if (account && account->get_passwd() == get_hash(passwd)) { // account exist
@@ -1283,7 +1283,7 @@ std::shared_ptr<account> block_chain_impl::is_account_passwd_valid
         return account;
     }
 
-    ass->on_auth_passwd(name, false);
+    // ass->on_auth_passwd(name, false);
     throw std::logic_error{"account not found or incorrect password"};
     return nullptr;
 }
@@ -1747,7 +1747,6 @@ block_chain_impl::get_account_asset_certs(const std::string& account, const std:
 std::shared_ptr<asset_cert::list> block_chain_impl::get_issued_asset_certs(
     const std::string& address)
 {
-    log::info("block_chain_impl") << "address: " << address;
     auto sp_vec = std::make_shared<asset_cert::list>();
     auto sp_asset_certs_vec = database_.certs.get_blockchain_asset_certs();
     for (const auto& each : *sp_asset_certs_vec) {
