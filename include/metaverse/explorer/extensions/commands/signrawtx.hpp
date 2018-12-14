@@ -81,6 +81,11 @@ public:
             "TRANSACTION",
             value<explorer::config::transaction>(&argument_.transaction)->required(),
             "The input Base16 transaction to sign."
+        )
+        (
+            "wif,w",
+            value<std::string>(&option_.private_key)->default_value(""),
+            "The wif or private key to sign."
         );
 
         return options;
@@ -100,6 +105,7 @@ public:
 
     struct option
     {
+        std::string private_key;
     } option_;
 
 private:

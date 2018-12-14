@@ -34,7 +34,7 @@ using namespace bc::explorer::config;
 /************************ getnewaccount *************************/
 
 //76066276 is HD private key version
-const uint64_t prefixes = bc::wallet::hd_private::to_prefixes(76066276, 0);
+const uint64_t prefixes = wallet::hd_private::to_prefixes(76066276, 0);
 
 console_result getnewaccount::invoke(Json::Value& jv_output,
     bc::server::server_node& node)
@@ -114,37 +114,39 @@ console_result getnewaccount::create_address(Json::Value& jv_output,
 
     // create mnemonic words
     bc::explorer::config::language opt_language(option_.language);
-    auto&& words = get_mnemonic_new(opt_language, get_seed());
+    auto words = get_mnemonic_new(opt_language, get_seed());
     std::string mnemonic = bc::join(words);
 
     // create master hd private
     const auto seed = wallet::decode_mnemonic(words);
-    bc::config::base16 bs(seed);
+    config::base16 bs(seed);
     const data_chunk& ds = static_cast<const data_chunk&>(bs);
-    const bc::wallet::hd_private master_hd_private(ds, prefixes);
+    const wallet::hd_private master_hd_private(ds, prefixes);
 
     // create derive hd private at index 0
     const auto derive_hd_private = master_hd_private.derive_private(0);
     std::string hk = derive_hd_private.encoded();
-    const auto derive_private_key = bc::wallet::hd_private(hk, prefixes);
+    const auto derive_private_key = wallet::hd_private(hk, prefixes);
 
     // get public key and payment address
     ec_secret secret = derive_private_key.secret();
+    wallet::ec_private ec_prv(secret);
     ec_compressed point;
     bc::secret_to_public(point, secret);
-    wallet::ec_public ep = wallet::ec_public(point, true);
-    wallet::payment_address pay_address(ep, payment_version);
+    wallet::ec_public ec_pub(point, true);
+    wallet::payment_address pay_address(ec_pub, payment_version);
 
     // encode
     std::string prv_key = encode_base16(secret);
-    std::string prv_key_wif = encode_base58(secret);
-    std::string pub_key = ep.encoded();
+    std::string prv_key_wif = ec_prv.encoded();
+    std::string pub_key = ec_pub.encoded();
     std::string addr = pay_address.encoded();
 
     // output
     jv_output["mnemonic"] = mnemonic;
-    jv_output["private_key"] = prv_key_wif;
+    jv_output["private_key"] = prv_key;
     jv_output["public_key"] = pub_key;
+    jv_output["wif"] = prv_key_wif;
     jv_output["address"] = addr;
 
     return console_result::okay;

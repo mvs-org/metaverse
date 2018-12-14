@@ -31,11 +31,29 @@ namespace commands {
 
 using payment_address = wallet::payment_address;
 
+std::string parse_private_key(const std::string& raw_str)
+{
+    bc::wallet::ec_private prv_key(raw_str);
+    if (true == (bool)prv_key) {
+        const ec_secret& secret = prv_key;
+        return encode_base16(secret);
+    }
+
+    return raw_str;
+}
+
 console_result signrawtx::invoke(Json::Value& jv_output,
                                  bc::server::server_node& node)
 {
+    if (option_.private_key.empty() && (auth_.name.empty() || auth_.auth.empty())) {
+        throw argument_legality_exception{"Missing account/password or private key!"};
+    }
+
     auto &blockchain = node.chain_impl();
-    const auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    std::shared_ptr<account> acc(nullptr);
+    if (option_.private_key.empty()) {
+        acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    }
 
     tx_type tx_ = argument_.transaction;
 
@@ -60,6 +78,10 @@ console_result signrawtx::invoke(Json::Value& jv_output,
 
             // script address : maybe multisig
             if (!address || (address.version() == payment_address::mainnet_p2sh)) {
+                if (acc == nullptr) {
+                    throw argument_legality_exception{"Please use account/password to sign pay-to-script raw tx."};
+                }
+
                 const auto script_vec = acc->get_script(address.encoded());
                 if (!script_vec || script_vec->empty()) {
                     throw argument_legality_exception{"invalid script: " + config::script(output.script).to_string()};
@@ -108,7 +130,14 @@ console_result signrawtx::invoke(Json::Value& jv_output,
                 }
             }
             else {
-                std::string prv_key_str = get_private_key(blockchain, address.encoded());
+                std::string prv_key_str;
+                if (acc) {
+                    prv_key_str = get_private_key(blockchain, address.encoded());
+                }
+                else {
+                    prv_key_str = parse_private_key(option_.private_key);
+                }
+
                 bc::explorer::config::script config_contract(output.script); // previous output script
 
                 data_chunk public_key_data;
