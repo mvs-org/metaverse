@@ -13,8 +13,5 @@
  */
 
 #define MVS_VERSION "0.8.5"
-#define MVS_MAJOR_VERSION 0
-#define MVS_MINOR_VERSION 8
-#define MVS_PATCH_VERSION 5
 
 #endif

@@ -28,7 +28,6 @@
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/generated.hpp>
 #include <metaverse/explorer/utility.hpp>
-#include <metaverse/explorer/version.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -79,8 +78,7 @@ void display_usage(std::ostream& stream)
 {
     stream
         << std::endl << BX_COMMAND_USAGE << std::endl
-        << format(BX_VERSION_MESSAGE) %
-            MVS_EXPLORER_VERSION << std::endl
+        << format(BX_VERSION_MESSAGE) % MVS_VERSION << std::endl
         << BX_COMMANDS_HEADER << std::endl
         << std::endl;
 
