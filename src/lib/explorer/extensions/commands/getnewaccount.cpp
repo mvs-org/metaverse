@@ -119,7 +119,7 @@ console_result getnewaccount::create_address(Json::Value& jv_output,
 
     // create master hd private
     const auto seed = wallet::decode_mnemonic(words);
-    config::base16 bs(seed);
+    bc::config::base16 bs(seed);
     const data_chunk& ds = static_cast<const data_chunk&>(bs);
     const wallet::hd_private master_hd_private(ds, prefixes);
 
