@@ -113,7 +113,7 @@ public:
     {
         std::string address;
         uint16_t number;
-        std::string consensus;
+        std::string consensus = "pow";
     } option_;
 
 };
