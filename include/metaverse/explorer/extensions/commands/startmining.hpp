@@ -20,6 +20,7 @@
 
 
 #pragma once
+#include <metaverse/macros_define.hpp>
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -85,11 +86,14 @@ public:
             value<uint16_t>(&option_.number)->default_value(0),
             "The number of mining blocks, useful for testing. Defaults to 0, means no limit."
         )
+#ifdef PRIVATE_CHAIN
         (
             "consensus,c",
             value<std::string>(&option_.consensus)->default_value("pow"),
             "Accept block with the specified consensus, eg. pow, pos, dpos, defaults to pow."
-        );
+        )
+#endif
+        ;
 
         return options;
     }
