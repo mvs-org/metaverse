@@ -137,6 +137,9 @@ private:
 
     u256 get_next_target_required(const chain::header& header, const chain::header& prev_header, bool is_staking);
 
+    std::shared_ptr<chain::output> create_coinbase_mst_output(
+        const wallet::payment_address& pay_address, const std::string& symbol, uint64_t value);
+
 private:
     p2p_node& node_;
     std::shared_ptr<boost::thread> thread_;

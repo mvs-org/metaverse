@@ -83,6 +83,16 @@ std::string timestamp_to_string(uint32_t timestamp)
     return std::string(buf);
 }
 
+chain::operation::stack to_script_operation(const wallet::payment_address& pay_address, uint64_t lock_height = 0)
+{
+    if (lock_height > 0) {
+        return chain::operation::to_pay_key_hash_with_lock_height_pattern(pay_address.hash(), lock_height);
+    }
+    else {
+        return chain::operation::to_pay_key_hash_pattern(pay_address.hash());
+    }
+}
+
 miner::miner(p2p_node& node)
     : node_(node)
     , state_(state::init_)
@@ -277,12 +287,12 @@ miner::block_ptr miner::create_genesis_block(bool is_mainnet)
     // init for testnet/mainnet
     if (!is_mainnet) {
         wallet::payment_address testnet_genesis_address("tPd41bKLJGf1C5RRvaiV2mytqZB6WfM1vR");
-        tx_new.outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(testnet_genesis_address));
+        tx_new.outputs[0].script.operations = to_script_operation(testnet_genesis_address);
         pblock->header.timestamp = 1479881397;
     }
     else {
         wallet::payment_address genesis_address("MGqHvbaH9wzdr6oUDFz4S1HptjoKQcjRve");
-        tx_new.outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(genesis_address));
+        tx_new.outputs[0].script.operations = to_script_operation(genesis_address);
         pblock->header.timestamp = 1486796400;
     }
     tx_new.outputs[0].value = 50000000 * coin_price();
@@ -317,14 +327,28 @@ miner::transaction_ptr miner::create_coinbase_tx(
 
     ptransaction->outputs.resize(1);
     ptransaction->outputs[0].value = value;
-    if (lock_height > 0) {
-        ptransaction->outputs[0].script.operations = chain::operation::to_pay_key_hash_with_lock_height_pattern(short_hash(pay_address), lock_height);
-    } else {
-        ptransaction->outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(pay_address));
-    }
+    ptransaction->outputs[0].script.operations = to_script_operation(pay_address, lock_height);
 
     return ptransaction;
 }
+
+std::shared_ptr<chain::output> miner::create_coinbase_mst_output(const wallet::payment_address& pay_address,
+    const std::string& symbol, uint64_t value)
+{
+    using namespace bc::chain;
+    chain::asset_transfer trans(symbol, value);
+    chain::asset ass(ASSET_TRANSFERABLE_TYPE, trans);
+
+    if (!ass.is_valid()) {
+        return nullptr;
+    }
+
+    chain::attachment attach(ASSET_TYPE, 1/*version*/, ass);
+    auto payment_script = chain::script{ to_script_operation(pay_address) };
+    auto output = std::make_shared<chain::output>(value, payment_script, attach);
+    return output;
+}
+
 #ifdef PRIVATE_CHAIN
 int bucket_size = 200;
 #else
@@ -364,14 +388,13 @@ uint64_t miner::calculate_block_subsidy(uint64_t block_height, bool is_testnet, 
 uint64_t miner::calculate_block_subsidy_pow(uint64_t block_height, bool is_testnet)
 {
     auto rate = block_height / bucket_size;
-    if(block_height > pos_enabled_height)
-    {
+    if (block_height > pos_enabled_height) {
         rate = pos_enabled_height / bucket_size;
         auto period_left = pos_enabled_height % bucket_size;
         auto period_right = (bucket_size - period_left) * 2;
         auto period_end = pos_enabled_height + period_right;
 
-        if(block_height >= period_end){
+        if (block_height >= period_end) {
             rate = rate + 1 + (block_height - period_end) / (2 * bucket_size);
         }
     }
@@ -422,7 +445,6 @@ bool miner::get_block_transactions(
     std::vector<transaction_ptr>& txs, std::vector<transaction_ptr>& reward_txs,
     uint64_t& total_fee, uint32_t& total_tx_sig_length)
 {
-    block_ptr pblock;
     block_chain_impl& block_chain = node_.chain_impl();
 
     uint64_t current_block_height = 0;
@@ -431,8 +453,6 @@ bool miner::get_block_transactions(
             || !block_chain.get_header(prev_header, current_block_height)) {
         log::warning(LOG_HEADER) << "get_last_height or get_header fail. current_block_height:" << current_block_height;
         return false;
-    } else {
-        pblock = make_shared<block>();
     }
 
     vector<transaction_ptr> transactions;
@@ -441,16 +461,13 @@ bool miner::get_block_transactions(
     previous_out_map_t previous_out_map;
     tx_fee_map_t tx_fee_map;
 
-    if (!witness::is_begin_of_epoch(current_block_height + 1)){
+    if (!witness::is_begin_of_epoch(current_block_height + 1)) {
         get_transaction(transactions, previous_out_map, tx_fee_map);
     }
 
-    // Create coinbase tx
-    pblock->transactions.push_back(*create_coinbase_tx(pay_address_, 0, current_block_height + 1, 0));
-
     // Largest block you're willing to create:
     uint32_t block_max_size = blockchain::max_block_size / 2;
-    // Limit to betweeen 1K and max_block_size-1K for sanity:
+    // Limit to betweeen 1K and max_block_size - 1K for sanity:
     block_max_size = max((uint32_t)1000, min((uint32_t)(blockchain::max_block_size - 1000), block_max_size));
 
     // How much of the block should be dedicated to high-priority transactions,
@@ -538,9 +555,9 @@ bool miner::get_block_transactions(
         for (const auto& output : ptx->outputs) {
             if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
                 int lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-                coinage_reward_coinbase = create_coinbase_tx(wallet::payment_address::extract(ptx->outputs[0].script),
-                                          calculate_lockblock_reward(lock_height, output.value),
-                                          last_height + 1, lock_height);
+                auto address = wallet::payment_address::extract(ptx->outputs[0].script);
+                auto reward = calculate_lockblock_reward(lock_height, output.value);
+                coinage_reward_coinbase = create_coinbase_tx(address, reward, last_height + 1, lock_height);
                 uint32_t tx_sig_length = get_tx_sign_length(coinage_reward_coinbase);
                 if (total_tx_sig_length + tx_sig_length >= blockchain::max_block_script_sigops) {
                     continue;
@@ -994,7 +1011,7 @@ miner::transaction_ptr miner::create_pos_genesis_tx(uint64_t block_height, uint3
 
     genesis_tx->outputs.resize(1);
     wallet::payment_address pay_address(get_foundation_address(setting_.use_testnet_rules));
-    genesis_tx->outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(pay_address));
+    genesis_tx->outputs[0].script.operations = to_script_operation(pay_address);
     genesis_tx->outputs[0].value = pos_genesis_reward;
 
     return genesis_tx;
@@ -1055,7 +1072,7 @@ miner::transaction_ptr miner::create_coinstake_tx(
         nCredit += stake.data.value;
     }
 
-    auto&& script_operation = chain::operation::to_pay_key_hash_pattern(short_hash(pay_address));
+    auto&& script_operation = to_script_operation(pay_address);
     // auto payment_script = chain::script{script_operation};
 
     coinstake->outputs.emplace_back(nCredit, chain::script{script_operation},
