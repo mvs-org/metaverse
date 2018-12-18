@@ -497,7 +497,9 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
                 configured.network.hosts_file = "hosts-test.cache";
                 configured.network.debug_file = "debug-test.log";
                 configured.network.error_file = "error-test.log";
-                const_cast<path&>(variables[BS_CONFIG_VARIABLE].as<path>()) = "mvs-test.conf";
+                if (get_config_option(variables, BS_CONFIG_VARIABLE).empty()) {
+                    const_cast<path&>(variables[BS_CONFIG_VARIABLE].as<path>()) = "mvs-test.conf";
+                }
             }
             auto data_dir = variables[BS_DATADIR_VARIABLE].as<path>();
             if (!data_dir.empty())
