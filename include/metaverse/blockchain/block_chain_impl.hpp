@@ -35,20 +35,32 @@
 #include <metaverse/blockchain/simple_chain.hpp>
 #include <metaverse/blockchain/transaction_pool.hpp>
 #include <metaverse/bitcoin/chain/header.hpp>
-#include <metaverse/bitcoin/chain/header.hpp>
+#include <metaverse/consensus/fts.hpp>
 
 #define  LOG_BLOCK_CHAIN_IMPL  "block_chain_impl"
-using namespace libbitcoin::message;
 
 namespace libbitcoin {
 namespace blockchain {
 
 typedef console_result operation_result;
 
+class block_chain_impl;
+class validate_block;
+
+// encap to safer write database
+class block_chain_writer {
+public:
+    block_chain_writer(block_chain_impl& chain);
+    ~block_chain_writer();
+private:
+    block_chain_impl& chain_;
+};
+
 /// The simple_chain interface portion of this class is not thread safe.
 class BCB_API block_chain_impl
   : public block_chain, public simple_chain
 {
+    friend class block_chain_writer;
 public:
     block_chain_impl(threadpool& pool,
         const blockchain::settings& chain_settings,
@@ -96,6 +108,7 @@ public:
 
     /// Get the header of the block at the given height.
     bool get_header(chain::header& out_header, uint64_t height) const;
+    uint64_t get_transaction_count(uint64_t block_height) const;
 
     /// Get the height of the block with the given hash.
     bool get_height(uint64_t& out_height, const hash_digest& block_hash) const;
@@ -156,6 +169,15 @@ public:
     /// fetch hashes of transactions for a block, by block hash.
     void fetch_block_transaction_hashes(const hash_digest& hash,
         transaction_hashes_fetch_handler handler);
+
+    /// fetch hashes of transactions for a block, by block height.
+    void fetch_block_signature(uint64_t height,
+                               block_signature_fetch_handler handler);
+
+    /// fetch hashes of transactions for a block, by block hash.
+    void fetch_block_signature(const hash_digest& hash,
+                               block_signature_fetch_handler handler);
+
 
     /// fetch a block locator relative to the current top and threshold.
     void fetch_block_locator(block_locator_fetch_handler handler);
@@ -219,9 +241,43 @@ public:
     /// Subscribe to blockchain reorganizations.
     virtual void subscribe_reorganize(reorganize_handler handler);
 
-    inline hash_digest get_hash(const std::string& str);
-    inline short_hash get_short_hash(const std::string& str);
-  
+    /// must be have enough etp locked in the address
+    virtual bool check_pos_capability(
+        uint64_t best_height,
+        const wallet::payment_address& pay_addres,
+        bool need_sync_lock = true);
+
+    /// select pos utxo. target value
+    virtual bool select_utxo_for_staking(
+        uint64_t best_height,
+        const wallet::payment_address& pay_addres,
+        chain::output_info::list& stake_outputs,
+        uint32_t max_count = max_uint32) override;
+
+    inline bool check_pos_utxo_height_and_value(
+        const uint64_t& out_height,
+        const uint64_t& curr_height,
+        const uint64_t& value)
+    {
+        return (value >= pos_stake_min_value) && (out_height + pos_stake_min_height <= curr_height);
+    }
+
+    bool check_pos_utxo_capability(
+        const  uint64_t& height,
+        const chain::transaction& tx,
+        const uint32_t& out_index ,
+        const uint64_t& out_height,
+        bool strict=true,
+        const validate_block* validate_block=nullptr
+    );
+
+    bool pos_exist_before(const uint64_t& height);
+
+    virtual chain::header::ptr get_last_block_header(const chain::header& parent_header, bool is_staking) const;
+
+    inline hash_digest get_hash(const std::string& str) const;
+    inline short_hash get_short_hash(const std::string& str) const;
+
     std::shared_ptr<chain::transaction>  get_spends_output(const input_point& input);
 
 
@@ -262,18 +318,19 @@ public:
     bool is_asset_exist(const std::string& asset_name, bool check_local_db=true);
     uint64_t get_asset_height(const std::string& asset_name) const ;
     std::shared_ptr<asset_detail::list> get_local_assets();
-    std::shared_ptr<asset_detail::list> get_issued_assets(const std::string& symbol="");
+    std::shared_ptr<asset_detail::list> get_issued_assets(
+        const std::string& symbol="", const std::string& address="");
     std::shared_ptr<asset_detail> get_issued_asset(const std::string& symbol);
     std::shared_ptr<business_address_asset::list> get_account_assets();
     std::shared_ptr<business_address_asset::list> get_account_unissued_assets(const std::string& name);
     std::shared_ptr<asset_detail> get_account_unissued_asset(
         const std::string& name, const std::string& symbol);
-    
+
     std::shared_ptr<blockchain_asset::list> get_asset_register_output(const std::string& symbol);
     // cert api
     bool is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_type);
     uint64_t get_asset_cert_height(const std::string& cert_symbol,const asset_cert_type& cert_type);
-    std::shared_ptr<asset_cert::list> get_issued_asset_certs();
+    std::shared_ptr<asset_cert::list> get_issued_asset_certs(const std::string& address = "");
     std::shared_ptr<asset_cert> get_account_asset_cert(
         const std::string& account, const std::string& symbol, asset_cert_type cert_type);
     std::shared_ptr<business_address_asset_cert::list> get_account_asset_certs(
@@ -292,12 +349,12 @@ public:
         const std::string& account, const std::string& symbol="");
 
     // account did api
-    bool is_did_exist(const std::string& symbol);
+    bool is_did_exist(const std::string& symbol) const;
     uint64_t get_did_height(const std::string& symbol) const;
     bool is_address_registered_did(const std::string& address, uint64_t fork_index = max_uint64);
     bool is_account_owned_did(const std::string& account, const std::string& symbol);
     std::string get_did_from_address(const std::string& address, uint64_t fork_index = max_uint64);
-    std::shared_ptr<did_detail> get_registered_did(const std::string& symbol);
+    std::shared_ptr<did_detail> get_registered_did(const std::string& symbol) const;
     std::shared_ptr<did_detail::list> get_registered_dids();
     std::shared_ptr<did_detail::list> get_account_dids(const std::string& account);
 
@@ -338,7 +395,7 @@ public:
         chain::transaction& tx, uint64_t& tx_height);
     bool get_transaction_callback(const hash_digest& hash,
     std::function<void(const code&, const chain::transaction&)> handler);
-    bool get_history_callback(const payment_address& address,
+    bool get_history_callback(const wallet::payment_address& address,
         size_t limit, size_t from_height,
         std::function<void(const code&, chain::history::list&)> handler);
     bool get_history(const wallet::payment_address& address,
@@ -347,6 +404,24 @@ public:
     code broadcast_transaction(const chain::transaction& tx);
     bool get_tx_inputs_etp_value (chain::transaction& tx, uint64_t& etp_val);
     void safe_store_account(account& acc, std::vector<std::shared_ptr<account_address>>& addresses);
+
+    shared_mutex& get_mutex();
+    bool is_sync_disabled() const;
+    void set_sync_disabled(bool b);
+
+    uint64_t calc_number_of_blocks(uint64_t from, uint64_t to, const validate_block* validate_block=nullptr) const;
+    uint64_t get_expiration_height(uint64_t from, uint64_t lock_height) const;
+
+    std::pair<uint64_t, uint64_t> get_locked_balance(const std::string& address,
+        uint64_t expiration, const std::string& asset_symbol="") const;
+
+    std::vector<std::pair<std::string, data_chunk>> get_register_witnesses(
+        const std::string& addr, const std::string& symbol,
+        size_t start_height, size_t end_height=0, uint64_t limit=0, uint64_t page_number=0) const;
+
+    std::shared_ptr<consensus::fts_stake_holder::ptr_list> get_register_witnesses_with_stake(
+        const std::string& addr, const std::string& symbol,
+        size_t start_height, size_t end_height=0, uint64_t limit=0, uint64_t page_number=0) const;
 
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
@@ -379,10 +454,11 @@ private:
     void fetch_serial(perform_read_functor perform_read);
     bool stopped() const;
 
-    std::string get_asset_symbol_from_business_data(const business_data& data);
+    std::string get_asset_symbol_from_business_data(const business_data& data) const;
 
 private:
     std::atomic<bool> stopped_;
+    std::atomic<bool> sync_disabled_;
     const settings& settings_;
 
     // These are thread safe.
@@ -393,7 +469,7 @@ private:
 
     // This is protected by mutex.
     database::data_base database_;
-    mutable shared_mutex mutex_;
+    shared_mutex mutex_;
 };
 
 } // namespace blockchain

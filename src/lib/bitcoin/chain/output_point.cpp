@@ -32,32 +32,32 @@ namespace chain {
 //-----------------------------------------------------------------------------
 
 output_point::output_point()
-  : point{}, metadata{}
+  : point{}
 {
 }
 
 output_point::output_point(point&& value)
-  : point(std::move(value)), metadata{}
+  : point(std::move(value))
 {
 }
 
 output_point::output_point(const point& value)
-  : point(value), metadata{}
+  : point(value)
 {
 }
 
 output_point::output_point(const output_point& other)
-  : point(other), metadata(other.metadata)
+  : point(other)
 {
 }
 
 output_point::output_point(output_point&& other)
-  : point(std::move(other)), metadata(std::move(other.metadata))
+  : point(std::move(other))
 {
 }
 
 output_point::output_point(hash_digest&& hash, uint32_t index)
-  : point({ std::move(hash), index }), metadata{}
+  : point({ std::move(hash), index })
 {
 }
 
@@ -86,14 +86,12 @@ output_point& output_point::operator=(const point& other)
 output_point& output_point::operator=(output_point&& other)
 {
     point::operator=(std::move(other));
-    metadata = std::move(other.metadata);
     return *this;
 }
 
 output_point& output_point::operator=(const output_point& other)
 {
     point::operator=(other);
-    metadata = other.metadata;
     return *this;
 }
 
@@ -139,20 +137,6 @@ output_point output_point::factory(reader& source)
     output_point instance;
     instance.from_data(source);
     return instance;
-}
-
-// Validation.
-//-----------------------------------------------------------------------------
-
-// For tx pool validation height is that of the candidate block.
-bool output_point::is_mature(size_t height) const
-{
-    // Coinbase (null) inputs and those with non-coinbase prevouts are mature.
-    if (!metadata.coinbase || is_null())
-        return true;
-
-    // The (non-coinbase) input refers to a coinbase output, so validate depth.
-    return floor_subtract(height, metadata.height) >= coinbase_maturity;
 }
 
 } // namespace chain

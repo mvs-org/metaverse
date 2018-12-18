@@ -206,7 +206,7 @@ class TestAssetBoundary(MVSTestCaseBase):
     def test_7_getaddressasset(self):
         # invalid address
         ec, message = mvs_rpc.get_addressasset(Zac.mainaddress()+'1')
-        self.assertEqual(ec, 4010, message)
+        self.assertEqual(ec, 7006, message)
 
         # no asset
         ec, message = mvs_rpc.get_addressasset(Zac.mainaddress())

@@ -170,5 +170,28 @@ std::ostream& write_stream(std::ostream& output, const Json::Value& tree,
     return output;
 }
 
+uint32_t to_uint32_throw(const std::string& text, const std::string& except_desc)
+{
+    try {
+        return std::stoul(text);
+    }
+    catch(const std::exception& e) {
+        throw std::logic_error(except_desc + " Convert " + text + " to uint32_t caught exception: " + e.what());
+    }
+    return 0;
+}
+
+uint64_t to_uint64_throw(const std::string& text, const std::string& except_desc)
+{
+    try {
+        return std::stoull(text);
+    }
+    catch(const std::exception& e) {
+        throw std::logic_error(except_desc + " Convert " + text + " to uint64_t caught exception: " + e.what());
+    }
+    return 0;
+}
+
+
 } // namespace explorer
 } // namespace libbitcoin

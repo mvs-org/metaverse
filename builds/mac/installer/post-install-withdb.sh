@@ -1,9 +1,9 @@
 #!/bin/bash - 
 #===============================================================================
 #
-#          FILE: pre-install.sh
+#          FILE: post-install-withdb.sh
 # 
-#         USAGE: ./post-install.sh 
+#         USAGE: ./post-install-withdb.sh
 # 
 #   DESCRIPTION: 
 # 

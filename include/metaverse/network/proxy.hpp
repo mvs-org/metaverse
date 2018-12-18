@@ -107,6 +107,8 @@ public:
     static bool manualbanned(const config::authority& authority);
     static void manual_ban(const config::authority&);
     static void manual_unban(const config::authority&);
+    static std::map<config::authority, int64_t> get_banned();
+    static std::list<config::authority> get_manual_banned();
 
     virtual bool misbehaving(int32_t howmuch);
 

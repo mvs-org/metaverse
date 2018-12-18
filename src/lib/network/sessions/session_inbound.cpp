@@ -103,7 +103,7 @@ void session_inbound::start_accept(const code& ec, acceptor::ptr accept)
 void session_inbound::handle_accept(const code& ec, channel::ptr channel,
     acceptor::ptr accept)
 {
-    if (stopped())
+    if (stopped(ec))
     {
         log::trace(LOG_NETWORK)
             << "Suspended inbound connection.";
@@ -119,7 +119,7 @@ void session_inbound::handle_accept(const code& ec, channel::ptr channel,
         return;
     }
 
-    if (blacklisted(channel->authority()))
+    if (channel && blacklisted(channel->authority()))
     {
         log::trace(LOG_NETWORK)
             << "Rejected inbound connection from ["

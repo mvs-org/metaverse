@@ -14,6 +14,7 @@
     <ClInclude Include="..\..\..\include\metaverse\consensus\consensus.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\consensus\define.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\consensus\export.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\consensus\fts.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\Base64.h" />
     <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\BasicType.h" />
     <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\boost_multiprecision_number_compare_bug_workaround.hpp" />
@@ -33,6 +34,7 @@
     <ClInclude Include="..\..\..\include\metaverse\consensus\miner.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\consensus\miner\MinerAux.h" />
     <ClInclude Include="..\..\..\include\metaverse\consensus\version.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\consensus\witness.hpp" />
     <ClInclude Include="..\..\..\src\lib\consensus\clone\amount.h" />
     <ClInclude Include="..\..\..\src\lib\consensus\clone\compat\byteswap.h" />
     <ClInclude Include="..\..\..\src\lib\consensus\clone\compat\endian.h" />
@@ -80,7 +82,9 @@
     <ClCompile Include="..\..\..\src\lib\consensus\common\libdevcore\SHA3.cpp" />
     <ClCompile Include="..\..\..\src\lib\consensus\common\miner\MinerAux.cpp" />
     <ClCompile Include="..\..\..\src\lib\consensus\consensus\consensus.cpp" />
+    <ClCompile Include="..\..\..\src\lib\consensus\fts.cpp" />
     <ClCompile Include="..\..\..\src\lib\consensus\miner.cpp" />
+    <ClCompile Include="..\..\..\src\lib\consensus\witness.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D21052F1-33B6-4F1F-BB8D-5C0E8173E416}</ProjectGuid>

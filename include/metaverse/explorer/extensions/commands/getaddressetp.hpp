@@ -43,14 +43,14 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("PAYMENT_ADDRESS", 1);
+            .add("ADDRESS", 1);
     }
 
     void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        load_input(auth_.auth, "PAYMENT_ADDRESS", variables, input, raw);
+        load_input(argument_.address, "ADDRESS", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -64,9 +64,24 @@ public:
             "Get a description and instructions for this command."
         )
         (
-            "PAYMENT_ADDRESS",
-            value<bc::wallet::payment_address>(&argument_.address)->required(),
-            "The payment address. If not specified the address is read from STDIN."
+            "ADDRESS",
+            value<std::string>(&argument_.address)->required(),
+            "did/address. If not specified it is read from STDIN."
+        )
+        (
+            "deposited,d",
+            value<bool>(&option_.deposited)->zero_tokens()->default_value(false),
+            "If specified, then only get deposited etp. Default is not specified."
+        )
+        (
+            "utxo,u",
+            value<bool>(&option_.utxo)->zero_tokens()->default_value(false),
+            "If specified, list all utxos. Default is not specified."
+        )
+        (
+            "range,r",
+            value<colon_delimited2_item<uint64_t, uint64_t>>(&option_.range),
+            "Pick utxo whose value is between this range [begin:end)."
         );
 
         return options;
@@ -81,11 +96,14 @@ public:
 
     struct argument
     {
-        bc::wallet::payment_address address;
+        std::string address;
     } argument_;
 
     struct option
     {
+        bool deposited;
+        bool utxo;
+        colon_delimited2_item<uint64_t, uint64_t> range = {0, 0};
     } option_;
 
 };

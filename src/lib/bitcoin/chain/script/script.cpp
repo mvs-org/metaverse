@@ -120,6 +120,9 @@ script_pattern script::pattern() const
     if (operation::is_pay_key_hash_with_attenuation_model_pattern(operations))
         return script_pattern::pay_key_hash_with_attenuation_model;
 
+    if (operation::is_pay_key_hash_with_sequence_lock_pattern(operations))
+        return script_pattern::pay_key_hash_with_sequence_lock;
+
     return script_pattern::non_standard;
 }
 
@@ -308,6 +311,8 @@ bool script::from_string(const std::string& human_readable)
 
 std::string script::to_string(uint32_t flags) const
 {
+    flags = chain::get_script_context();
+
     std::ostringstream value;
 
     for (auto it = operations.begin(); it != operations.end(); ++it)
@@ -1466,7 +1471,7 @@ bool op_checksequenceverify(evaluation_context& context, const script& script,
     // To provide for future soft-fork extensibility, if the
     // operand has the disabled lock-time flag set,
     // CHECKSEQUENCEVERIFY behaves as a NOP.
-    if ((number.int64() & (1 << 31)/*CTxIn::SEQUENCE_LOCKTIME_DISABLE_FLAG*/) != 0)
+    if ((number.int64() & relative_locktime_disabled) != 0)
         return false;
 
     return true;

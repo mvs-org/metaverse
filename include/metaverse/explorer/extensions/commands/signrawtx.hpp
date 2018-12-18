@@ -81,6 +81,11 @@ public:
             "TRANSACTION",
             value<explorer::config::transaction>(&argument_.transaction)->required(),
             "The input Base16 transaction to sign."
+        )
+        (
+            "wif,w",
+            value<std::string>(&option_.private_key)->default_value(""),
+            "The wif or private key to sign."
         );
 
         return options;
@@ -91,7 +96,7 @@ public:
     }
 
     console_result invoke (Json::Value& jv_output,
-                           libbitcoin::server::server_node& node) override;
+                           bc::server::server_node& node) override;
 
     struct argument
     {
@@ -100,7 +105,18 @@ public:
 
     struct option
     {
+        std::string private_key;
     } option_;
+
+private:
+    std::string get_private_key(blockchain::block_chain_impl& blockchain, const std::string& address);
+
+    bc::endorsement sign(
+        const std::string& private_key,
+        tx_type tx_,
+        const uint32_t& index,
+        const bc::explorer::config::script& config_contract,
+        data_chunk& public_key_data);
 
 };
 

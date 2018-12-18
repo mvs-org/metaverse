@@ -47,6 +47,8 @@ protected:
     /// Create a channel from the configured number of concurrent attempts.
     virtual void connect(connector::ptr connect, channel_handler handler);
 
+    void connect_seed(connector::ptr connect, channel_handler handler);
+
 private:
     typedef std::atomic<size_t> atomic_counter;
     typedef std::shared_ptr<atomic_counter> atomic_counter_ptr;
@@ -58,7 +60,7 @@ private:
 
     // Connect sequence
     void new_connect(connector::ptr connect, atomic_counter_ptr counter,
-        channel_handler handler);
+        channel_handler handler, bool only_seed=false);
     void start_connect(const code& ec, const authority& host,
         connector::ptr connect, atomic_counter_ptr counter,
         channel_handler handler);

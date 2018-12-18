@@ -34,6 +34,12 @@ attachment::attachment()
     reset();
 }
 
+attachment::attachment(uint32_t type)
+{
+    reset();
+    this->type = type;
+}
+
 attachment::attachment(const std::string& from_did, const std::string& to_did)
     : version(DID_ATTACH_VERIFY_VERSION)
     , type(0) //attachment_type::attach_none;
@@ -42,6 +48,44 @@ attachment::attachment(const std::string& from_did, const std::string& to_did)
 {
     auto visitor = reset_visitor();
     boost::apply_visitor(visitor, attach);
+}
+
+attachment::attachment(attachment&& other)
+    : version(other.version)
+    , type(other.type)
+    , todid(std::move(other.todid))
+    , fromdid(std::move(other.fromdid))
+    , attach(std::move(other.attach))
+{
+}
+
+attachment::attachment(const attachment& other)
+    : version(other.version)
+    , type(other.type)
+    , todid(other.todid)
+    , fromdid(other.fromdid)
+    , attach(other.attach)
+{
+}
+
+attachment& attachment::operator=(attachment&& other)
+{
+    version = other.version;
+    type = other.type;
+    todid = std::move(other.todid);
+    fromdid = std::move(other.fromdid);
+    attach = std::move(other.attach);
+    return *this;
+}
+
+attachment& attachment::operator=(const attachment& other)
+{
+    version = other.version;
+    type = other.type;
+    todid = other.todid;
+    fromdid = other.fromdid;
+    attach = other.attach;
+    return *this;
 }
 
 void attachment::reset()
@@ -133,8 +177,8 @@ bool attachment::from_data_t(reader& source)
         result = boost::apply_visitor(visitor, attach);
     }
     else {
-        result = false;
-        reset();
+        // result = false;
+        // reset();
     }
 
     return result;
@@ -200,6 +244,12 @@ uint32_t attachment::get_type() const
 void attachment::set_type(uint32_t type)
 {
      this->type = type;
+}
+
+void attachment::set_null()
+{
+    reset();
+    this->type = ATTACH_NULL_TYPE;
 }
 
 std::string attachment::get_to_did() const

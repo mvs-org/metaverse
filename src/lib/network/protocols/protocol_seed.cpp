@@ -91,17 +91,8 @@ void protocol_seed::handle_seeding_complete(const code& ec,
 bool protocol_seed::handle_receive_address(const code& ec,
     address::ptr message)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
-
-    if (ec)
-    {
-        log::trace(LOG_NETWORK)
-            << "Failure receiving addresses from seed [" << authority() << "] "
-            << ec.message();
-        set_event(ec);
-        return false;
-    }
 
     log::trace(LOG_NETWORK)
         << "Storing addresses from seed [" << authority() << "] ("
@@ -115,17 +106,8 @@ bool protocol_seed::handle_receive_address(const code& ec,
 
 void protocol_seed::handle_send_address(const code& ec)
 {
-    if (stopped())
+    if (stopped(ec))
         return;
-
-    if (ec)
-    {
-        log::trace(LOG_NETWORK)
-            << "Failure sending address to seed [" << authority() << "] "
-            << ec.message();
-        set_event(ec);
-        return;
-    }
 
     // 1 of 3
     set_event(error::success);
@@ -133,7 +115,7 @@ void protocol_seed::handle_send_address(const code& ec)
 
 void protocol_seed::handle_send_get_address(const code& ec)
 {
-    if (stopped())
+    if (stopped(ec))
         return;
 
     if (ec)
@@ -151,7 +133,7 @@ void protocol_seed::handle_send_get_address(const code& ec)
 
 void protocol_seed::handle_store_addresses(const code& ec)
 {
-    if (stopped())
+    if (stopped(ec))
         return;
 
     if (ec)

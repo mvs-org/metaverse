@@ -24,6 +24,7 @@
 #include <sstream>
 #include <utility>
 #include <boost/iostreams/stream.hpp>
+#include <metaverse/bitcoin/math/limits.hpp>
 #include <metaverse/bitcoin/chain/input.hpp>
 #include <metaverse/bitcoin/chain/output.hpp>
 #include <metaverse/bitcoin/constants.hpp>
@@ -31,6 +32,7 @@
 #include <metaverse/bitcoin/utility/container_source.hpp>
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
+#include <metaverse/consensus/witness.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -169,13 +171,22 @@ bool transaction::from_data_t(reader& source)
     return result;
 }
 
-void transaction::to_data_t(writer& sink) const
+void transaction::to_data_t(writer& sink, bool for_merkle) const
 {
     sink.write_4_bytes_little_endian(version);
     sink.write_variable_uint_little_endian(inputs.size());
 
-    for (const auto& input: inputs)
+    if (for_merkle && consensus::witness::is_dpos_enabled() && is_coinbase()) {
+        auto input = inputs[0];
+        operation::stack ops;
+        ops.swap(input.script.operations);
+        input.script.operations.emplace_back(operation::factory_from_data(ops.front().to_data()));
         input.to_data(sink);
+    }
+    else {
+        for (const auto& input: inputs)
+            input.to_data(sink);
+    }
 
     sink.write_variable_uint_little_endian(outputs.size());
 
@@ -201,6 +212,8 @@ uint64_t transaction::serialized_size() const
 
 std::string transaction::to_string(uint32_t flags) const
 {
+    flags = chain::get_script_context();
+
     std::ostringstream value;
     value << "Transaction:\n"
         << "\tversion = " << version << "\n"
@@ -228,7 +241,7 @@ hash_digest transaction::hash() const
     {
         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         mutex_.unlock_upgrade_and_lock();
-        hash_.reset(new hash_digest(bitcoin_hash(to_data())));
+        hash_.reset(new hash_digest(bitcoin_hash(to_data(true))));
         mutex_.unlock_and_lock_upgrade();
         //---------------------------------------------------------------------
     }
@@ -252,39 +265,50 @@ bool transaction::is_coinbase() const
     return (inputs.size() == 1) && inputs[0].previous_output.is_null();
 }
 
-bool transaction::is_final(uint64_t block_height, uint32_t block_time) const
+bool transaction::is_pos_genesis_tx(bool is_testnet) const
 {
-    if (locktime == 0)
-        return true;
+    if (!is_coinbase() || outputs.size() != 1) {
+        return false;
+    }
 
-    auto max_locktime = block_time;
+    chain::script script;
+    wallet::payment_address pay_address(get_foundation_address(is_testnet));
+    script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(pay_address));
 
-    if (locktime < locktime_threshold)
-        max_locktime = static_cast<uint32_t>(block_height);
-
-    if (locktime < max_locktime)
-        return true;
-
-    for (const auto& tx_input: inputs)
-        if (!tx_input.is_final())
-            return false;
-
-    return true;
+    const auto & out = outputs[0];
+    return out.is_etp() && out.value == pos_genesis_reward &&
+        out.script.operations == script.operations;
 }
 
-bool transaction::is_locked(size_t block_height,
-    uint32_t median_time_past) const
+bool transaction::is_coinstake() const
 {
-    if (version < relative_locktime_min_version || is_coinbase())
-        return false;
+    return (inputs.size() > 0)
+        && (!inputs[0].previous_output.is_null())
+        && (outputs.size() >= 2)
+        && (outputs[0].is_null()) //the coin stake transaction is marked with the first output empty
+        && (inputs[0].get_script_address() == outputs[1].get_script_address());
 
-    const auto locked = [block_height, median_time_past](const input& input)
+}
+
+bool transaction::all_inputs_final() const
+{
+    const auto finalized = [](const input& input)
     {
-        return input.is_locked(block_height, median_time_past);
+        return input.is_final();
     };
 
-    // If any input is relative time locked the transaction is as well.
-    return std::any_of(inputs.begin(), inputs.end(), locked);
+    return std::all_of(inputs.begin(), inputs.end(), finalized);
+}
+
+bool transaction::is_final(uint64_t block_height, uint32_t block_time) const
+{
+    const auto max_locktime = [=]()
+    {
+        return locktime < locktime_threshold ?
+            safe_unsigned<uint32_t>(block_height) : block_time;
+    };
+
+    return locktime == 0 || locktime < max_locktime() || all_inputs_final();
 }
 
 bool transaction::is_locktime_conflict() const
@@ -388,31 +412,6 @@ bool transaction::has_did_transfer() const
     return false;
 }
 
-std::string transaction::get_did_transfer_old_address() const
-{
-    std::string newdidstr = "";
-    for (auto& elem: outputs) {
-        if(elem.is_did_transfer()) {
-            newdidstr = elem.get_script_address();
-        }
-
-    }
-
-    if (newdidstr.empty()){
-        return newdidstr;
-    }
-
-    for (auto& elem: inputs) {
-        if(elem.get_script_address()!=newdidstr) {
-            newdidstr = elem.get_script_address();
-            return newdidstr;
-        }
-
-    }
-
-
-    return newdidstr;
-}
 
 } // namspace chain
 } // namspace libbitcoin

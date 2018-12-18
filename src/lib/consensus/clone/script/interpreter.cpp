@@ -12,6 +12,7 @@
 #include "pubkey.h"
 #include "script/script.h"
 #include "uint256.h"
+#include <metaverse/bitcoin/constants.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/attenuation_model.hpp>
 
 using namespace std;
@@ -424,7 +425,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                     // To provide for future soft-fork extensibility, if the
                     // operand has the disabled lock-time flag set,
                     // CHECKSEQUENCEVERIFY behaves as a NOP.
-                    if ((nSequence & CTxIn::SEQUENCE_LOCKTIME_DISABLE_FLAG) != 0)
+                    if ((nSequence & bc::relative_locktime_disabled) != 0)
                         break;
 
                     // Compare the specified sequence number with the input.
@@ -1185,21 +1186,23 @@ bool TransactionSignatureChecker::CheckLockTime(const CScriptNum& nLockTime) con
 {
     // There are two kinds of nLockTime: lock-by-blockheight
     // and lock-by-blocktime, distinguished by whether
-    // nLockTime < LOCKTIME_THRESHOLD.
+    // nLockTime < bc::locktime_threshold.
     //
     // We want to compare apples to apples, so fail the script
     // unless the type of nLockTime being tested is the same as
     // the nLockTime in the transaction.
     if (!(
-        (txTo->nLockTime <  LOCKTIME_THRESHOLD && nLockTime <  LOCKTIME_THRESHOLD) ||
-        (txTo->nLockTime >= LOCKTIME_THRESHOLD && nLockTime >= LOCKTIME_THRESHOLD)
-    ))
+        (txTo->nLockTime <  bc::locktime_threshold && nLockTime <  bc::locktime_threshold) ||
+        (txTo->nLockTime >= bc::locktime_threshold && nLockTime >= bc::locktime_threshold)
+    )) {
         return false;
+    }
 
     // Now that we know we're comparing apples-to-apples, the
     // comparison is a simple numeric one.
-    if (nLockTime > (int64_t)txTo->nLockTime)
+    if (nLockTime > (int64_t)txTo->nLockTime) {
         return false;
+    }
 
     // Finally the nLockTime feature can be disabled and thus
     // CHECKLOCKTIMEVERIFY bypassed if every txin has been
@@ -1211,8 +1214,9 @@ bool TransactionSignatureChecker::CheckLockTime(const CScriptNum& nLockTime) con
     // prevent this condition. Alternatively we could test all
     // inputs, but testing just this input minimizes the data
     // required to prove correct CHECKLOCKTIMEVERIFY execution.
-    if (txTo->vin[nIn].IsFinal())
+    if (txTo->vin[nIn].IsFinal()) {
         return false;
+    }
 
     return true;
 }
@@ -1225,32 +1229,32 @@ bool TransactionSignatureChecker::CheckSequence(const CScriptNum& nSequence) con
 
     // Fail if the transaction's version number is not set high
     // enough to trigger BIP 68 rules.
-    if (static_cast<uint32_t>(txTo->nVersion) < 2)
+    if (static_cast<uint32_t>(txTo->nVersion) < bc::relative_locktime_min_version)
         return false;
 
     // Sequence numbers with their most significant bit set are not
     // consensus constrained. Testing that the transaction's sequence
     // number do not have this bit set prevents using this property
     // to get around a CHECKSEQUENCEVERIFY check.
-    if (txToSequence & CTxIn::SEQUENCE_LOCKTIME_DISABLE_FLAG)
+    if (txToSequence & bc::relative_locktime_disabled)
         return false;
 
     // Mask off any bits that do not have consensus-enforced meaning
     // before doing the integer comparisons
-    const uint32_t nLockTimeMask = CTxIn::SEQUENCE_LOCKTIME_TYPE_FLAG | CTxIn::SEQUENCE_LOCKTIME_MASK;
+    const uint32_t nLockTimeMask = bc::relative_locktime_time_locked | bc::relative_locktime_mask;
     const int64_t txToSequenceMasked = txToSequence & nLockTimeMask;
     const CScriptNum nSequenceMasked = nSequence & nLockTimeMask;
 
     // There are two kinds of nSequence: lock-by-blockheight
     // and lock-by-blocktime, distinguished by whether
-    // nSequenceMasked < CTxIn::SEQUENCE_LOCKTIME_TYPE_FLAG.
+    // nSequenceMasked < bc::relative_locktime_time_locked.
     //
     // We want to compare apples to apples, so fail the script
     // unless the type of nSequenceMasked being tested is the same as
     // the nSequenceMasked in the transaction.
     if (!(
-        (txToSequenceMasked <  CTxIn::SEQUENCE_LOCKTIME_TYPE_FLAG && nSequenceMasked <  CTxIn::SEQUENCE_LOCKTIME_TYPE_FLAG) ||
-        (txToSequenceMasked >= CTxIn::SEQUENCE_LOCKTIME_TYPE_FLAG && nSequenceMasked >= CTxIn::SEQUENCE_LOCKTIME_TYPE_FLAG)
+        (txToSequenceMasked <  bc::relative_locktime_time_locked && nSequenceMasked <  bc::relative_locktime_time_locked) ||
+        (txToSequenceMasked >= bc::relative_locktime_time_locked && nSequenceMasked >= bc::relative_locktime_time_locked)
     )) {
         return false;
     }

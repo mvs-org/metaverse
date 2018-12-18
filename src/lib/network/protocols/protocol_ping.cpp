@@ -62,10 +62,10 @@ void protocol_ping::start()
 // This is fired by the callback (i.e. base timer and stop handler).
 void protocol_ping::send_ping(const code& ec)
 {
-    if (stopped())
+    if (stopped(ec))
         return;
 
-    if (ec && ec != error::channel_timeout)
+    if (ec && ec.value() != error::channel_timeout)
     {
         log::trace(LOG_NETWORK)
             << "Failure in ping timer for [" << authority() << "] "
@@ -83,7 +83,7 @@ void protocol_ping::send_ping(const code& ec)
 bool protocol_ping::handle_receive_ping(const code& ec,
     message::ping::ptr message)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
 
     if (ec)
@@ -104,7 +104,7 @@ bool protocol_ping::handle_receive_ping(const code& ec,
 bool protocol_ping::handle_receive_pong(const code& ec,
     message::pong::ptr message, uint64_t nonce)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
 
     if (ec)

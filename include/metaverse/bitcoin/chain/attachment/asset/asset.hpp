@@ -33,7 +33,12 @@
 #include <metaverse/bitcoin/chain/attachment/asset/asset_transfer.hpp>
 #include <metaverse/bitcoin/base_primary.hpp>
 
-using namespace libbitcoin::chain;
+namespace libbitcoin {
+namespace chain {
+class asset;
+}
+}
+using asset = libbitcoin::chain::asset;
 
 #define ASSET_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<asset::asset_status>::type>(kd))
 

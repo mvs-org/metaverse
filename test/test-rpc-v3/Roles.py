@@ -39,7 +39,7 @@ class Role:
             if message and message['dids']:
                 message = message['dids']
                 dids = [MOCs.Did.init(i) for i in message if i]
-                found_dids = filter(lambda a: a.symbol == self.did_symbol, dids)
+                found_dids = list( filter(lambda a: a.symbol == self.did_symbol, dids) )
                 assert(len(found_dids) == 1)
                 self.did_address = found_dids[0].address
 
@@ -199,6 +199,15 @@ class Role:
             print("failed to send_asset: {}, {}".format(result, message))
         assert (result == 0)
 
+    def sendmore_asset(self, receivers, asset_symbol=None, memo=None, fee=None):
+        if not asset_symbol:
+            asset_symbol = self.asset_symbol
+
+        result, message = mvs_rpc.sendmore_asset(self.name, self.password, asset_symbol, receivers, memo, fee)
+        if (result != 0):
+            print("failed to sendmore_asset: {}, {}".format(result, message))
+        assert (result == 0)
+
     def send_asset_from(self, from_, to_, amount, asset_symbol=None):
         if not asset_symbol:
             asset_symbol = self.asset_symbol
@@ -256,20 +265,22 @@ class Role:
         return message["hash"]
 
     def mining(self, times=1):
-        '''
-        use the mainaddress to mining x times.
-        do mining to get the main address rich.
+
+        #use the mainaddress to mining x times.
+        #do mining to get the main address rich.
 
         result, (height_origin, _) = mvs_rpc.get_info()
         assert (result == 0)
         mvs_rpc.start_mining(self.name, self.password, self.mainaddress(), times)
-        for i in range(10):
-            time.sleep(0.1)
+        for i in range(times * 2 + 10):
+            time.sleep(0.5)
             result, (height_new, _) = mvs_rpc.get_info()
             assert (result == 0)
             if height_new == (height_origin + times):
                 break
 
+        mvs_rpc.stop_mining()
+        time.sleep(1)
         return
         '''
         from ethereum.pow.ethpow import mine
@@ -286,20 +297,25 @@ class Role:
             result, (height, difficulty) = mvs_rpc.get_info()
             assert (result == 0)
 
+            bin_header_hash = bytes.fromhex(header_hash[2:])
+
             rounds = 100
             nonce = 0
             while True:
-                bin_nonce, mixhash = mine(block_number=height+1, difficulty=difficulty, mining_hash=header_hash,
+                bin_nonce, mixhash = mine(block_number=height+1, difficulty=difficulty, mining_hash=bin_header_hash,
                                           rounds=rounds, start_nonce=nonce)
                 if bin_nonce:
                     break
                 nonce += rounds
-            return bin_nonce, '0x' + common.toString(header_hash), '0x' + common.toString(mixhash)
+            return '0x' + bin_nonce.hex(), header_hash, '0x' + mixhash.hex()
 
-        for i in xrange(times):
+        for i in range(times):
             bin_nonce, header_hash, mix_hash = __mine__()
-            result, message = mvs_rpc.eth_submit_work('0x' + common.toString(bin_nonce), header_hash, mix_hash)
+            result, message = mvs_rpc.eth_submit_work( bin_nonce, header_hash, mix_hash)
+            if result != 0:
+                print('failed to submit work:[%s, %s, %s] -> %s' % (bin_nonce, header_hash, mix_hash, message))
             assert (result == 0)
+        '''
 
     def new_multisigaddress(self, description, others, required_key_num):
         '''
@@ -371,7 +387,7 @@ class NewGuy(Role):
         assert (result == 0)
 
         f = open('./Zac.txt', 'w')
-        print >> f, self.lastword()
+        f.write( self.lastword() )
         f.close()
 
         result, _ = mvs_rpc.new_address(self.name, self.password, 9)

@@ -36,30 +36,6 @@ class BC_API output_point
 {
 public:
 
-    // THIS IS FOR LIBRARY USE ONLY, DO NOT CREATE A DEPENDENCY ON IT.
-    struct validation
-    {
-        /// Must be false if confirmed is false.
-        /// output spender's tx->block is indexed or confirmed not above fork.
-        bool spent = false;
-
-        /// The output->tx is confirmed|indexed, fork point dependent.
-        bool confirmed = false;
-
-        /// The previous output is a coinbase (must verify spender maturity).
-        bool coinbase = false;
-
-        /// Prevout height is used for coinbase maturity and relative lock time.
-        size_t height = 0;
-
-        /// Median time past is used for relative lock time.
-        uint32_t median_time_past = 0;
-
-        /// The output cache contains the output referenced by the input point.
-        /// If the cache.value is not_found (default) the output is not found.
-        output cache;
-    };
-
     // Constructors.
     //-------------------------------------------------------------------------
 
@@ -95,23 +71,14 @@ public:
     static output_point factory(std::istream& stream);
     static output_point factory(reader& source);
 
-    // Validation.
-    //-------------------------------------------------------------------------
-
-    /// True if cached previous output is mature enough to spend from height.
-    bool is_mature(size_t height) const;
-
-    // THIS IS FOR LIBRARY USE ONLY, DO NOT CREATE A DEPENDENCY ON IT.
-    mutable validation metadata;
-
 protected:
     // So that input may call reset from its own.
     friend class input;
 };
 
-struct BC_API output_info
+struct BC_API output_point_info
 {
-    typedef std::vector<output_info> list;
+    typedef std::vector<output_point_info> list;
 
     output_point point;
     uint64_t value;
@@ -123,8 +90,20 @@ struct BC_API points_info
     uint64_t change;
 };
 
+struct BC_API output_info
+{
+    typedef std::vector<output_info> list;
+
+    output data;
+    output_point point;
+    uint64_t height;
+};
 
 } // namespace chain
 } // namespace libbitcoin
+
+using output_point = libbitcoin::chain::output_point;
+using output_point_info = libbitcoin::chain::output_point_info;
+using output_info = libbitcoin::chain::output_info;
 
 #endif

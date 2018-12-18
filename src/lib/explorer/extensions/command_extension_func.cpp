@@ -40,9 +40,11 @@
 #include <metaverse/explorer/extensions/commands/getblockheader.hpp>
 #include <metaverse/explorer/extensions/commands/fetchheaderext.hpp>
 #include <metaverse/explorer/extensions/commands/gettx.hpp>
+#include <metaverse/explorer/extensions/commands/popblock.hpp>
 #include <metaverse/explorer/extensions/commands/dumpkeyfile.hpp>
 #include <metaverse/explorer/extensions/commands/importkeyfile.hpp>
 #include <metaverse/explorer/extensions/commands/importaccount.hpp>
+#include <metaverse/explorer/extensions/commands/importaddress.hpp>
 #include <metaverse/explorer/extensions/commands/getnewaccount.hpp>
 #include <metaverse/explorer/extensions/commands/getaccount.hpp>
 #include <metaverse/explorer/extensions/commands/deleteaccount.hpp>
@@ -50,6 +52,7 @@
 #include <metaverse/explorer/extensions/commands/getnewaddress.hpp>
 #include <metaverse/explorer/extensions/commands/getblock.hpp>
 #include <metaverse/explorer/extensions/commands/validateaddress.hpp>
+#include <metaverse/explorer/extensions/commands/validatesymbol.hpp>
 #include <metaverse/explorer/extensions/commands/listbalances.hpp>
 #include <metaverse/explorer/extensions/commands/getbalance.hpp>
 #include <metaverse/explorer/extensions/commands/listtxs.hpp>
@@ -71,6 +74,7 @@
 #include <metaverse/explorer/extensions/commands/sendmore.hpp>
 #include <metaverse/explorer/extensions/commands/sendasset.hpp>
 #include <metaverse/explorer/extensions/commands/sendassetfrom.hpp>
+#include <metaverse/explorer/extensions/commands/sendmoreasset.hpp>
 #include <metaverse/explorer/extensions/commands/swaptoken.hpp>
 // #include <metaverse/explorer/extensions/commands/swapmit.hpp>
 #include <metaverse/explorer/extensions/commands/listdids.hpp>
@@ -96,17 +100,18 @@
 #include <metaverse/explorer/extensions/commands/signrawtx.hpp>
 #include <metaverse/explorer/extensions/commands/didchangeaddress.hpp>
 #include <metaverse/explorer/extensions/commands/getdid.hpp>
+#include <metaverse/explorer/extensions/commands/lock.hpp>
+#include <metaverse/explorer/extensions/commands/getlocked.hpp>
 
 
 namespace libbitcoin {
 namespace explorer {
 
+using namespace std;
+using namespace commands;
 
 void broadcast_extension(const function<void(shared_ptr<command>)> func, std::ostream& os)
 {
-    using namespace std;
-    using namespace commands;
-
     os <<"\r\n";
     // account
     func(make_shared<getnewaccount>());
@@ -119,6 +124,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<listaddresses>());
     func(make_shared<dumpkeyfile>());
     func(make_shared<importkeyfile>());
+    func(make_shared<importaddress>());
 
     os <<"\r\n";
     // system
@@ -135,6 +141,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<getwork>());
     func(make_shared<submitwork>());
     func(make_shared<getmemorypool>());
+    func(make_shared<popblock>());
 
     os <<"\r\n";
     // block & tx
@@ -166,17 +173,21 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<sendmore>());
     func(make_shared<sendfrom>());
     func(make_shared<deposit>());
+    func(make_shared<lock>());
     func(make_shared<listbalances>());
     func(make_shared<getbalance>());
     func(make_shared<getaddressetp>());
+    func(make_shared<getlocked>());
 
     os <<"\r\n";
     // asset
+    func(make_shared<validatesymbol>());
     func(make_shared<createasset>());
     func(make_shared<deletelocalasset>());
     func(make_shared<issue>());
     func(make_shared<secondaryissue>());
     func(make_shared<sendasset>());
+    func(make_shared<sendmoreasset>());
     func(make_shared<sendassetfrom>());
     func(make_shared<listassets>());
     func(make_shared<getasset>());
@@ -209,9 +220,6 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
 
 shared_ptr<command> find_extension(const string& symbol)
 {
-    using namespace std;
-    using namespace commands;
-
     // account
     if (symbol == getnewaccount::symbol())
         return make_shared<getnewaccount>();
@@ -233,6 +241,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<dumpkeyfile>();
     if (symbol == importkeyfile::symbol() || symbol == "importaccountfromfile")
         return make_shared<importkeyfile>();
+    if (symbol == importaddress::symbol())
+        return make_shared<importaddress>();
 
     // system
     if (symbol == shutdown::symbol())
@@ -275,6 +285,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<fetchheaderext>();
     if (symbol == gettx::symbol() || symbol == "gettransaction")
         return make_shared<gettx>();
+    if (symbol == popblock::symbol())
+        return make_shared<popblock>();
     if (symbol == "fetch-tx")
         return make_shared<gettx>(symbol);
     if (symbol == listtxs::symbol())
@@ -313,6 +325,10 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getaddressetp>();
     if (symbol == deposit::symbol())
         return make_shared<deposit>();
+    if (symbol == lock::symbol())
+        return make_shared<lock>();
+    if (symbol == getlocked::symbol())
+        return make_shared<getlocked>();
     if (symbol == send::symbol() || symbol == "didsend")
         return make_shared<send>();
     if (symbol == sendmore::symbol() || symbol == "didsendmore")
@@ -321,6 +337,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<sendfrom>();
 
     // asset
+    if (symbol == validatesymbol::symbol())
+        return make_shared<validatesymbol>();
     if (symbol == createasset::symbol())
         return make_shared<createasset>();
     if (symbol == deletelocalasset::symbol() || symbol == "deleteasset" )
@@ -343,6 +361,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<sendasset>();
     if (symbol == sendassetfrom::symbol() || symbol == "didsendassetfrom")
         return make_shared<sendassetfrom>();
+    if (symbol == sendmoreasset::symbol() || symbol == "sendassetmore")
+        return make_shared<sendmoreasset>();
     if (symbol == burn::symbol())
         return make_shared<burn>();
     if (symbol == swaptoken::symbol())

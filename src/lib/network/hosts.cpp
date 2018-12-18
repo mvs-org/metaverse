@@ -19,6 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/network/hosts.hpp>
+#include <metaverse/macros_define.hpp>
 
 #include <algorithm>
 #include <cstddef>
@@ -26,34 +27,44 @@
 #include <vector>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/bitcoin/utility/path.hpp>
+#include <metaverse/bitcoin/math/limits.hpp>
 #include <metaverse/network/settings.hpp>
+#include <metaverse/network/channel.hpp>
 
 namespace libbitcoin {
 namespace network {
 
-#define NAME "hosts"
+uint32_t timer_interval = 60 * 5; // 5 minutes
 
 
 hosts::hosts(threadpool& pool, const settings& settings)
-  : stopped_(true),
-    dispatch_(pool, NAME),
-    file_path_(default_data_path() / settings.hosts_file),
-    disabled_(settings.host_pool_capacity == 0),
-    pool_(pool),
-    seed_count(settings.seeds.size())
+    : seed_count(settings.seeds.size())
+    , host_pool_capacity_(std::max(settings.host_pool_capacity, 1u))
+    , buffer_(host_pool_capacity_)
+    , backup_(host_pool_capacity_)
+    , inactive_(host_pool_capacity_ * 2)
+    , seeds_()
+    , stopped_(true)
+    , file_path_(default_data_path() / settings.hosts_file)
+    , disabled_(settings.host_pool_capacity == 0)
+    , pool_(pool)
+    , self_(settings.self)
 {
-//    buffer_.reserve(std::max(settings.host_pool_capacity, 1u));
 }
 
 // private
 hosts::iterator hosts::find(const address& host)
 {
-    const auto found = [&host](const address& entry)
+    return find(buffer_, host);
+}
+
+hosts::iterator hosts::find(list& buffer, const address& host)
+{
+    const auto found = [&host](const address & entry)
     {
         return entry.port == host.port && entry.ip == host.ip;
     };
-    return buffer_.find(host);
-//    return std::find_if(buffer_.begin(), buffer_.end(), found);
+    return std::find_if(buffer.begin(), buffer.end(), found);
 }
 
 size_t hosts::count() const
@@ -66,172 +77,199 @@ size_t hosts::count() const
     ///////////////////////////////////////////////////////////////////////////
 }
 
-static std::atomic<uint64_t> fetch_times{0};
-
-static std::vector<config::authority> hosts_{config::authority("198.199.84.199:5252")};
+code hosts::fetch_seed(address& out, const config::authority::list& excluded_list)
+{
+    return fetch(seeds_, out, excluded_list);
+}
 
 code hosts::fetch(address& out, const config::authority::list& excluded_list)
 {
-    ///////////////////////////////////////////////////////////////////////////
+    return fetch(buffer_, out, excluded_list);
+}
+
+template <typename T>
+code hosts::fetch(T& buffer, address& out, const config::authority::list& excluded_list)
+{
+    if (disabled_) {
+        return error::not_found;
+    }
+
     // Critical Section
     shared_lock lock(mutex_);
-    fetch_times++;
-    config::authority::list addresses;
-    list* buffer=nullptr;
-    {
 
-        if (stopped_)
-        {
-            return error::service_stopped;
-        }
-
-        if (fetch_times % 5 == 4 && !inactive_.empty())
-            buffer = &inactive_;
-        else
-            buffer = &buffer_;
+    if (stopped_) {
+        return error::service_stopped;
     }
 
-    for(auto entry: *buffer)
-    {
-        auto iter = std::find(excluded_list.begin(), excluded_list.end(), config::authority(entry) );
-        if(iter == excluded_list.end())
-        {
-            addresses.push_back(config::authority(entry));
-        }
+    if (buffer.empty()) {
+        return error::not_found;
     }
 
-    if (addresses.empty()) {
-        if (inactive_.empty()) {
-            return error::not_found;
-        }
-        const auto index = static_cast<size_t>(pseudo_random() % inactive_.size());
+    auto match = [&excluded_list](address& addr) {
+        auto auth = config::authority(addr);
+        return std::find(excluded_list.begin(), excluded_list.end(), auth) == excluded_list.end();
+    };
 
-        size_t i = 0;
-        for (const auto& entry : inactive_)
-        {
-            if (i == index) {
-                out = entry;
-                break;
-            }
-            i++;
-        }
+    std::vector<address> vec;
+    std::copy_if(buffer.begin(), buffer.end(), std::back_inserter(vec), match);
 
-        return error::success;
+    if (vec.empty()) {
+        return error::not_found;
     }
 
-    const auto index = static_cast<size_t>(pseudo_random() % addresses.size());
-    out = addresses[index].to_network_address();
+    const auto index = pseudo_random(0, vec.size() - 1);
+    out = vec[static_cast<size_t>(index)];
 
-//    const auto index = static_cast<size_t>(pseudo_random() % hosts_.size());
-//    out = hosts_[index].to_network_address();
     return error::success;
-    ///////////////////////////////////////////////////////////////////////////
+}
+
+hosts::address::list hosts::copy_seeds()
+{
+    if (disabled_)
+        return address::list();
+
+    shared_lock lock{mutex_};
+    return seeds_;
 }
 
 hosts::address::list hosts::copy()
 {
-    address::list copy;
+    if (disabled_)
+        return address::list();
 
     shared_lock lock{mutex_};
-    copy.reserve(buffer_.size());
-    for (auto& h:buffer_) {
-        copy.push_back(h);
-    }
+
+    if (stopped_ || buffer_.empty())
+        return address::list();
+
+    // not copy all, but just 10% ~ 20% , at least one
+    const auto out_count = std::max<size_t>(1,
+        std::min<size_t>(1000, buffer_.size()) / pseudo_random(5, 10));
+
+    const auto limit = buffer_.size();
+    auto index = pseudo_random(0, limit - 1);
+
+    address::list copy(out_count);
+
+    for (size_t count = 0; count < out_count; ++count)
+        copy.push_back(buffer_[index++ % limit]);
+
+    pseudo_random::shuffle(copy);
     return copy;
+}
+
+bool hosts::store_cache(bool succeed_clear_buffer)
+{
+    if (!buffer_.empty()) {
+        bc::ofstream file(file_path_.string());
+        const auto file_error = file.bad();
+
+        if (file_error) {
+            log::error(LOG_NETWORK) << "hosts file (" << file_path_.string() << ") open failed" ;
+            return false;
+        }
+
+        log::debug(LOG_NETWORK)
+                << "sync hosts to file(" << file_path_.string()
+                << "), inactive size is " << inactive_.size()
+                << ", buffer size is " << buffer_.size();
+
+        for (const auto& entry : buffer_) {
+            // TODO: create full space-delimited network_address serialization.
+            // Use to/from string format as opposed to wire serialization.
+            if (!(channel::blacklisted(entry) || channel::manualbanned(entry))) {
+                file << config::authority(entry) << std::endl;
+            }
+        }
+
+        if (succeed_clear_buffer) {
+            buffer_.clear();
+        }
+    }
+    else {
+        if (boost::filesystem::exists(file_path_.string())) {
+            boost::filesystem::remove_all(file_path_.string());
+        }
+    }
+
+    return true;
 }
 
 void hosts::handle_timer(const code& ec)
 {
-    if (ec.value() != error::success){
+    if (disabled_) {
         return;
     }
 
-    mutex_.lock_upgrade();
-
-    if (stopped_)
-    {
-        mutex_.unlock_upgrade();
+    if (ec.value() != error::success) {
         return;
     }
 
-    mutex_.unlock_upgrade_and_lock();
-    bc::ofstream file(file_path_.string());
-    const auto file_error = file.bad();
+    // Critical Section
+    upgrade_lock lock(mutex_);
 
-    if (!file_error)
-    {
-        log::debug(LOG_NETWORK) << "sync hosts to file(" << file_path_.string() << "), active hosts size is "
-                << buffer_.size() << " hosts found, inactive hosts size is " << inactive_.size();
-        for (const auto& entry: buffer_)
-            file << config::authority(entry) << std::endl;
-        for (const auto& entry: inactive_)
-            file << config::authority(entry) << std::endl;
-    }
-    else
-    {
-        log::error(LOG_NETWORK) << "hosts file (" << file_path_.string() << ") open failed" ;
-        mutex_.unlock();
+    if (stopped_) {
         return;
     }
 
-    mutex_.unlock();
+    {
+        upgrade_to_unique_lock unq_lock(lock);
+
+        if (!store_cache()) {
+            return;
+        }
+    }
+
     snap_timer_->start(std::bind(&hosts::handle_timer, shared_from_this(), std::placeholders::_1));
 }
 
 // load
 code hosts::start()
 {
-    if (disabled_)
+    if (disabled_) {
         return error::success;
-    ///////////////////////////////////////////////////////////////////////////
-    // Critical Section
-    mutex_.lock_upgrade();
+    }
 
-    if (!stopped_)
-    {
-        mutex_.unlock_upgrade();
-        //---------------------------------------------------------------------
+    // Critical Section
+    upgrade_lock lock(mutex_);
+
+    if (!stopped_) {
         return error::operation_failed;
     }
 
-    mutex_.unlock_upgrade_and_lock();
+    upgrade_to_unique_lock unq_lock(lock);
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    snap_timer_ = std::make_shared<deadline>(pool_, asio::seconds(60));
+    snap_timer_ = std::make_shared<deadline>(pool_, asio::seconds(timer_interval));
     snap_timer_->start(std::bind(&hosts::handle_timer, shared_from_this(), std::placeholders::_1));
+
     stopped_ = false;
+
     bc::ifstream file(file_path_.string());
     const auto file_error = file.bad();
-
-    if (!file_error)
-    {
+    if (!file_error) {
         std::string line;
-
-        while (std::getline(file, line))
-        {
+        while (std::getline(file, line)) {
             config::authority host(line);
 
-            if (host.port() != 0)
-            {
+            if (host.port() != 0) {
                 auto network_address = host.to_network_address();
-                if(network_address.is_routable())
-                {
-                    buffer_.insert(network_address);
+                if (network_address.is_routable()) {
+                    buffer_.push_back(network_address);
+                    if (buffer_.full()) {
+                        break;
+                    }
                 }
-                else
-                {
-                    log::debug(LOG_NETWORK) << "host start is not routable," << config::authority{network_address};
+                else {
+                    log::debug(LOG_NETWORK) << "host start is not routable,"
+                        << config::authority{network_address};
                 }
             }
         }
     }
 
-    mutex_.unlock();
-    ///////////////////////////////////////////////////////////////////////////
-
-    if (file_error)
-    {
+    if (file_error) {
         log::debug(LOG_NETWORK)
-            << "Failed to save hosts file.";
+                << "Failed to save hosts file.";
         return error::file_system;
     }
 
@@ -241,42 +279,26 @@ code hosts::start()
 // load
 code hosts::stop()
 {
-    if (disabled_)
+    if (disabled_) {
         return error::success;
+    }
 
-    ///////////////////////////////////////////////////////////////////////////
     // Critical Section
-    mutex_.lock_upgrade();
+    upgrade_lock lock(mutex_);
 
-    if (stopped_)
-    {
-        mutex_.unlock_upgrade();
-        //---------------------------------------------------------------------
+    if (stopped_) {
         return error::success;
     }
 
-    mutex_.unlock_upgrade_and_lock();
-    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    upgrade_to_unique_lock unq_lock(lock);
+
+    // stop timer
     snap_timer_->stop();
+
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     stopped_ = true;
-    bc::ofstream file(file_path_.string());
-    const auto file_error = file.bad();
 
-    if (!file_error)
-    {
-        for (const auto& entry: buffer_)
-            file << config::authority(entry) << std::endl;
-
-        buffer_.clear();
-    }
-
-    mutex_.unlock();
-    ///////////////////////////////////////////////////////////////////////////
-
-    if (file_error)
-    {
-        log::debug(LOG_NETWORK)
-            << "Failed to load hosts file.";
+    if (!store_cache(true)) {
         return error::file_system;
     }
 
@@ -285,167 +307,285 @@ code hosts::stop()
 
 code hosts::clear()
 {
-    // Critical Section
-    mutex_.lock_upgrade();
+    if (disabled_) {
+        return error::success;
+    }
 
-    if (stopped_)
-    {
-        mutex_.unlock_upgrade();
-        //---------------------------------------------------------------------
+    // Critical Section
+    upgrade_lock lock(mutex_);
+
+    if (stopped_) {
         return error::service_stopped;
     }
 
+    upgrade_to_unique_lock unq_lock(lock);
 
-    mutex_.unlock_upgrade_and_lock();
-
-    // if the buffer is already moved to backup, call this function again will lead to the loss of backup.
-    // backup_ = std::move( buffer_ );
-    for (auto &host : buffer_) {
-        backup_.insert(host);
+    if (!buffer_.empty()) {
+        backup_.clear();
+        std::copy(buffer_.begin(), buffer_.end(), std::back_inserter(backup_));
+        buffer_.clear();
     }
-    buffer_.clear();
-
-    mutex_.unlock();
-    ///////////////////////////////////////////////////////////////////////////
 
     return error::success;
 }
 
 code hosts::after_reseeding()
 {
-    mutex_.lock_upgrade();
+    if (disabled_) {
+        return error::success;
+    }
 
-    if (stopped_)
-    {
-        mutex_.unlock_upgrade();
-        //---------------------------------------------------------------------
+    // Critical Section
+    upgrade_lock lock(mutex_);
+
+    if (stopped_) {
         return error::service_stopped;
     }
 
+    upgrade_to_unique_lock unq_lock(lock);
 
-    mutex_.unlock_upgrade_and_lock();
     //re-seeding failed and recover the buffer with backup one
     if (buffer_.size() <= seed_count) {
-        log::warning(LOG_NETWORK) << "Reseeding finished, but got address list: " << buffer_.size() << ", less than seed count: "
-                                << seed_count << ", roll back the hosts cache.";
-        buffer_ = std::move(backup_);
-    } else {
+        log::debug(LOG_NETWORK)
+                << "Reseeding finished, buffer size: " << buffer_.size()
+                << ", less than seed count: " << seed_count
+                << ", roll back the hosts cache.";
+
+        if (!buffer_.full()) {
+            for (auto& host : backup_) {
+                if (find(host) == buffer_.end()) {
+                    buffer_.push_back(host);
+
+                    if (buffer_.full()) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    else {
         // filter inactive hosts
         for (auto &host : inactive_) {
-            auto iter = buffer_.find(host);
+            auto iter = find(host);
             if (iter != buffer_.end()) {
                 buffer_.erase(iter);
             }
         }
-
-        // clear the backup
-        backup_.clear();
     }
 
-    log::debug(LOG_NETWORK) << "Reseeding finished, and got addresses of count: " << buffer_.size();
+    // clear the backup
+    backup_.clear();
 
-    mutex_.unlock();
-    ///////////////////////////////////////////////////////////////////////////
+    log::debug(LOG_NETWORK)
+            << "Reseeding finished, buffer size: " << buffer_.size();
 
     return error::success;
 }
 
 code hosts::remove(const address& host)
 {
-    ///////////////////////////////////////////////////////////////////////////
-    // Critical Section
-    mutex_.lock_upgrade();
-
-    if (stopped_)
-    {
-        mutex_.unlock_upgrade();
-        //---------------------------------------------------------------------
-        return error::service_stopped;
-    }
-
-    auto it = find(host);
-
-    if (it != buffer_.end())
-    {
-        mutex_.unlock_upgrade_and_lock();
-        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        buffer_.erase(it);
-
-        mutex_.unlock();
-        //---------------------------------------------------------------------
+    if (disabled_) {
         return error::success;
     }
 
-    mutex_.unlock_upgrade_and_lock();
-    auto iter = inactive_.find(host);
-    if (iter == inactive_.end()) {
-        inactive_.insert(host);
+    // Critical Section
+    upgrade_lock lock(mutex_);
+
+    if (stopped_) {
+        return error::service_stopped;
     }
-    mutex_.unlock();
-    ///////////////////////////////////////////////////////////////////////////
+
+    upgrade_to_unique_lock unq_lock(lock);
+
+    auto it = find(host);
+    if (it != buffer_.end()) {
+        buffer_.erase(it);
+    }
+
+    if (find(inactive_, host) == inactive_.end()) {
+        inactive_.push_back(host);
+    }
+
+    return error::success;
+}
+
+code hosts::store_seed(const address& host)
+{
+    // don't store blacklist and banned address
+    if (channel::blacklisted(host) || channel::manualbanned(host)) {
+        return error::success;
+    }
+
+    // Critical Section
+    upgrade_lock lock(mutex_);
+
+    if (stopped_) {
+        return error::service_stopped;
+    }
+
+    auto iter = std::find_if(seeds_.begin(), seeds_.end(),
+        [&host](const address& item){
+            return host.ip == item.ip && host.port == item.port;
+        });
+
+    if (iter == seeds_.end()) {
+        constexpr size_t max_seeds = 8;
+        constexpr size_t half_pos = max_seeds >> 1;
+        upgrade_to_unique_lock unq_lock(lock);
+        if (seeds_.size() == max_seeds) { // full
+            std::copy(seeds_.begin()+half_pos+1, seeds_.end(), seeds_.begin()+half_pos);
+            seeds_.back() = host;
+        }
+        else {
+            seeds_.push_back(host);
+        }
+#ifdef PRIVATE_CHAIN
+        log::info(LOG_NETWORK) << "store seed " << config::authority(host).to_string();
+#endif
+    }
+
+    return error::success;
+}
+
+code hosts::remove_seed(const address& host)
+{
+    if (disabled_) {
+        return error::success;
+    }
+
+    // Critical Section
+    upgrade_lock lock(mutex_);
+
+    if (stopped_) {
+        return error::service_stopped;
+    }
+
+    auto iter = std::find_if(seeds_.begin(), seeds_.end(),
+        [&host](const address& item){
+            return host.ip == item.ip && host.port == item.port;
+        });
+
+    if (iter != seeds_.end()) {
+        upgrade_to_unique_lock unq_lock(lock);
+        seeds_.erase(iter);
+
+#ifdef PRIVATE_CHAIN
+        log::info(LOG_NETWORK) << "remove seed " << config::authority(host).to_string();
+#endif
+    }
 
     return error::success;
 }
 
 code hosts::store(const address& host)
 {
-    if (!host.is_routable())
-    {
+    if (disabled_) {
+        return error::success;
+    }
+
+    if (!host.is_routable()) {
         // We don't treat invalid address as an error, just log it.
         return error::success;
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Critical Section
-    mutex_.lock_upgrade();
-
-    if (stopped_)
-    {
-        mutex_.unlock_upgrade();
-        //---------------------------------------------------------------------
-        return error::service_stopped;
-    }
-
-    if (find(host) == buffer_.end())
-    {
-        mutex_.unlock_upgrade_and_lock();
-        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        buffer_.insert(host);
-        auto iter = inactive_.find(host);
-        if (iter != inactive_.end()){
-            inactive_.erase(iter);
-        }
-
-        mutex_.unlock();
-        //---------------------------------------------------------------------
+    // don't store self address
+    auto authority = config::authority{host};
+    if (authority == self_ || authority.port() == 0) {
         return error::success;
     }
 
-    mutex_.unlock_upgrade();
-    ///////////////////////////////////////////////////////////////////////////
+    // don't store blacklist and banned address
+    if (channel::blacklisted(host) || channel::manualbanned(host)) {
+        return error::success;
+    }
 
-//    log::trace(LOG_NETWORK)
-//        << "Redundant host address from peer";
+    // Critical Section
+    upgrade_lock lock(mutex_);
 
-    // We don't treat redundant address as an error, just log it.
+    if (stopped_) {
+        return error::service_stopped;
+    }
+
+    upgrade_to_unique_lock unq_lock(lock);
+
+    if (find(host) == buffer_.end()) {
+        buffer_.push_back(host);
+    }
+
+    auto iter = find(inactive_, host);
+    if (iter != inactive_.end()) {
+        inactive_.erase(iter);
+    }
+
     return error::success;
-}
-
-// private
-void hosts::do_store(const address& host, result_handler handler)
-{
-    handler(store(host));
 }
 
 // The handler is invoked once all calls to do_store are completed.
 // We disperse here to allow other addresses messages to interleave hosts.
 void hosts::store(const address::list& hosts, result_handler handler)
 {
-    if (stopped_)
+    if (disabled_ || hosts.empty()) {
+        handler(error::success);
         return;
+    }
 
-    dispatch_.parallel(hosts, "hosts", handler,
-        &hosts::do_store, shared_from_this());
+    // Critical Section
+    upgrade_lock lock(mutex_);
+
+    if (stopped_) {
+        handler(error::service_stopped);
+        return;
+    }
+
+    // Accept between 1 and all of this peer's addresses up to capacity.
+    const auto capacity = host_pool_capacity_;
+    size_t host_size = hosts.size();
+    const size_t usable = std::min(host_size, capacity);
+    const size_t random = static_cast<size_t>(pseudo_random(1, usable));
+
+    // But always accept at least the amount we are short if available.
+    const size_t gap = capacity - buffer_.size();
+    const size_t accept = std::max(gap, random);
+
+    // Convert minimum desired to step for iteration, no less than 1.
+    const auto step = std::max(usable / accept, size_t(1));
+    size_t accepted = 0;
+
+    {
+        upgrade_to_unique_lock unq_lock(lock);
+        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        for (size_t index = 0; index < usable; index = ceiling_add(index, step)) {
+            const auto& host = hosts[index];
+
+            // Do not treat invalid address as an error, just log it.
+            if (!host.is_valid()) {
+                log::debug(LOG_NETWORK)
+                        << "Invalid host address from peer.";
+                continue;
+            }
+
+            if (channel::blacklisted(host) || channel::manualbanned(host)) {
+                continue;
+            }
+
+            // Do not allow duplicates in the host cache.
+            if (find(host) == buffer_.end()
+                    && find(inactive_, host) == inactive_.end()) {
+                ++accepted;
+                buffer_.push_back(host);
+            }
+        }
+
+        log::debug(LOG_NETWORK)
+                << "Accepted (" << accepted << " of " << hosts.size()
+                << ") host addresses from peer."
+                << " inactive size is " << inactive_.size()
+                << ", buffer size is " << buffer_.size();
+    }
+
+    // Notice: don't unique lock this handler
+    handler(error::success);
 }
 
 } // namespace network

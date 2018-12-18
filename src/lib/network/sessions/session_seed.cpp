@@ -78,7 +78,7 @@ void session_seed::handle_started(const code& ec, result_handler handler)
 
 void session_seed::handle_count(size_t start_size, result_handler handler)
 {
-    if (start_size != 0)
+    if (start_size != 0 && settings_.seeds.empty())
     {
         log::debug(LOG_NETWORK)
             << "Seeding is not required because there are "
@@ -95,6 +95,11 @@ void session_seed::handle_count(size_t start_size, result_handler handler)
         return;
     }
 
+    log::debug(LOG_NETWORK)
+        << "Start seeding, there are "
+        << start_size << " cached addresses.";
+
+    start_size = 0;
     // This is NOT technically the end of the start sequence, since the handler
     // is not invoked until seeding operations are complete.
     start_seeding(start_size, create_connector(), handler);
@@ -132,10 +137,12 @@ void session_seed::start_seed(const config::endpoint& seed,
         << "Contacting seed [" << seed << "]";
 
     // OUTBOUND CONNECT
-    connect->connect(seed, BIND4(handle_connect, _1, _2, seed, handler), [this](const asio::endpoint& endpoint){
+    auto resolve_handler = [this](const asio::endpoint& endpoint){
+        network_.store_seed(config::authority{endpoint}.to_network_address(), [](const code& ec){});
         network_.store(config::authority{endpoint}.to_network_address(), [](const code& ec){});
         log::debug(LOG_NETWORK) << "session seed store," << endpoint ;
-    });
+    };
+    connect->connect(seed, BIND4(handle_connect, _1, _2, seed, handler), resolve_handler);
 }
 
 void session_seed::handle_connect(const code& ec, channel::ptr channel,
@@ -149,7 +156,7 @@ void session_seed::handle_connect(const code& ec, channel::ptr channel,
         return;
     }
 
-    if (blacklisted(channel->authority()))
+    if (channel && blacklisted(channel->authority()))
     {
         log::debug(LOG_NETWORK)
             << "Seed [" << seed << "] on blacklisted address ["

@@ -26,8 +26,6 @@ class MVSTestCaseBase(unittest.TestCase):
                     Alice.send_etp(role.mainaddress(), 10 ** 8)
                     Alice.mining()
                 ec, message = role.register_did()
-                self.assertEqual(
-                    ec, 0, "error: {}, message: {}".format(ec, message))
                 Alice.mining()
 
         if self.need_mine:
@@ -36,7 +34,7 @@ class MVSTestCaseBase(unittest.TestCase):
 
             # record current height
             _, (hash, height) = mvs_rpc.getblockheader()
-            print "current block height=[%s], hash=[%s]" % (height, hash)
+            print( "current block height=[%s], hash=[%s]" % (height, hash) )
 
     def tearDown(self):
         pass
@@ -47,7 +45,7 @@ class MVSTestCaseBase(unittest.TestCase):
     def checkResponseKeys(self, result, expect_keys):
         if result != None and isinstance(result, dict):
             expect_keys.sort()
-            actual_keys = result.keys()
+            actual_keys = list(result.keys())
             actual_keys.sort()
             self.assertEqual(actual_keys, expect_keys)
 
@@ -107,7 +105,7 @@ class ForkTestCase(MVSTestCaseBase):
                 # it still works if the account Alice already exist in remote wallet
                 #self.assertEqual(ec, 0, message)
         except:
-            print 'unable to connect remote url:' + self.remote_ip
+            print( 'unable to connect remote url:' + self.remote_ip )
 
     def tearDown(self):
         try:
@@ -117,7 +115,7 @@ class ForkTestCase(MVSTestCaseBase):
             ec, message = mvs_rpc.add_node(self.remote_ip + ':5251')
             self.assertEqual(ec, 0, message)
         except:
-            print 'unable to connect remote url:' + self.remote_ip
+            print( 'unable to connect remote url:' + self.remote_ip )
 
         MVSTestCaseBase.tearDown(self)
 
@@ -162,4 +160,4 @@ class ForkTestCase(MVSTestCaseBase):
                 timeout -= 1
                 self.assertGreater(timeout, 0, "wait fork timeout error!")
         except:
-            print 'unable to connect remote url:' + self.remote_ip
+            print( 'unable to connect remote url:' + self.remote_ip )

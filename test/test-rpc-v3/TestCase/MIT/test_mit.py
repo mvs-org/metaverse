@@ -72,7 +72,7 @@ class TestRegisterMIT(MVSTestCaseBase):
 
         mits = message
         self.assertGreater(len(mits), 0)
-        found_mits = filter(lambda a: a["symbol"] == symbol, mits)
+        found_mits = list( filter(lambda a: a["symbol"] == symbol, mits) )
         self.assertEqual(len(found_mits), 1)
 
         mit = found_mits[0]
@@ -86,7 +86,7 @@ class TestRegisterMIT(MVSTestCaseBase):
 
         mits = message
         self.assertGreater(len(mits), 0)
-        found_mits = filter(lambda a: a["symbol"] == symbol, mits)
+        found_mits = list( filter(lambda a: a["symbol"] == symbol, mits) )
         self.assertEqual(len(found_mits), 1)
 
         mit = found_mits[0]
@@ -107,7 +107,7 @@ class TestRegisterMIT(MVSTestCaseBase):
 
         mits = message
         self.assertGreater(len(mits), 0)
-        found_mits = filter(lambda a: a == symbol, mits)
+        found_mits = list( filter(lambda a: a == symbol, mits) )
         self.assertEqual(len(found_mits), 1)
 
     def test_2_transfer_mit(self):
@@ -152,7 +152,7 @@ class TestRegisterMIT(MVSTestCaseBase):
 
         mits = message
         self.assertGreater(len(mits), 0)
-        found_mits = filter(lambda a: a["symbol"] == symbol, mits)
+        found_mits = list( filter(lambda a: a["symbol"] == symbol, mits) )
         self.assertEqual(len(found_mits), 2)
 
         mit = found_mits[0]

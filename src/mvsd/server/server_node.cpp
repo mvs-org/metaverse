@@ -28,6 +28,7 @@
 #include <metaverse/server/messages/route.hpp>
 #include <metaverse/server/workers/query_worker.hpp>
 #include <metaverse/mgbubble.hpp>
+#include <metaverse/consensus/witness.hpp>
 
 #include <thread>
 
@@ -64,6 +65,7 @@ server_node::server_node(const configuration& configuration)
     rest_server_(new mgbubble::HttpServ(webpage_path_.string().data(), *this, configuration.server.mongoose_listen)),
     push_server_(new mgbubble::WsPushServ(*this, configuration.server.websocket_listen))
 {
+    consensus::witness::create(*this);
 }
 
 // This allows for shutdown based on destruct without need to call stop.
@@ -80,6 +82,36 @@ const settings& server_node::server_settings() const
     return configuration_.server;
 }
 
+bool server_node::is_use_testnet_rules() const
+{
+    return configuration_.use_testnet_rules;
+}
+
+void server_node::start(result_handler handler)
+{
+    if (!stopped())
+    {
+        handler(error::operation_failed);
+        return;
+    }
+
+    p2p_node::start(handler);
+
+    if (!rest_server_->start() || !push_server_->start())
+    {
+        log::error(LOG_SERVER) << "Http/Websocket server can not start.";
+        handler(error::operation_failed);
+        return;
+    }
+
+    if (!consensus::witness::get().init_witness_list())
+    {
+        log::error(LOG_SERVER) << "init witness list failed.";
+        handler(error::witness_update_error);
+        return;
+    }
+}
+
 // Run sequence.
 // ----------------------------------------------------------------------------
 
@@ -88,13 +120,6 @@ void server_node::run(result_handler handler)
     if (stopped())
     {
         handler(error::service_stopped);
-        return;
-    }
-
-    if (!rest_server_->start() || !push_server_->start())
-    {
-        log::error(LOG_SERVER) << "Http/Websocket server can not start.";
-        handler(error::operation_failed);
         return;
     }
 

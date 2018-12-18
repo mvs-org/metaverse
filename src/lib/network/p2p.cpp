@@ -263,7 +263,7 @@ session_outbound::ptr p2p::attach_outbound_session()
 bool p2p::stop()
 {
     // This is the only stop operation that can fail.
-    const auto result = (hosts_->stop() == (code)error::success);
+    const auto result = (hosts_->stop().value() == error::success);
 
     // Signal all current work to stop and free manual session.
     stopped_ = true;
@@ -423,9 +423,25 @@ void p2p::fetch_address(const config::authority::list& excluded_list, address_ha
     handler(hosts_->fetch(out, excluded_list), out);
 }
 
+void p2p::fetch_seed_address(const config::authority::list& excluded_list, address_handler handler)
+{
+    address out;
+    handler(hosts_->fetch_seed(out, excluded_list), out);
+}
+
 config::authority::list p2p::authority_list()
 {
     return connections_->authority_list();
+}
+
+void p2p::store_seed(const address& address, result_handler handler)
+{
+    handler(hosts_->store_seed(address));
+}
+
+void p2p::remove_seed(const address& address, result_handler handler)
+{
+    handler(hosts_->remove_seed(address));
 }
 
 void p2p::store(const address& address, result_handler handler)
@@ -452,6 +468,11 @@ void p2p::address_count(count_handler handler)
 p2p::address::list p2p::address_list()
 {
     return hosts_->copy();
+}
+
+p2p::address::list p2p::seed_address_list()
+{
+    return hosts_->copy_seeds();
 }
 
 connections::ptr p2p::connections_ptr()
@@ -625,8 +646,15 @@ void p2p::map_port(bool)
 }
 #endif // #ifdef USE_UPNP
 
-void p2p::restart_seeding()
+void p2p::restart_seeding(bool manual)
 {
+    if (manual) {
+        seed->restart([](const code& ec) {
+            log::debug(LOG_NETWORK) << "restart_seeding manual result: " << ec.message();
+        });
+        return;
+    }
+
     //1. clear the host::buffer_ cache
     const auto result = hosts_->clear();
     log::debug(LOG_NETWORK) << "restart_seeding clear hosts cache: " << result.message();

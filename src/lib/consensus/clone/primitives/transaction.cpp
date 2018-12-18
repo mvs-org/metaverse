@@ -3,15 +3,14 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "primitives/transaction.h"
-
+#include "transaction.h"
 #include "hash.h"
-#include "tinyformat.h"
 #include "utilstrencodings.h"
+#include <boost/format.hpp>
 
 std::string COutPoint::ToString() const
 {
-    return strprintf("COutPoint(%s, %u)", hash.ToString().substr(0,10), n);
+    return (boost::format("COutPoint(%1%, %2%)") % hash.ToString().substr(0,10) % n).str();
 }
 
 CTxIn::CTxIn(COutPoint prevoutIn, CScript scriptSigIn, uint32_t nSequenceIn)
@@ -34,11 +33,11 @@ std::string CTxIn::ToString() const
     str += "CTxIn(";
     str += prevout.ToString();
     if (prevout.IsNull())
-        str += strprintf(", coinbase %s", HexStr(scriptSig));
+        str += (boost::format(", coinbase %1%") % HexStr(scriptSig)).str();
     else
-        str += strprintf(", scriptSig=%s", HexStr(scriptSig).substr(0, 24));
+        str += (boost::format(", scriptSig=%1%") % HexStr(scriptSig).substr(0, 24)).str();
     if (nSequence != std::numeric_limits<unsigned int>::max())
-        str += strprintf(", nSequence=%u", nSequence);
+        str += (boost::format(", nSequence=%1%") % nSequence).str();
     str += ")";
     return str;
 }
@@ -56,7 +55,10 @@ uint256 CTxOut::GetHash() const
 
 std::string CTxOut::ToString() const
 {
-    return strprintf("CTxOut(nValue=%d.%08d, scriptPubKey=%s)", nValue / COIN, nValue % COIN, HexStr(scriptPubKey).substr(0, 30));
+    auto val = nValue / COIN;
+    auto rem = nValue % COIN;
+    return (boost::format("CTxOut(nValue=%1%.%2$08d, scriptPubKey=%3%)")
+        % (nValue / COIN) % (nValue % COIN) % HexStr(scriptPubKey).substr(0, 30)).str();
 }
 
 CMutableTransaction::CMutableTransaction() : nVersion(CTransaction::CURRENT_VERSION), nLockTime(0) {}
@@ -128,12 +130,12 @@ unsigned int CTransaction::CalculateModifiedSize(unsigned int nTxSize) const
 std::string CTransaction::ToString() const
 {
     std::string str;
-    str += strprintf("CTransaction(hash=%s, ver=%d, vin.size=%u, vout.size=%u, nLockTime=%u)\n",
-        GetHash().ToString().substr(0,10),
-        nVersion,
-        vin.size(),
-        vout.size(),
-        nLockTime);
+    str += (boost::format("CTransaction(hash=%1%, ver=%2%, vin.size=%3%, vout.size=%4%, nLockTime=%5%)\n")
+        % GetHash().ToString().substr(0,10)
+        % nVersion
+        % vin.size()
+        % vout.size()
+        % nLockTime).str();
     for (unsigned int i = 0; i < vin.size(); i++)
         str += "    " + vin[i].ToString() + "\n";
     for (unsigned int i = 0; i < vout.size(); i++)

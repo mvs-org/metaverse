@@ -73,7 +73,7 @@ public:
     transaction& operator=(const transaction& other) /*= delete*/;
 
     bool from_data_t(reader& source);
-    void to_data_t(writer& sink) const;
+    void to_data_t(writer& sink, bool for_merkle=false) const;
     std::string to_string(uint32_t flags) const;
     bool is_valid() const;
     void reset();
@@ -82,6 +82,8 @@ public:
     // sighash_type is used by OP_CHECKSIG
     hash_digest hash(uint32_t sighash_type) const;
     bool is_coinbase() const;
+    bool is_pos_genesis_tx(bool is_testnet) const;
+    bool is_coinstake() const;
     bool is_final(uint64_t block_height, uint32_t block_time) const;
     bool is_locked(size_t block_height, uint32_t median_time_past) const;
     bool is_locktime_conflict() const;
@@ -96,12 +98,14 @@ public:
 
     bool has_did_register() const;
     bool has_did_transfer() const;
-    std::string get_did_transfer_old_address() const;
 
     uint32_t version;
     uint32_t locktime;
     input::list inputs;
     output::list outputs;
+
+protected:
+    bool all_inputs_final() const;
 
 private:
     mutable upgrade_mutex mutex_;
@@ -110,5 +114,8 @@ private:
 
 } // namespace chain
 } // namespace libbitcoin
+
+using transaction = libbitcoin::chain::transaction;
+using transaction_version = libbitcoin::chain::transaction_version;
 
 #endif

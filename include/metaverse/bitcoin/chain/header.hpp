@@ -49,6 +49,15 @@ namespace libbitcoin {
 
 namespace chain {
 
+enum block_version {
+    block_version_any = 0,
+    block_version_min = 1,
+    block_version_pow = 1,
+    block_version_pos = 2,
+    block_version_dpos = 3,
+    block_version_max = 4
+};
+
 class BC_API header
     : public base_primary<header>
 {
@@ -58,7 +67,7 @@ public:
     typedef std::vector<ptr> ptr_list;
 
     static uint64_t satoshi_fixed_size_without_transaction_count();
-    
+
     header();
     header(const header& other);
     header(uint32_t version, const hash_digest& previous_block_hash,
@@ -83,6 +92,10 @@ public:
     void reset();
     uint64_t serialized_size(bool with_transaction_count = true) const;
 
+    bool is_proof_of_stake() const;
+    bool is_proof_of_work() const;
+    bool is_proof_of_dpos() const;
+
     uint32_t version;
     hash_digest previous_block_hash;
     hash_digest merkle;
@@ -103,6 +116,11 @@ private:
 
 BC_API bool operator==(const header& left, const header& right);
 BC_API bool operator!=(const header& left, const header& right);
+
+
+std::string get_block_version(const header& header);
+std::string get_block_version(block_version version);
+std::string get_block_version(uint32_t version);
 
 } // namespace chain
 } // namespace libbitcoin

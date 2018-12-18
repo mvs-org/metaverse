@@ -168,10 +168,14 @@ void block_database::store(const block& block, size_t height)
 
         for (const auto& tx: block.transactions)
             serial.write_hash(tx.hash());
+
+        if (block.header.is_proof_of_stake()){
+            serial.write_data(block.blocksig);
+        }
     };
 
     const auto key = block.header.hash();
-    const auto value_size = 148 + 4 + 4 + tx_count * hash_size;
+    const auto value_size = 148 + 4 + 4 + tx_count * hash_size + (block.header.is_proof_of_stake() ? sizeof(block.blocksig): 0);
 
     // Write block header, height, tx count and hashes to hash table.
     const auto position = lookup_map_.store(key, write, value_size);

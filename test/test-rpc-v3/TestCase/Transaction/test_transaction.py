@@ -38,7 +38,7 @@ class TestTransaction(MVSTestCaseBase):
 
         # invalid address parameter!
         ec, message = mvs_rpc.listtxs(Alice.name, Alice.password, Alice.mainaddress()+'1')
-        self.assertEqual(ec, 4010, message)
+        self.assertEqual(ec, 7006, message)
 
         ec, message = mvs_rpc.get_blockheader()
         self.assertEqual(ec, 0, message)

@@ -20,6 +20,7 @@
 
 
 #pragma once
+#include <metaverse/macros_define.hpp>
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -97,6 +98,18 @@ public:
             value<std::string>(&option_.memo)->default_value(""),
             "Attached memo for this transaction."
         )
+#ifdef ENABLE_LOCKTIME
+        (
+            "locktime,x",
+            value<uint32_t>(&option_.locktime)->default_value(0),
+            "Locktime. defaults to 0"
+        )
+#endif
+        (
+            "exclude,e",
+            value<colon_delimited2_item<uint64_t, uint64_t>>(&option_.exclude),
+            "Exclude utxo whose value is between this range [begin:end)."
+        )
         (
             "fee,f",
             value<uint64_t>(&option_.fee)->default_value(10000),
@@ -123,12 +136,11 @@ public:
 
     struct option
     {
-        option():fee(10000), memo(""), change("")
-        {};
-
         uint64_t fee;
         std::string memo;
         std::string change;
+        uint32_t locktime;
+        colon_delimited2_item<uint64_t, uint64_t> exclude = {0, 0};
     } option_;
 
 };

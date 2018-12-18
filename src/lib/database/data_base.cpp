@@ -809,16 +809,10 @@ void data_base::push(const block& block, uint64_t height)
         const auto tx_hash = tx.hash();
 
         timestamp_ = block.header.timestamp; // for address_asset_database store_input/store_output used only
+        
         // Add inputs
         if (!tx.is_coinbase())
             push_inputs(tx_hash, height, tx.inputs);
-
-        // std::string didaddress = tx.get_did_transfer_old_address();
-        // if (!didaddress.empty()) {
-        //     data_chunk data(didaddress.begin(), didaddress.end());
-        //     short_hash key = ripemd160_hash(data);
-        //     address_dids.delete_old_did(key);
-        // }
 
         // Add outputs
         push_outputs(tx_hash, height, tx.outputs);
@@ -930,17 +924,19 @@ void data_base::push_stealth(const hash_digest& tx_hash, size_t height,
     }
 }
 
-chain::block data_base::pop()
+bool data_base::pop(chain::block& block)
 {
     size_t height;
-    DEBUG_ONLY(const auto result =) blocks.top(height);
+    auto result = blocks.top(height);
     BITCOIN_ASSERT_MSG(result, "Pop on empty database.");
+    if (!result) {
+        return false;
+    }
 
     const auto block_result = blocks.get(height);
     const auto count = block_result.transaction_count();
 
     // Build the block for return.
-    chain::block block;
     block.header = block_result.header();
     block.transactions.reserve(count);
     auto& txs = block.transactions;
@@ -950,14 +946,14 @@ chain::block data_base::pop()
         const auto tx_hash = block_result.transaction_hash(tx);
         const auto tx_result = transactions.get(tx_hash);
 
-        //fix a bug ,synchronize block may destroy the database
-        /*if (!tx_result) {
-            continue;
-        }*/
-
         BITCOIN_ASSERT(tx_result);
         BITCOIN_ASSERT(tx_result.height() == height);
-        BITCOIN_ASSERT(tx_result.index() == static_cast<size_t>(tx));
+        BITCOIN_ASSERT(tx_result.index() == tx);
+
+        //fix a bug ,synchronize block may destroy the database
+        if (!(tx_result && tx_result.height() == height && tx_result.index() == tx)) {
+            return false;
+        }
 
         // TODO: the deserialization should cache the hash on the tx.
         // Deserialize the transaction and move it to the block.
@@ -983,8 +979,7 @@ chain::block data_base::pop()
     // Synchronise everything that was changed.
     synchronize();
 
-    // Return the block.
-    return block;
+    return true;
 }
 
 void data_base::pop_inputs(const input::list& inputs, size_t height)
@@ -1129,7 +1124,6 @@ void data_base::push_etp(const etp& etp, const short_hash& key,
         static_cast<typename std::underlying_type<business_kind>::type>(business_kind::etp),
         timestamp_, etp);
     address_assets.sync();
-
 }
 
 void data_base::push_etp_award(const etp_award& award, const short_hash& key,

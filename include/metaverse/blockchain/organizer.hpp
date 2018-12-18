@@ -30,7 +30,6 @@
 #include <metaverse/blockchain/block_detail.hpp>
 #include <metaverse/blockchain/orphan_pool.hpp>
 #include <metaverse/blockchain/settings.hpp>
-#include <metaverse/blockchain/simple_chain.hpp>
 #include <metaverse/bitcoin/math/hash.hpp>
 #include <boost/thread.hpp>
 
@@ -53,7 +52,7 @@ public:
         reorganize_handler;
 
     /// Construct an instance.
-    organizer(threadpool& pool, simple_chain& chain, const settings& settings);
+    organizer(threadpool& pool, block_chain_impl& chain, const settings& settings);
 
     /// This method is NOT thread safe.
     virtual void organize();
@@ -83,7 +82,8 @@ private:
     virtual code verify(uint64_t fork_index,
         const block_detail::list& orphan_chain, uint64_t orphan_index);
     void process(block_detail::ptr process_block);
-    void replace_chain(uint64_t fork_index, detail_list& orphan_chain);
+    /// Return a tuple <number of poped blocks, number of pushed blocks, current block height>
+    std::tuple<uint64_t, uint64_t, uint64_t> replace_chain(uint64_t fork_index, detail_list& orphan_chain);
     void remove_processed(block_detail::ptr remove_block);
     void clip_orphans(detail_list& orphan_chain, uint64_t orphan_index,
         const code& invalid_reason);
@@ -97,7 +97,7 @@ private:
     const config::checkpoint::list checkpoints_;
 
     // These are protected by the caller protecting organize().
-    simple_chain& chain_;
+    block_chain_impl& chain_;
     block_detail::list process_queue_;
 
     // These are thread safe.

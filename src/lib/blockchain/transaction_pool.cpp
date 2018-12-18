@@ -38,6 +38,8 @@ using namespace chain;
 using namespace wallet;
 using namespace std::placeholders;
 
+using string = std::string;
+
 transaction_pool::transaction_pool(threadpool& pool, block_chain& chain,
                                    const settings& settings)
     : stopped_(true),
@@ -125,7 +127,7 @@ void transaction_pool::handle_validated(const code& ec, transaction_ptr tx,
         return;
     }
 
-    if (ec == (code)error::input_not_found || ec == (code)error::validate_inputs_failed)
+    if (ec.value() == error::input_not_found || ec.value() == error::validate_inputs_failed)
     {
         BITCOIN_ASSERT(unconfirmed.size() == 1);
         handler(ec, tx, unconfirmed);
@@ -147,7 +149,7 @@ void transaction_pool::handle_validated(const code& ec, transaction_ptr tx,
     }
 
     code error = check_symbol_repeat(tx);
-    if (error != error::success) {
+    if (error) {
         handler(error, tx, {});
         return;
     }
@@ -274,11 +276,11 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
         if (!item.tx)
             continue;
 
-        if((ec = check_outputs(item.tx)) != error::success)
+        if((ec = check_outputs(item.tx)))
             break;
     }
 
-    return ec != error::success ? ec : check_outputs(tx);
+    return (ec.value() != error::success) ? ec : check_outputs(tx);
 }
 
 // handle_confirm will never fire if handle_validate returns a failure code.
@@ -463,14 +465,14 @@ void transaction_pool::exists(const hash_digest& tx_hash,
 bool transaction_pool::handle_reorganized(const code& ec, size_t fork_point,
         const block_list& new_blocks, const block_list& replaced_blocks)
 {
-    if (ec == (code)error::service_stopped)
+    if (ec.value() == error::service_stopped)
     {
         log::debug(LOG_BLOCKCHAIN)
                 << "Stopping transaction pool: " << ec.message();
         return false;
     }
 
-    if (ec == error::mock)
+    if (ec.value() == error::mock)
         return true;
 
     if (ec)
@@ -479,12 +481,6 @@ bool transaction_pool::handle_reorganized(const code& ec, size_t fork_point,
                 << "Failure in tx pool reorganize handler: " << ec.message();
         return false;
     }
-
-    log::debug(LOG_BLOCKCHAIN)
-            << "Reorganize: tx pool size (" << buffer_.size()
-            << ") forked at (" << fork_point
-            << ") new blocks (" << new_blocks.size()
-            << ") replace blocks (" << replaced_blocks.size() << ")";
 
     if (replaced_blocks.empty())
     {
@@ -495,6 +491,12 @@ bool transaction_pool::handle_reorganized(const code& ec, size_t fork_point,
     }
     else
     {
+        log::debug(LOG_BLOCKCHAIN)
+                << "Reorganize: tx pool size (" << buffer_.size()
+                << ") forked at (" << fork_point
+                << ") new blocks (" << new_blocks.size()
+                << ") replace blocks (" << replaced_blocks.size() << ")";
+
         // See http://www.jwz.org/doc/worse-is-better.html
         // for why we take this approach. We return with an error_code.
         // An alternative would be resubmit all tx from the cleared blocks.
@@ -657,6 +659,12 @@ bool transaction_pool::delete_single(const hash_digest& tx_hash, const code& ec)
 
     it->handle_confirm(ec, it->tx);
     buffer_.erase(it);
+
+    if (ec) {
+        log::debug(LOG_BLOCKCHAIN)
+            << "delete_tx " << encode_hash(tx_hash)
+            << ", error code is " << ec.message();
+    }
 
     while (1) {
         const auto it = std::find_if(buffer_.begin(), buffer_.end(), matched);

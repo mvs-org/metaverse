@@ -41,7 +41,14 @@ size_t variable_string_size(const std::string& str)
     return length;
 }
 
-std::string limit_size_string(const std::string& str, size_t limit_size)
+size_t variable_data_chunk_size(const data_chunk& data)
+{
+    const size_t length = data.size();
+    return length + variable_uint_size(length);
+}
+
+
+    std::string limit_size_string(const std::string& str, size_t limit_size)
 {
     if (str.size() > limit_size) {
         return str.substr(0, limit_size);

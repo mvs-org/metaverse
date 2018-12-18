@@ -32,7 +32,7 @@ namespace commands {
 
 
 console_result send::invoke(Json::Value& jv_output,
-    libbitcoin::server::server_node& node)
+                            libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -45,6 +45,12 @@ console_result send::invoke(Json::Value& jv_output,
         throw argument_legality_exception("invalid amount parameter!");
     }
 
+    // exclude range check
+    if (!option_.exclude.is_valid()) {
+        throw argument_legality_exception("invalid exclude option! "
+            + option_.exclude.encode_colon_delimited());
+    }
+
     // receiver
     std::vector<receiver_record> receiver{
         {to_address, "", argument_.amount, 0, utxo_attach_type::etp, attach}
@@ -53,20 +59,25 @@ console_result send::invoke(Json::Value& jv_output,
     if (!option_.memo.empty()) {
         check_message(option_.memo);
 
-        receiver.push_back({to_address, "", 0, 0, utxo_attach_type::message,
-            attachment(0, 0, blockchain_message(option_.memo))});
+        receiver.push_back({
+            to_address, "", 0, 0, utxo_attach_type::message,
+            attachment(0, 0, chain::blockchain_message(option_.memo))
+        });
     }
 
-    auto send_helper = sending_etp(*this, blockchain,
-        std::move(auth_.name), std::move(auth_.auth),
-        "", std::move(receiver),
-        std::move(change_address), option_.fee);
+    auto send_helper = sending_etp(
+                           *this, blockchain,
+                           std::move(auth_.name), std::move(auth_.auth),
+                           "", std::move(receiver),
+                           std::move(change_address),
+                           option_.fee, option_.locktime,
+                           std::make_pair(option_.exclude.first(), option_.exclude.second()));
 
     send_helper.exec();
 
     // json output
     auto tx = send_helper.get_transaction();
-     jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
+    jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
 
     return console_result::okay;
 }

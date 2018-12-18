@@ -45,6 +45,7 @@ constexpr int  JSON_FORMAT_VERSION = 3;
 namespace mgbubble {
 using namespace bc;
 using namespace libbitcoin;
+using payment_address = wallet::payment_address;
 
 explorer::config::json_helper get_json_helper()
 {
@@ -90,7 +91,7 @@ bool WsPushServ::handle_transaction_pool(const code& ec, const index_list&, mess
 {
     if (stopped())
         return false;
-    if (ec == (code)error::mock || ec == (code)error::service_stopped)
+    if (ec.value() == error::mock || ec.value() == error::service_stopped)
         return true;
     if (ec)
     {
@@ -106,7 +107,7 @@ bool WsPushServ::handle_blockchain_reorganization(const code& ec, uint64_t fork_
 {
     if (stopped())
         return false;
-    if (ec == (code)error::mock || ec == (code)error::service_stopped)
+    if (ec.value() == error::mock || ec.value() == error::service_stopped)
         return true;
     if (ec)
     {
@@ -429,7 +430,7 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
         if (!reader.parse(begin, end, root)
                 || !root.isObject()
                 || !root["event"].isString()) {
-            stringstream ss;
+            std::stringstream ss;
             ss << "parse request error, "
                << reader.getFormattedErrorMessages();
             throw std::runtime_error(ss.str());
@@ -440,7 +441,7 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
         auto event = root["event"].asString();
         if (event == EV_SUBSCRIBE || event == EV_UNSUBSCRIBE) {
             if (!root["channel"].isString()) {
-                stringstream ss;
+                std::stringstream ss;
                 ss << "parse request error, "
                    << reader.getFormattedErrorMessages();
                 throw std::runtime_error(ss.str());
@@ -452,7 +453,7 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
 
         if ((event == EV_SUBSCRIBE) && (channel == CH_TRANSACTION)) {
             if (!root["address"].isString() && !root["address"].isArray()) {
-                stringstream ss;
+                std::stringstream ss;
                 ss << "parse request error, invalid address!"
                    << reader.getFormattedErrorMessages();
                 throw std::runtime_error(ss.str());

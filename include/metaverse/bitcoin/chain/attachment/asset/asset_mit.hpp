@@ -29,6 +29,13 @@
 #include <metaverse/bitcoin/utility/writer.hpp>
 #include <metaverse/bitcoin/base_primary.hpp>
 
+namespace libbitcoin {
+namespace chain {
+class asset_mit;
+}
+}
+using asset_mit = libbitcoin::chain::asset_mit;
+
 #define MIT_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<asset_mit::mit_status>::type>(kd))
 
 #define MIT_STATUS_NONE        MIT_STATUS2UINT32(asset_mit::mit_status::mit_status_none)
@@ -132,6 +139,9 @@ struct BC_API asset_mit_info
 
 } // namespace chain
 } // namespace libbitcoin
+
+using asset_mit = libbitcoin::chain::asset_mit;
+using asset_mit_info = libbitcoin::chain::asset_mit_info;
 
 #endif
 

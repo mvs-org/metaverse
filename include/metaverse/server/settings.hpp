@@ -47,6 +47,7 @@ public:
     std::string mongoose_listen;
     std::string websocket_listen;
     std::string log_level;
+    std::string rpc_version;
     bool administrator_required;
     bool secure_only;
 

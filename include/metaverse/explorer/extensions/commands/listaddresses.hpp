@@ -74,6 +74,11 @@ public:
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
+        )
+        (
+            "script,s",
+            value<bool>(&option_.b_script)->default_value(false)->zero_tokens(),
+            "If specified, then only get addresses created by \"importaddress\". Default is not specified."
         );
 
         return options;
@@ -92,6 +97,7 @@ public:
 
     struct option
     {
+        bool b_script;
     } option_;
 
 };

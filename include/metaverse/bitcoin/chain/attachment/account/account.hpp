@@ -57,6 +57,36 @@ enum account_type : uint8_t
 {
     common = 0,
     multisignature,
+    script_,    // 'script' conflicts with class 'script'
+};
+
+#define is_multisignature(type) ((type & account_type::multisignature) == account_type::multisignature)
+#define is_script(type) ((type & account_type::script_) == account_type::script_)
+
+class BC_API account_script
+{
+public:
+    typedef std::vector<account_script> list;
+    account_script();
+
+    const std::string& get_description() const{return description_;};
+    void set_description(const std::string& description);
+
+    const std::string& get_address() const{return address_;};
+    void set_address(const std::string& address);
+
+    const data_chunk& get_script() const{return script_;};
+    void set_script(const data_chunk& script);
+
+    bool from_data(reader& source);
+    void to_data(writer& sink) const;
+
+    uint64_t serialized_size() const;
+    bool operator==(const account_script& other) const;
+private:
+    std::string description_;
+    std::string address_;
+    data_chunk script_;
 };
 
 /// used for store account related information
@@ -188,6 +218,14 @@ public:
     void remove_multisig(const account_multisig& multisig);
     std::shared_ptr<account_multisig::list> get_multisig(const std::string& addr);
 
+    const account_script::list& get_script_vec() const;
+    void set_script_vec(account_script::list&& script);
+    bool is_script_exist(const account_script& script);
+    void set_script(const account_script& script);
+    void modify_script(const account_script& script);
+    void remove_script(const account_script& script);
+    std::shared_ptr<account_script::list> get_script(const std::string& addr);
+
 private:
     std::string name;
     std::string mnemonic;
@@ -202,11 +240,19 @@ private:
     // multisig fields
     account_multisig::list multisig_vec;
     //account_multisig multisig;
+    account_script::list script_vec;
 };
 
 
 } // namespace chain
 } // namespace libbitcoin
+
+using account_status = libbitcoin::chain::account_status;
+using account_priority = libbitcoin::chain::account_priority;
+using account_type = libbitcoin::chain::account_type;
+using account_script = libbitcoin::chain::account_script;
+using account = libbitcoin::chain::account;
+using account_multisig = libbitcoin::chain::account_multisig;
 
 #endif
 

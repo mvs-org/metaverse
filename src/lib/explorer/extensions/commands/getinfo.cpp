@@ -19,7 +19,6 @@
  */
 
 #include <metaverse/explorer/json_helper.hpp>
-#include <metaverse/explorer/version.hpp>
 #include <metaverse/explorer/extensions/commands/getinfo.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -54,7 +53,7 @@ console_result getinfo::invoke(Json::Value& jv_output,
     auto& jv = jv_output;
     if (get_api_version() <= 2) {
         jv["protocol-version"] = node.network_settings().protocol;
-        jv["wallet-version"] = MVS_EXPLORER_VERSION;
+        jv["wallet-version"] = MVS_VERSION;
         jv["database-version"] = MVS_DATABASE_VERSION;
         jv["testnet"] = blockchain.chain_settings().use_testnet_rules;
         jv["peers"] = get_connections_count(node);
@@ -69,7 +68,7 @@ console_result getinfo::invoke(Json::Value& jv_output,
     }
     else {
         jv["protocol_version"] = node.network_settings().protocol;
-        jv["wallet_version"] = MVS_EXPLORER_VERSION;
+        jv["wallet_version"] = MVS_VERSION;
         jv["database_version"] = MVS_DATABASE_VERSION;
         jv["testnet"] = blockchain.chain_settings().use_testnet_rules;
         jv["peers"] = get_connections_count(node);

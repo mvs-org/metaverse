@@ -17,8 +17,8 @@ def derive_key(passphrase, salt):
     iv_size = 16
     iterations = 1
 
-    derivedKeyWords = ''
-    block = ''
+    derivedKeyWords = b''
+    block = b''
 
     while len(derivedKeyWords) < (key_size + iv_size):
         hash = MD5.new()
@@ -43,13 +43,14 @@ def AES_CBC_encrypt(message, key, iv):
 
 
 def AES_CBC_decrypt(cipher_txt, passphrase):
+    passphrase = bytes(passphrase, 'utf-8')
     s = base64.b64decode(cipher_txt)
     salt = s[8:16]
     raw_cipher_txt = s[16:]
     key, iv = derive_key(passphrase, salt)
     cipher = AES.new(key, AES.MODE_CBC, iv)
     msg = cipher.decrypt(raw_cipher_txt)
-    padding = ord(msg[-1])
-    return msg[:-padding]
+    padding = msg[-1]
+    return str(msg[:-padding], 'utf-8')
 
 

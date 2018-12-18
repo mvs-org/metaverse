@@ -64,7 +64,7 @@ void protocol_address::start()
         network_address nt_address=settings.self.to_network_address();
 
         //for testnet don't filter local ip
-        if (settings.hosts_file == "hosts-test.cache") {
+        if (network_.is_use_testnet_rules()) {
             self_ = address({ { nt_address } });
             SEND2(self_, handle_send, _1, self_.command);
         }
@@ -83,7 +83,7 @@ void protocol_address::start()
         if (sp_out_address && (settings.self != *sp_out_address)) {
             const config::authority& out_address = *sp_out_address;
             network_address nt_address = out_address.to_network_address();
-            if (settings.hosts_file == "hosts-test.cache") {
+            if (network_.is_use_testnet_rules()) {
                 address self = address({ { nt_address } });
                 log::info("UPnP") << "send addresss " << out_address.to_string();
                 SEND2(self, handle_send, _1, self.command);
@@ -108,22 +108,15 @@ void protocol_address::start()
 
 void protocol_address::remove_useless_address(address::ptr& message)
 {
-    auto& addresses = message->addresses;
     const auto& settings = network_.network_settings();
     if(settings.self.port() != 0)
     {
-        auto iter = std::find_if(addresses.begin(), addresses.end(), [&settings](const message::network_address& addr){
-            if(config::authority{addr} == settings.self)
-            {
-                return true;
-            }
-            return false;
-        });
-
-        if(iter != addresses.end())
-        {
-            addresses.erase(iter);
-        }
+        auto pred = [&settings](const network_address& addr) {
+            auto authority = config::authority{addr};
+            return authority == settings.self || authority.port() == 0;
+        };
+        auto& addresses = message->addresses;
+        addresses.erase(std::remove_if(addresses.begin(), addresses.end(), pred), addresses.end());
     }
 }
 
@@ -133,32 +126,18 @@ void protocol_address::remove_useless_address(address::ptr& message)
 bool protocol_address::handle_receive_address(const code& ec,
     address::ptr message)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
 
-    if (ec)
-    {
-        log::trace(LOG_NETWORK)
-            << "Failure receiving address message from ["
-            << authority() << "] " << ec.message();
-          stop(ec);
-
-        return false;
-    }
     remove_useless_address(message);
     log::trace(LOG_NETWORK)
         << "Storing addresses from [" << authority() << "] ("
         << message->addresses.size() << ")";
 
-//    if (message->addresses.size() > 1000)
-//    {
-//        return ! misbehaving(20);
-//    }
     network_address::list addresses;
     addresses.reserve(message->addresses.size());
     for (auto& addr:message->addresses) {
-        //if (!channel::blacklisted(addr)) {
-        if (!channel::manualbanned(addr)) {
+        if (!channel::blacklisted(addr) && !channel::manualbanned(addr)) {
             addresses.push_back(addr);
         }
     }
@@ -173,58 +152,27 @@ bool protocol_address::handle_receive_address(const code& ec,
 bool protocol_address::handle_receive_get_address(const code& ec,
     get_address::ptr message)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
-
-    if (ec)
-    {
-        log::trace(LOG_NETWORK)
-            << "Failure receiving get_address message from ["
-            << authority() << "] " << ec.message();
-           stop(ec);
-        return false;
-    }
-
-
-    // TODO: allowing repeated queries can allow a channel to map our history.
-    // TODO: pull active hosts from host cache (currently just resending self).
-    // TODO: need to distort for privacy, don't send currently-connected peers.
 
     auto&& address_list = network_.address_list();
-    auto channel_authorithy = authority();
 
-    auto iter = std::find_if(address_list.begin(), address_list.end(), [&channel_authorithy](const message::network_address& address){
-        if(config::authority{address} == channel_authorithy)
-        {
-            return true;
-        }
-        return false;
-    });
-    if(iter != address_list.end() )
+    if(!address_list.empty())
     {
-        address_list.erase(iter);
+        log::trace(LOG_NETWORK)
+            << "Sending addresses to [" << authority() << "] ("
+            << address_list.size() << ")";
+        message::address self_address = {address_list};
+        SEND2(self_address, handle_send, _1, self_address.command);
     }
 
-    if(address_list.empty())
-    {
-        return true;
-    }
-//    if (self_.addresses.empty())
-//        return false;
-
-    log::trace(LOG_NETWORK)
-        << "Sending addresses to [" << authority() << "] ("
-        << address_list.size() << ")";
-    message::address self_address = {address_list};
-    SEND2(self_address, handle_send, _1, self_address.command);
-
-    // RESUBSCRIBE
-    return true;
+    // do not resubscribe; one response per connection permitted
+    return false;
 }
 
 void protocol_address::handle_store_addresses(const code& ec, address::ptr message)
 {
-    if (stopped())
+    if (stopped(ec))
         return;
 
     if (ec)

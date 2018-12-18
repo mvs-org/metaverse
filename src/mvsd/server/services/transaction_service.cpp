@@ -149,10 +149,10 @@ bool transaction_service::unbind(zmq::socket& xpub, zmq::socket& xsub)
 bool transaction_service::handle_transaction(const code& ec, const index_list&,
     transaction_message::ptr tx)
 {
-    if (stopped() || ec == (code)error::service_stopped)
+    if (stopped() || ec.value() == error::service_stopped)
         return false;
 
-    if (ec == (code)error::mock)
+    if (ec.value() == error::mock)
     {
         return true;
     }
@@ -185,7 +185,7 @@ void transaction_service::publish_transaction(const transaction& tx)
     zmq::socket publisher(authenticator_, zmq::socket::role::publisher);
     auto ec = publisher.connect(endpoint);
 
-    if (ec == (code)error::service_stopped)
+    if (ec.value() == error::service_stopped)
         return;
 
     if (ec)
@@ -204,7 +204,7 @@ void transaction_service::publish_transaction(const transaction& tx)
     broadcast.enqueue(tx_msg.to_data(bc::message::version::level::maximum));
     ec = publisher.send(broadcast);
 
-    if (ec == (code)error::service_stopped)
+    if (ec.value() == error::service_stopped)
         return;
 
     if (ec)

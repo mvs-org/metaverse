@@ -85,6 +85,11 @@ void session::fetch_address(host_handler handler)
     network_.fetch_address(network_.authority_list(), handler);
 }
 
+void session::fetch_seed_address(host_handler handler)
+{
+    network_.fetch_seed_address(network_.authority_list(), handler);
+}
+
 // protected:
 void session::connection_count(count_handler handler)
 {
@@ -94,6 +99,9 @@ void session::connection_count(count_handler handler)
 // protected:
 bool session::blacklisted(const authority& authority) const
 {
+    if (authority == settings_.self) {
+        return true;
+    }
     const auto& blocked = settings_.blacklists;
     // black through IP, does not care port.
     const auto it = std::find_if(blocked.begin(), blocked.end(),
@@ -173,6 +181,11 @@ void session::do_stop_session(const code&)
 bool session::stopped() const
 {
     return stopped_;
+}
+
+bool session::stopped(const code& ec) const
+{
+    return stopped() || ec.value() == error::service_stopped;
 }
 
 // Subscribe Stop sequence.

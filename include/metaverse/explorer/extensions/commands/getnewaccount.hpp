@@ -72,12 +72,12 @@ public:
         )
         (
             "ACCOUNTNAME",
-            value<std::string>(&auth_.name)->required(),
+            value<std::string>(&auth_.name)->default_value(""),
             BX_ACCOUNT_NAME
         )
         (
             "ACCOUNTAUTH",
-            value<std::string>(&auth_.auth)->required(),
+            value<std::string>(&auth_.auth)->default_value(""),
             BX_ACCOUNT_AUTH
         );
 
@@ -89,7 +89,7 @@ public:
     }
 
     console_result invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node) override;
+         bc::server::server_node& node) override;
 
     struct argument
     {
@@ -100,6 +100,12 @@ public:
         std::string language;
     } option_;
 
+private:
+    console_result create_account(Json::Value& jv_output,
+        bc::server::server_node& node);
+
+    console_result create_address(Json::Value& jv_output,
+        bc::server::server_node& node);
 };
 
 

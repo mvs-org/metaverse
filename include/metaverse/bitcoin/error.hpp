@@ -178,6 +178,20 @@ enum error_code_t
     mit_not_exist,                  // 90
 
     sequence_locked,
+    sync_disabled,
+    block_version_not_match,
+    witness_sign_invalid,
+    witness_mismatch,               // 95
+    witness_vote_error,
+    witness_update_error,
+
+    proof_of_stake,
+    miss_coinstake,
+    illegal_coinstake,
+    extra_coinstakes,
+    coinstake_version_invalid,
+    cointstake_signature_invalid,
+    check_pos_genesis_error
 
 };
 

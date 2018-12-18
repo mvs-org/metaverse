@@ -19,6 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/bitcoin/chain/block.hpp>
+#include <metaverse/macros_define.hpp>
 
 #include <utility>
 #include <boost/iostreams/stream.hpp>
@@ -29,6 +30,7 @@
 #include <metaverse/bitcoin/utility/container_source.hpp>
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
+#include <metaverse/consensus/witness.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -40,25 +42,28 @@ block::block()
 }
 
 block::block(const block& other)
-  : block(other.header, other.transactions)
+  : block(other.header, other.transactions, other.blocksig)
 {
 }
 
 block::block(const chain::header& header,
-    const chain::transaction::list& transactions)
-  : header(header), transactions(transactions)
+    const chain::transaction::list& transactions,
+    const ec_signature& blocksig)
+  : header(header), transactions(transactions), blocksig(blocksig)
 {
 }
 
 block::block(block&& other)
   : block(std::forward<chain::header>(other.header),
-        std::forward<chain::transaction::list>(other.transactions))
+        std::forward<chain::transaction::list>(other.transactions),
+        std::forward<ec_signature>(other.blocksig))
 {
 }
 
-block::block(chain::header&& header, chain::transaction::list&& transactions)
+block::block(chain::header&& header, chain::transaction::list&& transactions, ec_signature&& blocksig)
   : header(std::forward<chain::header>(header)),
-    transactions(std::forward<chain::transaction::list>(transactions))
+    transactions(std::forward<chain::transaction::list>(transactions)),
+    blocksig(std::forward<ec_signature>(blocksig))
 {
 }
 
@@ -66,6 +71,7 @@ block& block::operator=(block&& other)
 {
     header = std::move(other.header);
     transactions = std::move(other.transactions);
+    blocksig = std::move(other.blocksig);
     return *this;
 }
 
@@ -79,6 +85,22 @@ void block::reset()
     header.reset();
     transactions.clear();
     transactions.shrink_to_fit();
+    blocksig.fill(0);
+}
+
+bool block::is_proof_of_stake() const
+{
+    return header.is_proof_of_stake();
+}
+
+bool block::is_proof_of_work() const
+{
+    return header.is_proof_of_work();
+}
+
+bool block::is_proof_of_dpos() const
+{
+    return header.is_proof_of_dpos();
 }
 
 bool block::from_data_t(reader& source, bool with_transaction_count)
@@ -103,6 +125,9 @@ bool block::from_data_t(reader& source, bool with_transaction_count)
     if (!result)
         reset();
 
+    if (header.is_proof_of_stake()) {
+        source.read_data(blocksig.data(), blocksig.size());
+    }
     return result;
 }
 
@@ -113,6 +138,10 @@ void block::to_data_t(writer& sink, bool with_transaction_count) const
 
     for (const auto& tx: transactions)
         tx.to_data(sink);
+
+    if (header.is_proof_of_stake()){
+        sink.write_data(blocksig.data(), blocksig.size());
+    }
 }
 
 uint64_t block::serialized_size(bool with_transaction_count) const
@@ -121,6 +150,9 @@ uint64_t block::serialized_size(bool with_transaction_count) const
 
     for (const auto& tx: transactions)
         block_size += tx.serialized_size();
+
+    if (header.is_proof_of_stake())
+        block_size += blocksig.size();
 
     return block_size;
 }
@@ -249,6 +281,34 @@ chain::block block::genesis_testnet()
         == genesis.header.merkle);
 
     return genesis;
+}
+
+bool block::must_use_pow_consensus() const
+{
+    if (!consensus::witness::is_witness_enabled(header.number)) {
+        return true;
+    }
+    // ensure the vote is security,
+    // first vote_maturity blocks of each epoch must use pow
+    if (consensus::witness::is_between_vote_maturity_interval(header.number)) {
+        return true;
+    }
+    if (header.number % consensus::witness::pow_check_point_height == 0) {
+        return true;
+    }
+    return false;
+}
+
+bool block::can_use_dpos_consensus() const
+{
+    if (must_use_pow_consensus()) {
+        return false;
+    }
+    // only use DPOS to pack real txs, forbid block with only coinbase tx
+    if (transactions.size() == 1) {
+        return false;
+    }
+    return true;
 }
 
 } // namspace chain

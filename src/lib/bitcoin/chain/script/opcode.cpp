@@ -20,9 +20,9 @@
  */
 #include <metaverse/bitcoin/chain/script/opcode.hpp>
 #include <metaverse/bitcoin/chain/script/script.hpp>
-
-#include <sstream>
+#include <metaverse/macros_define.hpp>
 #include <metaverse/bitcoin/constants.hpp>
+#include <sstream>
 
 namespace libbitcoin {
 namespace chain {
@@ -516,6 +516,18 @@ opcode data_to_opcode(const data_chunk& value)
     else
         code = opcode::bad_operation;
     return code;
+}
+
+script_context get_script_context()
+{
+#ifdef ENABLE_LOCKTIME
+    return script_context::all_enabled;
+#else
+    uint32_t context = script_context::all_enabled;
+    context &= ~bip65_enabled;  // disable nLocktime
+    context &= ~bip112_enabled; // disable nSequence
+    return static_cast<script_context>(context);
+#endif
 }
 
 } // namspace chain

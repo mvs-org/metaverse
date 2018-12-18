@@ -36,7 +36,13 @@
 #include <metaverse/bitcoin/chain/attachment/message/message.hpp>
 #include <metaverse/bitcoin/base_primary.hpp>
 
-using namespace libbitcoin::chain;
+namespace libbitcoin {
+namespace chain {
+class attachment;
+}
+}
+using attachment = libbitcoin::chain::attachment;
+
 #define TYPE2UINT32(kd)  (static_cast<typename std::underlying_type<attachment::attachment_type>::type>(kd))
 
 #define ETP_TYPE        TYPE2UINT32(attachment::attachment_type::attachment_etp)
@@ -49,6 +55,7 @@ using namespace libbitcoin::chain;
 
 #define DID_ATTACH_VERIFY_VERSION       TYPE2UINT32(207)
 
+#define ATTACH_NULL_TYPE MAX_UINT32
 
 namespace libbitcoin {
 namespace chain {
@@ -80,6 +87,7 @@ public:
         > attachment_data_type;
 
     attachment();
+    attachment(uint32_t type);
 
     attachment(const std::string& from_did, const std::string& to_did);
 
@@ -87,6 +95,11 @@ public:
     attachment(uint32_t type, uint32_t version, const Type& attach_data)
         : type(type), version(version), attach(attach_data)
     {}
+
+    attachment(attachment&& other);
+    attachment(const attachment& other);
+    attachment& operator=(attachment&& other);
+    attachment& operator=(const attachment& other);
 
     static uint64_t satoshi_fixed_size();
 
@@ -102,6 +115,7 @@ public:
     void set_version(uint32_t version);
     uint32_t get_type() const;
     void set_type(uint32_t type);
+    void set_null();
 
     std::string get_to_did() const;
     void set_to_did(const std::string& did);

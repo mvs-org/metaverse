@@ -244,7 +244,7 @@ Json::Value json_helper::prop_list(const tx_input_type& tx_input)
         tree["previous_output"]["index"] = tx_input.previous_output.index;
         tree["sequence"] = tx_input.sequence;
     }
-    tree["script"] += script(tx_input.script).to_string();
+    tree["script"] += script(tx_input.script.to_data(false)).to_string();
     return tree;
 }
 Json::Value json_helper::prop_tree(const tx_input_type& tx_input)
@@ -296,14 +296,14 @@ Json::Value json_helper::prop_list(const tx_output_type& tx_output)
     // TODO: this will eventually change due to privacy problems, see:
     // lists.dyne.org/lurker/message/20140812.214120.317490ae.en.html
 
-    if (!address)
+    if (!address && is_stealth_script(tx_output.script))
     {
-        tree["stealth"] = Json::objectValue;
         uint32_t stealth_prefix;
         ec_compressed ephemeral_key;
         if (to_stealth_prefix(stealth_prefix, tx_output.script) &&
             extract_ephemeral_key(ephemeral_key, tx_output.script))
         {
+            tree["stealth"] = Json::objectValue;
             tree["stealth"]["prefix"] += stealth_prefix;
             tree["stealth"]["ephemeral_public_key"] += ec_public(ephemeral_key);
         }
@@ -669,6 +669,9 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
         auto msg_info = boost::get<bc::chain::blockchain_message>(attach_data.get_attach());
         tree["content"] = msg_info.get_content();
     }
+    else if(attach_data.get_type() == ATTACH_NULL_TYPE){
+        tree["type"] = "null";
+    }
     else {
         tree["type"] = "unknown business";
         BITCOIN_ASSERT(false);
@@ -766,10 +769,16 @@ Json::Value json_helper::prop_list(const transaction& transaction, bool json)
     Json::Value tree;
     if (json) {
         tree["hash"] += hash256(tx.hash());
+        if (version_ <= 3) {
+            tree["lock_time"] += tx.locktime;
+            tree["version"] += tx.version;
+        }
+        else {
+            tree["lock_time"] = tx.locktime;
+            tree["version"] = tx.version;
+        }
         tree["inputs"] = prop_tree_list("input", tx.inputs, json);
-        tree["lock_time"] += tx.locktime;
         tree["outputs"] = prop_tree(tx.outputs, json); // only used for output to add new field "index"
-        tree["version"] += tx.version;
         return tree;
     }
     else {
@@ -796,10 +805,15 @@ Json::Value json_helper::prop_list(const transaction& transaction, uint64_t tx_h
     } else {
         tree["height"] = tx_height;
     }
+    if (version_ <= 3) {
+        tree["lock_time"] += tx.locktime;
+        tree["version"] += tx.version;
+    } else {
+        tree["lock_time"] = tx.locktime;
+        tree["version"] = tx.version;
+    }
     tree["inputs"] = prop_tree_list("input", tx.inputs, json);
-    tree["lock_time"] += tx.locktime;
     tree["outputs"] = prop_tree(tx.outputs, json); // only used for output to add new field "index"
-    tree["version"] += tx.version;
     return tree;
 }
 

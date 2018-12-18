@@ -37,11 +37,11 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    if (!blockchain.is_valid_address(argument_.address))
-        throw address_invalid_exception{"invalid address!"};
+    const auto address = get_address(argument_.address, blockchain);
 
     if (!option_.symbol.empty()) {
         // check asset symbol
+        blockchain.uppercase_symbol(option_.symbol);
         check_asset_symbol(option_.symbol);
     }
 
@@ -53,7 +53,7 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
         json_key = "assetcerts";
 
         auto sh_vec = std::make_shared<asset_cert::list>();
-        sync_fetch_asset_cert_balance(argument_.address, "", blockchain, sh_vec);
+        sync_fetch_asset_cert_balance(address, "", blockchain, sh_vec);
         std::sort(sh_vec->begin(), sh_vec->end());
         for (auto& elem: *sh_vec) {
             if (!option_.symbol.empty() && option_.symbol != elem.get_symbol())
@@ -67,7 +67,7 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
         json_key = "assets";
 
         auto sh_vec = std::make_shared<asset_deposited_balance::list>();
-        sync_fetch_asset_deposited_balance(argument_.address, blockchain, sh_vec);
+        sync_fetch_asset_deposited_balance(address, blockchain, sh_vec);
         std::sort(sh_vec->begin(), sh_vec->end());
 
         for (auto& elem: *sh_vec) {
@@ -88,7 +88,7 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
         json_key = "assets";
 
         auto sh_vec = std::make_shared<asset_balances::list>();
-        sync_fetch_asset_balance(argument_.address, true, blockchain, sh_vec);
+        sync_fetch_asset_balance(address, true, blockchain, sh_vec);
         std::sort(sh_vec->begin(), sh_vec->end());
         for (auto& elem: *sh_vec) {
             if (!option_.symbol.empty() && option_.symbol != elem.symbol)

@@ -168,10 +168,10 @@ void p2p_node::handle_running(const code& ec, result_handler handler)
 bool p2p_node::handle_reorganized(const code& ec, size_t fork_point,
     const block_ptr_list& incoming, const block_ptr_list& outgoing)
 {
-    if (stopped() || ec == (code)error::service_stopped)
+    if (stopped() || ec.value() == error::service_stopped)
         return false;
 
-    if (ec == (code)error::mock)
+    if (ec.value() == error::mock)
         return true;
 
     if (ec)

@@ -58,5 +58,7 @@ private:
 } // namespace chain
 } // namespace libbitcoin
 
+using etp = libbitcoin::chain::etp;
+
 #endif
 

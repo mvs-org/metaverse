@@ -17,8 +17,6 @@ namespace server{
 
 namespace mgbubble{
 
-using namespace bc;
-
 class HttpServ : public MgServer
 {
     typedef MgServer base;
@@ -82,7 +80,7 @@ private:
     static thread_local int state_;
     const char* const servername_{"Metaverse " MVS_VERSION};
     libbitcoin::server::server_node &node_;
-    string document_root_;
+    std::string document_root_;
 };
 
 } // mgbubble

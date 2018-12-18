@@ -43,6 +43,7 @@ public:
 
     /// Construct an instance.
     session_outbound(p2p& network);
+    ~session_outbound();
 
     /// Start the session.
     void start(result_handler handler) override;
@@ -50,24 +51,30 @@ public:
 protected:
     /// Override to attach specialized protocols upon channel start.
     virtual void attach_protocols(channel::ptr channel);
-    void delay_new_connect(connector::ptr connect);
+    void delay_new_connect(connector::ptr connect, deadline::ptr connect_timer, bool only_seed=false);
 
     void delay_reseeding();
 
 private:
-    void new_connection(connector::ptr connect);
+    void new_connection(connector::ptr connect, deadline::ptr connect_timer, bool reconnect=true, bool only_seed=false);
     void handle_started(const code& ec, result_handler handler);
     void handle_connect(const code& ec, channel::ptr channel,
-        connector::ptr connect);
+        connector::ptr connect, deadline::ptr connect_timer,
+        bool reconnect=true, bool only_seed=false);
 
     void handle_channel_stop(const code& ec, connector::ptr connect,
-        channel::ptr channel);
+        channel::ptr channel, deadline::ptr connect_timer, bool only_seed=false);
     void handle_channel_start(const code& ec, connector::ptr connect,
         channel::ptr channel);
+
+    void handle_reseeding();
 
     std::atomic_int outbound_counter;
     std::atomic_bool in_reseeding; //to mark if the re-seeding timer is active
     p2p& network__;
+
+    deadline::ptr reseeding_timer_;
+    std::vector<deadline::ptr> connect_timer_list_;
 };
 
 } // namespace network

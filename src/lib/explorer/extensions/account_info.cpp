@@ -31,6 +31,8 @@
 #include <metaverse/bitcoin/config/base16.hpp>
 #include <metaverse/bitcoin/math/checksum.hpp>
 
+#include <metaverse/blockchain/block_chain_impl.hpp>
+
 using namespace libbitcoin::wallet;
 using namespace libbitcoin::config;
 

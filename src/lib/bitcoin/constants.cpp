@@ -19,9 +19,49 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/bitcoin/constants.hpp>
+#include <metaverse/macros_define.hpp>
 
 namespace libbitcoin {
+
+const uint64_t pos_genesis_reward        = 50000000 * 100000000ul;
+
+#ifndef PRIVATE_CHAIN
+
 uint32_t coinbase_maturity = 1000;
+const uint64_t future_blocktime_fork_height = 1030000;
+
+const size_t relative_locktime_min_version = 5;
+
+// PoS
+const uint64_t pos_enabled_height        = max_uint64;
+const uint32_t pos_coinstake_max_utxos   = 10;
+const uint64_t pos_lock_min_value        = 10000 * 100000000ul;
+const uint64_t pos_lock_min_height       = 100000;
+const uint64_t pos_lock_gap_height       = 10000;
+const uint64_t pos_stake_min_value       = 10000 * 100000000ul;
+const uint64_t pos_stake_min_height      = 1000;
+const double   pos_stake_factor          = 1;
+const uint32_t block_timespan_window     = 28;
+
+#else //PRIVATE_CHAIN
+
+uint32_t coinbase_maturity = 10;
+const uint64_t future_blocktime_fork_height = 10;
+
+const size_t relative_locktime_min_version = 2;
+
+// PoS
+const uint64_t pos_enabled_height        = 350;
+const uint32_t pos_coinstake_max_utxos   = 10;
+const uint64_t pos_lock_min_value        = 10 * 100000000ul;
+const uint64_t pos_lock_min_height       = 100000;
+const uint64_t pos_lock_gap_height       = 10000;
+const uint64_t pos_stake_min_value       = 100 * 100000000ul;
+const uint64_t pos_stake_min_height      = 100;
+const double   pos_stake_factor          = 10;
+const uint32_t block_timespan_window     = 28;
+
+#endif //PRIVATE_CHAIN
 
 hash_number max_target()
 {
@@ -38,5 +78,15 @@ std::string get_developer_community_address(bool is_testnet)
     }
     return address;
 }
+
+std::string get_foundation_address(bool is_testnet)
+{
+    std::string address("MSCHL3unfVqzsZbRVCJ3yVp7RgAmXiuGN3");  // foundation address for mainnet
+    if (is_testnet) {
+        address = "tF9pfqY8p6cfjuhDVZu9aXBY1CBprgrpKm";         // foundation address for testnet
+    }
+    return address;
+}
+
 
 } // namespace libbitcoin

@@ -126,6 +126,21 @@ bool header::is_valid() const
         (nonce != 0);
 }
 
+bool header::is_proof_of_stake() const
+{
+    return version == block_version_pos;
+}
+
+bool header::is_proof_of_work() const
+{
+    return version == block_version_pow;
+}
+
+bool header::is_proof_of_dpos() const
+{
+    return version == block_version_dpos;
+}
+
 void header::reset()
 {
     version = 0;
@@ -237,6 +252,32 @@ bool operator==(const header& left, const header& right)
 bool operator!=(const header& left, const header& right)
 {
     return !(left == right);
+}
+
+std::string get_block_version(const header& header)
+{
+    return get_block_version(header.version);
+}
+
+std::string get_block_version(block_version version)
+{
+    return get_block_version((uint32_t)version);
+}
+
+std::string get_block_version(uint32_t version)
+{
+    switch (version) {
+    case block_version_any:
+        return " Any";
+    case block_version_pow:
+        return " PoW";
+    case block_version_pos:
+        return " PoS";
+    case block_version_dpos:
+        return "DPoS";
+    default:;
+    }
+    return "Unknown";
 }
 
 } // namspace chain

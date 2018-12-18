@@ -57,17 +57,40 @@ public:
 
 private:
     void handle_fetch_header(const code& ec, const header& header,
-        block::ptr block, block_chain::block_fetch_handler handler)
-    {
-        if (ec)
-        {
+        block::ptr block, block_chain::block_fetch_handler handler) {
+        if (ec) {
             handler(ec, nullptr);
             return;
         }
 
         // Set the block header.
         block->header = header;
-        const auto hash = header.hash();
+
+        const auto& hash = block->header.hash();
+        if (block->header.is_proof_of_stake())
+        {
+            blockchain_.fetch_block_signature(hash,
+                                              std::bind(&block_fetcher::handle_fetch_signature,
+                                                        shared_from_this(), _1, _2, block, handler));
+        } else {
+            blockchain_.fetch_block_transaction_hashes(hash,
+                                                       std::bind(&block_fetcher::fetch_transactions,
+                                                                 shared_from_this(), _1, _2, block, handler));
+        }
+    }
+
+    void handle_fetch_signature(const code& ec, const ec_signature& sig,
+                             block::ptr block, block_chain::block_fetch_handler handler){
+
+        if (ec) {
+            handler(ec, nullptr);
+            return;
+        }
+
+        // Set the block header.
+        block->blocksig = sig;
+
+        const auto& hash = block->header.hash();
 
         blockchain_.fetch_block_transaction_hashes(hash,
             std::bind(&block_fetcher::fetch_transactions,

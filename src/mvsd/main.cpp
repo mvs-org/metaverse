@@ -54,7 +54,7 @@ int bc::main(int argc, char* argv[])
     if(metadata.configured.daemon)
     {
         libbitcoin::daemon();
-        static fstream fout;
+        static std::fstream fout;
         fout.open("/dev/null");
         if(! fout.good())
             throw std::runtime_error{"open /dev/null failed"};

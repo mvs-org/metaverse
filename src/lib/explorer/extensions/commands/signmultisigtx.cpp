@@ -28,6 +28,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
+using payment_address = wallet::payment_address;
 
 console_result signmultisigtx::invoke(
     Json::Value& jv_output,
@@ -44,20 +45,22 @@ console_result signmultisigtx::invoke(
         throw address_list_empty_exception{"empty address list for this account."};
     }
 
-    std::string addr_prikey("");
-    if (!option_.self_publickey.empty()) {
-        auto owned = false;
+    auto get_prikey = [&](const std::string& publickey) -> std::string {
         for (auto& each : *pvaddr) {
             auto prv_key = each.get_prv_key(auth_.auth);
             auto pub_key = ec_to_xxx_impl("ec-to-public", prv_key);
-            if (option_.self_publickey == pub_key) {
-                owned = true;
-                addr_prikey = prv_key;
-                break;
+            if (publickey == pub_key) {
+                return prv_key;
             }
         }
+        return "";
+    };
 
-        if (!owned) {
+    std::string addr_prikey("");
+    if (!option_.self_publickey.empty()) {
+        addr_prikey = get_prikey(option_.self_publickey);
+
+        if (addr_prikey.empty()) {
             throw pubkey_dismatch_exception(
                 "public key " + option_.self_publickey + " is not owned by " + auth_.name);
         }
@@ -67,12 +70,11 @@ console_result signmultisigtx::invoke(
     bc::chain::script redeem_script;
 
     bool fullfilled = true;
-    std::string multisig_script;
-    uint32_t index = 0;
-    for (auto& each_input : tx_.inputs) {
+    for (uint32_t index = 0; index < tx_.inputs.size(); ++index) {
+        auto& each_input = tx_.inputs[index];
         input_script = each_input.script;
 
-        if (script_pattern::sign_multisig != input_script.pattern())
+        if (chain::script_pattern::sign_multisig != input_script.pattern())
             continue;
 
         // 1. extract address from multisig payment script
@@ -87,7 +89,7 @@ console_result signmultisigtx::invoke(
         }
 
         // Is the redeem script a standard pay (output) script?
-        if (redeem_script.pattern() != script_pattern::pay_multisig) {
+        if (redeem_script.pattern() != chain::script_pattern::pay_multisig) {
             throw redeem_script_pattern_exception{"redeem script is not pay multisig pattern."};
         }
 
@@ -101,27 +103,24 @@ console_result signmultisigtx::invoke(
         }
 
         // signed, nothing to do (2 == zero + encoded-script)
-        account_multisig acc_multisig = *(multisig_vec->begin());
-        if (input_script.operations.size() >= acc_multisig.get_m() + 2) {
-            index++;
+        account_multisig acc_multisig_first = *(multisig_vec->begin());
+        if (input_script.operations.size() >= acc_multisig_first.get_m() + 2) {
             continue;
         }
 
-        for (auto& acc_multisig : *multisig_vec) {
+        std::string multisig_script = acc_multisig_first.get_multisig_script();
+        if (multisig_script.empty()) {
+            throw tx_sign_exception{"get_multisig_script get empty script."};
+        }
+
+        bool has_new_sign = false;
+        for (const auto& acc_multisig : *multisig_vec) {
             if (!option_.self_publickey.empty() && option_.self_publickey != acc_multisig.get_pub_key()) {
                 continue;
             }
 
             if (option_.self_publickey.empty()) {
-                addr_prikey = "";
-                for (auto& each : *pvaddr) {
-                    auto prv_key = each.get_prv_key(auth_.auth);
-                    auto&& pub_key = ec_to_xxx_impl("ec-to-public", prv_key);
-                    if (pub_key == acc_multisig.get_pub_key()) {
-                        addr_prikey = prv_key;
-                        break;
-                    }
-                }
+                addr_prikey = get_prikey(acc_multisig.get_pub_key());
             }
 
             if (addr_prikey.empty()) {
@@ -129,13 +128,9 @@ console_result signmultisigtx::invoke(
                     "The private key of " + acc_multisig.get_pub_key() + " not found.");
             }
 
-            // 3. populate unlock script
-            multisig_script = acc_multisig.get_multisig_script();
-            // log::trace("multisig_script=") << multisig_script;
-
             // prepare sign
             explorer::config::hashtype sign_type;
-            uint8_t hash_type = (signature_hash_algorithm)sign_type;
+            uint8_t hash_type = (chain::signature_hash_algorithm)sign_type;
 
             bc::explorer::config::ec_private config_private_key(addr_prikey);
             bc::explorer::config::script config_contract(multisig_script);
@@ -150,6 +145,11 @@ console_result signmultisigtx::invoke(
             // insert endorse before multisig script
             auto position = input_script.operations.end();
             input_script.operations.insert(position - 1, {bc::chain::opcode::special, endorse});
+            has_new_sign = true;
+        }
+
+        if (!has_new_sign && !option_.self_publickey.empty()) {
+            throw tx_sign_exception{"has no multisig match self public key: " + option_.self_publickey};
         }
 
         // rearange signature order
@@ -182,7 +182,7 @@ console_result signmultisigtx::invoke(
 
                 ec_signature signature;
                 // from validate_transaction.cpp handle_previous_tx
-                auto strict = ((script_context::all_enabled & script_context::bip66_enabled) != 0);
+                auto strict = ((chain::get_script_context() & chain::script_context::bip66_enabled) != 0);
                 if (!parse_signature(signature, distinguished, strict)) {
                     log::trace("multisig") << "failed to parse_signature! " << sighash_type;
                     continue;
@@ -195,20 +195,19 @@ console_result signmultisigtx::invoke(
                 }
             }
 
-            if (new_script.operations.size() >= acc_multisig.get_m() + 1) {
+            if (new_script.operations.size() >= acc_multisig_first.get_m() + 1) {
                 break;
             }
         }
 
         // insert encoded-script
         new_script.operations.push_back(input_script.operations.back());
-        if (new_script.operations.size() < acc_multisig.get_m() + 2) {
+        if (new_script.operations.size() < acc_multisig_first.get_m() + 2) {
             fullfilled = false;
         }
 
         // set input script of this tx
         each_input.script = new_script;
-        index++;
     }
 
     // output json

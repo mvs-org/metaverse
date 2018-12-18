@@ -24,6 +24,7 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/node_method_wrapper.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/bitcoin/config/authority.hpp>
 #include <metaverse/network/channel.hpp>
 
@@ -41,9 +42,53 @@ console_result addnode::invoke(Json::Value& jv_output,
 
     administrator_required_checker(node, auth_.name, auth_.auth);
 
+    code errcode;
+
+    if (option_.operation == "reseed") {
+        node.restart_seeding(true);
+        jv_output = errcode.message();
+        return console_result::okay;
+    } else if (option_.operation == "list") {
+        Json::Value seeds_arr;
+        Json::Value peers_arr;
+        Json::Value banned_arr;
+        Json::Value manual_banned_arr;
+
+        auto&& seeds = node.seed_address_list();
+        for (const auto& seed : seeds) {
+            seeds_arr.append(bc::config::authority(seed).to_string());
+        }
+
+        auto&& peers = node.connections_ptr()->authority_list();
+        for (const auto& authority : peers) {
+            // invalid authority
+            if (authority.to_hostname() == "[::]" && authority.port() == 0) {
+                continue;
+            }
+            peers_arr.append(authority.to_string());
+        }
+
+        auto&& banned = network::channel::get_banned();
+        for (const auto& item : banned) {
+            banned_arr.append(item.first.to_string() + ", timestamp:" + std::to_string(item.second/1000));
+        }
+
+        auto&& manual_banned = network::channel::get_manual_banned();
+        for (const auto& authority : manual_banned) {
+            manual_banned_arr.append(authority.to_string());
+        }
+
+        jv_output["seeds"] = seeds_arr;
+        jv_output["peers"] = peers_arr;
+        jv_output["banned"] = banned_arr;
+        jv_output["manual_banned"] = manual_banned_arr;
+        return console_result::okay;
+    } else if (argument_.address.empty()) {
+        throw argument_legality_exception("the option '--NODEADDRESS' is required but missing");
+    }
+
     const auto authority = libbitcoin::config::authority(argument_.address);
 
-    code errcode;
     auto handler = [&errcode](const code& ec){
         errcode = ec;
     };
@@ -54,8 +99,11 @@ console_result addnode::invoke(Json::Value& jv_output,
     } else if ((option_.operation == "add") || (option_.operation == "")){
         network::channel::manual_unban(authority);
         node.store(authority.to_network_address(), handler);
+    } else if (option_.operation == "peer") {
+        network::channel::manual_unban(authority);
+        node.connect(authority);
     } else {
-        jv_output = string("Invalid operation [") +option_.operation+"]." ;
+        jv_output = std::string("Invalid operation [") +option_.operation+"]." ;
         return console_result::okay;
     }
 

@@ -302,6 +302,9 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\validateaddress.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\validatesymbol.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\callback_state.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -374,6 +377,9 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendasset.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendmore.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\send.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
@@ -390,6 +396,21 @@
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\swaptoken.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendmoreasset.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\importaddress.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\popblock.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getlocked.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\lock.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
   </ItemGroup>
@@ -624,6 +645,9 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\validateaddress.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\validatesymbol.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\callback_state.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -739,6 +763,21 @@
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\swaptoken.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendmoreasset.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\importaddress.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\popblock.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getlocked.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\lock.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
   </ItemGroup>

@@ -37,6 +37,15 @@ namespace chain {
 
 const size_t operation::max_null_data_size = 80;
 
+operation operation::from_raw_data(const data_chunk& data)
+{
+    BITCOIN_ASSERT_MSG(data.size() > 0, "operation::from_raw_data must take non-empty raw data.");
+    operation instance;
+    instance.data = data;
+    instance.code = data_to_opcode(data);
+    return instance;
+}
+
 operation operation::factory_from_data(const data_chunk& data)
 {
     operation instance;
@@ -190,6 +199,8 @@ uint64_t operation::serialized_size() const
 
 std::string operation::to_string(uint32_t flags) const
 {
+    flags = chain::get_script_context();
+
     std::ostringstream ss;
 
     if (data.empty())
@@ -373,6 +384,21 @@ bool operation::is_pay_key_hash_with_attenuation_model_pattern(const operation::
         && ops[7].code == opcode::checksig;
 }
 
+bool operation::is_pay_key_hash_with_sequence_lock_pattern(const operation::stack& ops)
+{
+    return ops.size() == 8
+        && ops[0].code == opcode::special
+        && ops[1].code == opcode::checksequenceverify
+        && ops[2].code == opcode::drop
+        && ops[3].code == opcode::dup
+        && ops[4].code == opcode::hash160
+        && ops[5].code == opcode::special
+        && ops[5].data.size() == short_hash_size
+        && ops[6].code == opcode::equalverify
+        && ops[7].code == opcode::checksig;
+}
+
+
 bool operation::is_sign_multisig_pattern(const operation::stack& ops)
 {
     if (ops.size() < 2 || !is_push_only(ops))
@@ -381,7 +407,12 @@ bool operation::is_sign_multisig_pattern(const operation::stack& ops)
     if (ops.front().code != opcode::zero)
         return false;
 
-    return true;
+    const auto found = [](const operation& op)
+    {
+        return op.code == opcode::special;
+    };
+
+    return std::all_of(ops.begin()+1, ops.end()-1, found);
 }
 
 bool operation::is_sign_public_key_pattern(const operation::stack& ops)
@@ -445,6 +476,12 @@ const data_chunk& operation::get_model_param_from_pay_key_hash_with_attenuation_
 const data_chunk& operation::get_input_point_from_pay_key_hash_with_attenuation_model(const operation::stack& ops)
 {
     return ops[1].data;
+}
+
+uint32_t operation::get_lock_sequence_from_pay_key_hash_with_sequence_lock(const operation::stack& ops)
+{
+    CScriptNum num(ops[0].data, 1);
+    return static_cast<uint32_t>(num.getint64());
 }
 
 // pattern templates
@@ -578,6 +615,27 @@ operation::stack operation::to_pay_key_hash_with_attenuation_model_pattern(
         { opcode::equalverify, {} },
         { opcode::checksig, {} }
     };
+}
+
+operation::stack operation::to_pay_key_hash_with_sequence_lock_pattern(const short_hash& hash, uint32_t sequence_lock)
+{
+    return operation::stack
+    {
+        { opcode::special, CScriptNum::serialize(sequence_lock) },
+        { opcode::checksequenceverify, {} },
+        { opcode::drop, {} },
+        { opcode::dup, {} },
+        { opcode::hash160, {} },
+        { opcode::special, to_chunk(hash) },
+        { opcode::equalverify, {} },
+        { opcode::checksig, {} }
+    };
+}
+
+
+bool operation::operator==(const operation& other) const
+{
+    return code == other.code && data == other.data;
 }
 
 } // namspace chain

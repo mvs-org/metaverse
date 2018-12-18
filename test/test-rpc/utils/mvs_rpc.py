@@ -54,7 +54,7 @@ class RPC:
             result = rpc_rsp.json()['result']
             if result != None and isinstance(result, dict):
                 if self.method not in self.method_keys:
-                    keys = result.keys()
+                    keys = list(result.keys())
                     keys.sort()
                     self.method_keys[self.method] = keys
 
@@ -731,5 +731,5 @@ def pop_block(height):
 
 if __name__ == "__main__":
     rc = RemoteCtrl("10.10.10.35")
-    print rc.list_balances('lxf', '123')
-    print list_balances('lxf', '123')
+    print(rc.list_balances('lxf', '123'))
+    print(list_balances('lxf', '123'))

@@ -106,7 +106,7 @@ class TestDIDSendAsset(MVSTestCaseBase):
     def get_asset_amount(self, role, asset_symbol):
         addressassets = role.get_addressasset(role.mainaddress())
 
-        addressasset = filter(lambda a: a.symbol == asset_symbol, addressassets)
+        addressasset = list( filter(lambda a: a.symbol == asset_symbol, addressassets) )
         if len(addressasset) == 1:
             previous_quantity = addressasset[0].quantity
             previous_decimal = addressasset[0].decimal_number
@@ -151,7 +151,7 @@ class Testdidcommon(MVSTestCaseBase):
     def test_1_registerdid(self):
         special_symbol=['@','.','-','_']
         optional = {}
-        for i in xrange(len(special_symbol)):
+        for i in range(len(special_symbol)):
             optional[Zac.addresslist[i]] = 10**8
 
         mvs_rpc.sendmore(Alice.name, Alice.password, optional)

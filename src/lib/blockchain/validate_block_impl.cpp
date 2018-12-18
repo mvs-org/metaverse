@@ -24,7 +24,6 @@
 #include <cstddef>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/blockchain/block_detail.hpp>
-#include <metaverse/blockchain/simple_chain.hpp>
 #include <metaverse/consensus/miner/MinerAux.h>
 #include <metaverse/blockchain/block_chain_impl.hpp>
 
@@ -32,11 +31,11 @@ namespace libbitcoin {
 namespace blockchain {
 
 // Value used to define median time past.
-static constexpr size_t median_time_past_blocks = 11;
+static constexpr uint64_t median_time_past_blocks = 11;
 
-validate_block_impl::validate_block_impl(simple_chain& chain,
-        size_t fork_index, const block_detail::list& orphan_chain,
-        size_t orphan_index, size_t height, const chain::block& block,
+validate_block_impl::validate_block_impl(block_chain_impl& chain,
+        uint64_t fork_index, const block_detail::list& orphan_chain,
+        uint64_t orphan_index, uint64_t height, const chain::block& block,
         bool testnet, const config::checkpoint::list& checks,
         stopped_callback stopped)
     : validate_block(height, block, testnet, checks, stopped),
@@ -48,16 +47,80 @@ validate_block_impl::validate_block_impl(simple_chain& chain,
 {
 }
 
-bool validate_block_impl::is_valid_proof_of_work(const chain::header& header) const
+bool validate_block_impl::check_work(const chain::block& block) const
 {
-    chain::header parent_header;
-    if (orphan_index_ != 0) {
-        parent_header = orphan_chain_[orphan_index_ - 1]->actual()->header;
+    chain::header parent_header = fetch_block(block.header.number - 1);
+
+    if (block.is_proof_of_dpos()) {
+        return block.header.bits == parent_header.bits;
     }
-    else {
-        static_cast<block_chain_impl&>(chain_).get_header(parent_header, header.number - 1);
+
+    chain::header::ptr last_header = get_last_block_header(parent_header, block.is_proof_of_stake());
+    BITCOIN_ASSERT(nullptr != last_header);
+
+    return MinerAux::verify_work(block.header, last_header);
+}
+
+bool validate_block_impl::verify_stake(const chain::block& block) const
+{
+    // check stake txs
+    const auto& txs = block.transactions;
+    if(!is_coin_stake(block)){
+        log::error(LOG_BLOCKCHAIN)
+            << "Failed to check stake, invalid coinstake. height: "
+            << block.header.number << ", " << txs.size() << " txs.";
+        return false;
     }
-    return MinerAux::verifySeal(const_cast<chain::header&>(header), parent_header);
+
+    // check stake
+    const auto& coinstake = txs[1];
+    const auto& stake_output_point = coinstake.inputs[0].previous_output;
+    bc::wallet::payment_address pay_address(coinstake.inputs[0].get_script_address());
+
+    auto height = block.header.number - 1;
+    if (!chain_.check_pos_capability(height, pay_address, false)) {
+        log::error(LOG_BLOCKCHAIN)
+            << "Failed to check pos capability. height: "
+            << block.header.number << ", address=" << pay_address.encoded()
+            << ", "<< txs.size() << " txs.";
+        return false;
+    }
+
+    uint64_t utxo_height = 0;
+    chain::transaction utxo_tx;
+    if (!fetch_transaction(utxo_tx, utxo_height, stake_output_point.hash)) {
+        log::error(LOG_BLOCKCHAIN)
+            << "Failed to check stake, can not get stake transaction "
+            << encode_hash(stake_output_point.hash);
+        return false;
+    }
+
+    BITCOIN_ASSERT(stake_output_point.index < utxo_tx.outputs.size());
+
+    if (!chain_.check_pos_utxo_capability(
+        block.header.number, utxo_tx, stake_output_point.index, utxo_height, true, this)) {
+        log::error(LOG_BLOCKCHAIN)
+            << "Failed to check utxo capability, hash=" << encode_hash(stake_output_point.hash)
+            << ", index=" << stake_output_point.index
+            << ", utxo height=" << utxo_height;
+
+        return false;
+    }
+
+    auto stake_output = utxo_tx.outputs.at(stake_output_point.index);
+    chain::output_info stake_info = {stake_output, stake_output_point, utxo_height};
+
+    return MinerAux::verify_stake(block.header, stake_info);
+}
+
+bool validate_block_impl::is_coin_stake(const chain::block& block) const
+{
+    const auto& txs = block.transactions;
+    if (txs.size() < 2 || !txs[0].is_coinbase() || !txs[1].is_coinstake()) {
+        return false;
+    }
+
+    return true;
 }
 
 u256 validate_block_impl::previous_block_bits() const
@@ -67,7 +130,7 @@ u256 validate_block_impl::previous_block_bits() const
 }
 
 validate_block::versions validate_block_impl::preceding_block_versions(
-    size_t maximum) const
+    uint64_t maximum) const
 {
     // 1000 previous versions maximum sample.
     // 950 previous versions minimum required for enforcement.
@@ -76,7 +139,7 @@ validate_block::versions validate_block_impl::preceding_block_versions(
 
     // Read block (top - 1) through (top - 1000) and return version vector.
     versions result;
-    for (size_t index = 0; index < size; ++index)
+    for (uint64_t index = 0; index < size; ++index)
     {
         const auto version = fetch_block(height_ - index - 1).version;
 
@@ -89,7 +152,7 @@ validate_block::versions validate_block_impl::preceding_block_versions(
     return result;
 }
 
-uint64_t validate_block_impl::actual_time_span(size_t interval) const
+uint64_t validate_block_impl::actual_time_span(uint64_t interval) const
 {
     BITCOIN_ASSERT(height_ > 0 && height_ >= interval);
 
@@ -103,7 +166,7 @@ uint64_t validate_block_impl::median_time_past() const
     const auto count = std::min(height_, median_time_past_blocks);
 
     std::vector<uint64_t> times;
-    for (size_t i = 0; i < count; ++i)
+    for (uint64_t i = 0; i < count; ++i)
         times.push_back(fetch_block(height_ - i - 1).timestamp);
 
     // Sort and select middle (median) value from the array.
@@ -111,7 +174,7 @@ uint64_t validate_block_impl::median_time_past() const
     return times.empty() ? 0 : times[times.size() / 2];
 }
 
-chain::header validate_block_impl::fetch_block(size_t fetch_height) const
+chain::header validate_block_impl::fetch_block(uint64_t fetch_height) const
 {
     if (fetch_height > fork_index_) {
         const auto fetch_index = fetch_height - fork_index_ - 1;
@@ -126,21 +189,40 @@ chain::header validate_block_impl::fetch_block(size_t fetch_height) const
     return out;
 }
 
-bool tx_after_fork(size_t tx_height, size_t fork_index)
+chain::header::ptr validate_block_impl::get_last_block_header(const chain::header& parent_header, bool is_staking) const
+{
+    uint64_t height = parent_header.number;
+    if (parent_header.is_proof_of_stake() == is_staking) {
+        // log::info(LOG_BLOCKCHAIN) << "validate_block_impl::get_last_block_header: prev: "
+        //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
+        return std::make_shared<chain::header>(parent_header);
+    }
+
+    while ((is_staking && height > pos_enabled_height) || (!is_staking && height > 2)) {
+        chain::header prev_header = fetch_block(--height);
+        if (prev_header.is_proof_of_stake() == is_staking) {
+            // log::info(LOG_BLOCKCHAIN) << "validate_block_impl::get_last_block_header: prev: "
+            //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
+            return std::make_shared<chain::header>(prev_header);
+        }
+    }
+
+    return nullptr;
+}
+
+bool tx_after_fork(uint64_t tx_height, uint64_t fork_index)
 {
     return tx_height > fork_index;
 }
 
 bool validate_block_impl::transaction_exists(const hash_digest& tx_hash) const
 {
-    uint64_t out_height;
+    uint64_t tx_height;
     chain::transaction unused;
-    const auto result = chain_.get_transaction(unused, out_height, tx_hash);
+    const auto result = chain_.get_transaction(unused, tx_height, tx_hash);
     if (!result)
         return false;
 
-    BITCOIN_ASSERT(out_height <= max_size_t);
-    const auto tx_height = static_cast<size_t>(out_height);
     return tx_height <= fork_index_;
 }
 
@@ -157,13 +239,9 @@ bool validate_block_impl::is_output_spent(
 }
 
 bool validate_block_impl::fetch_transaction(chain::transaction& tx,
-        size_t& tx_height, const hash_digest& tx_hash) const
+        uint64_t& tx_height, const hash_digest& tx_hash) const
 {
-    uint64_t out_height;
-    const auto result = chain_.get_transaction(tx, out_height, tx_hash);
-
-    BITCOIN_ASSERT(out_height <= max_size_t);
-    tx_height = static_cast<size_t>(out_height);
+    const auto result = chain_.get_transaction(tx, tx_height, tx_hash);
 
     if (!result || tx_after_fork(tx_height, fork_index_)) {
         return fetch_orphan_transaction(tx, tx_height, tx_hash);
@@ -173,9 +251,9 @@ bool validate_block_impl::fetch_transaction(chain::transaction& tx,
 }
 
 bool validate_block_impl::fetch_orphan_transaction(chain::transaction& tx,
-        size_t& tx_height, const hash_digest& tx_hash) const
+        uint64_t& tx_height, const hash_digest& tx_hash) const
 {
-    for (size_t orphan = 0; orphan <= orphan_index_; ++orphan) {
+    for (uint64_t orphan = 0; orphan <= orphan_index_; ++orphan) {
         const auto& orphan_block = orphan_chain_[orphan]->actual();
         for (const auto& orphan_tx : orphan_block->transactions) {
             if (orphan_tx.hash() == tx_hash) {
@@ -215,7 +293,7 @@ std::string validate_block_impl::get_did_from_address_consider_orphan_chain(
 
             // iter inputs
             for (const auto& input : orphan_tx.inputs) {
-                size_t previous_height;
+                uint64_t previous_height;
                 transaction previous_tx;
                 const auto& previous_output = input.previous_output;
 
@@ -274,7 +352,7 @@ bool validate_block_impl::is_did_in_orphan_chain(const std::string& did) const
 {
     BITCOIN_ASSERT(!did.empty());
 
-    for (size_t orphan = 0; orphan < orphan_index_; ++orphan) {
+    for (uint64_t orphan = 0; orphan < orphan_index_; ++orphan) {
         const auto& orphan_block = orphan_chain_[orphan]->actual();
         for (const auto& orphan_tx : orphan_block->transactions) {
             for (auto& output : orphan_tx.outputs) {
@@ -294,7 +372,7 @@ bool validate_block_impl::is_asset_in_orphan_chain(const std::string& symbol) co
 {
     BITCOIN_ASSERT(!symbol.empty());
 
-    for (size_t orphan = 0; orphan < orphan_index_; ++orphan) {
+    for (uint64_t orphan = 0; orphan < orphan_index_; ++orphan) {
         const auto& orphan_block = orphan_chain_[orphan]->actual();
         for (const auto& orphan_tx : orphan_block->transactions) {
             for (const auto& output : orphan_tx.outputs) {
@@ -314,7 +392,7 @@ bool validate_block_impl::is_asset_cert_in_orphan_chain(const std::string& symbo
 {
     BITCOIN_ASSERT(!symbol.empty());
 
-    for (size_t orphan = 0; orphan < orphan_index_; ++orphan) {
+    for (uint64_t orphan = 0; orphan < orphan_index_; ++orphan) {
         const auto& orphan_block = orphan_chain_[orphan]->actual();
         for (const auto& orphan_tx : orphan_block->transactions) {
             for (const auto& output : orphan_tx.outputs) {
@@ -333,7 +411,7 @@ bool validate_block_impl::is_asset_mit_in_orphan_chain(const std::string& symbol
 {
     BITCOIN_ASSERT(!symbol.empty());
 
-    for (size_t orphan = 0; orphan < orphan_index_; ++orphan) {
+    for (uint64_t orphan = 0; orphan < orphan_index_; ++orphan) {
         const auto& orphan_block = orphan_chain_[orphan]->actual();
         for (const auto& orphan_tx : orphan_block->transactions) {
             for (const auto& output : orphan_tx.outputs) {
@@ -351,7 +429,7 @@ bool validate_block_impl::is_asset_mit_in_orphan_chain(const std::string& symbol
 
 bool validate_block_impl::is_output_spent(
     const chain::output_point& previous_output,
-    size_t index_in_parent, size_t input_index) const
+    uint64_t index_in_parent, uint64_t input_index) const
 {
     // Search for double spends. This must be done in both chain AND orphan.
     // Searching chain when this tx is an orphan is redundant but it does not
@@ -367,20 +445,20 @@ bool validate_block_impl::is_output_spent(
 
 bool validate_block_impl::orphan_is_spent(
     const chain::output_point& previous_output,
-    size_t skip_tx, size_t skip_input) const
+    uint64_t skip_tx, uint64_t skip_input) const
 {
-    for (size_t orphan = 0; orphan <= orphan_index_; ++orphan) {
+    for (uint64_t orphan = 0; orphan <= orphan_index_; ++orphan) {
         const auto& orphan_block = orphan_chain_[orphan]->actual();
         const auto& transactions = orphan_block->transactions;
 
         BITCOIN_ASSERT(!transactions.empty());
         BITCOIN_ASSERT(transactions.front().is_coinbase());
 
-        for (size_t tx_index = 0; tx_index < transactions.size(); ++tx_index) {
+        for (uint64_t tx_index = 0; tx_index < transactions.size(); ++tx_index) {
             // TODO: too deep, move this section to subfunction.
             const auto& orphan_tx = transactions[tx_index];
 
-            for (size_t input_index = 0; input_index < orphan_tx.inputs.size(); ++input_index) {
+            for (uint64_t input_index = 0; input_index < orphan_tx.inputs.size(); ++input_index) {
                 const auto& orphan_input = orphan_tx.inputs[input_index];
 
                 if (orphan == orphan_index_ && tx_index == skip_tx && input_index == skip_input)

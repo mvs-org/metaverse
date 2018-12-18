@@ -70,6 +70,18 @@ console_result dumpkeyfile::invoke(Json::Value& jv_output,
     }
     file_root["multisigs"] = multisig_lst;
 
+    Json::Value script_lst;
+    script_lst.resize(0);
+    for (auto sc : acc->get_script_vec()) {
+        Json::Value script;
+        script["address"] = sc.get_address();
+        script["script"] = encode_base16(sc.get_script());
+        script["description"] = sc.get_description();
+
+        script_lst.append(script);
+    }
+    file_root["scripts"] = script_lst;
+
     Json::Value result;
 
     if (!option_.is_data) {
@@ -84,7 +96,7 @@ console_result dumpkeyfile::invoke(Json::Value& jv_output,
             argument_.dst /= keyfile_name;
 
         } else {
-            string dstpath = argument_.dst.string();
+            std::string dstpath = argument_.dst.string();
             if (dstpath.length() > 0 && dstpath[0] == '~') {
                 char *home_dir = getenv("HOME");
                 if (home_dir && strlen(home_dir) != 0) {

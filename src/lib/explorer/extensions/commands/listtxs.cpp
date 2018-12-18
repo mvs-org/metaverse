@@ -24,11 +24,13 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/explorer/extensions/base_helper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
+using payment_address = wallet::payment_address;
 
 class BC_API tx_block_info
 {
@@ -68,15 +70,28 @@ console_result listtxs::invoke(Json::Value& jv_output,
 {
     using namespace libbitcoin::config; // for hash256
     auto& blockchain = node.chain_impl();
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    // address option check
-    if (!argument_.address.empty() && !blockchain.is_valid_address(argument_.address))
-        throw address_invalid_exception{"invalid address parameter!"};
+
+    auto sh_addr_vec = std::make_shared<std::vector<std::string>>();
+
+    // collect address
+    if (argument_.address.empty()) {
+        blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+        auto pvaddr = blockchain.get_account_addresses(auth_.name);
+        if (!pvaddr)
+            throw address_invalid_exception{"nullptr for address list"};
+
+        for (auto& elem : *pvaddr) {
+            sh_addr_vec->push_back(elem.get_address());
+        }
+    } else { // address exist in command
+        auto addr = get_address(argument_.address, blockchain);
+        sh_addr_vec->push_back(addr);
+    }
+
     // height check
-    if (option_.height.first()
-            && option_.height.second()
-            && (option_.height.first() >= option_.height.second())) {
-        throw block_height_exception{"invalid height option!"};
+    if (!option_.height.is_valid()) {
+        throw block_height_exception{"invalid height option! "
+            + option_.height.encode_colon_delimited()};
     }
     // symbol check
     if (!argument_.symbol.empty()) {
@@ -93,20 +108,6 @@ console_result listtxs::invoke(Json::Value& jv_output,
     };
 
     auto sh_txs = std::make_shared<std::vector<tx_block_info>>();
-    auto sh_addr_vec = std::make_shared<std::vector<std::string>>();
-
-    // collect address
-    if (argument_.address.empty()) {
-        auto pvaddr = blockchain.get_account_addresses(auth_.name);
-        if (!pvaddr)
-            throw address_invalid_exception{"nullptr for address list"};
-
-        for (auto& elem : *pvaddr) {
-            sh_addr_vec->push_back(elem.get_address());
-        }
-    } else { // address exist in command
-        sh_addr_vec->push_back(argument_.address);
-    }
 
     // scan all addresses business record
     for (auto& each : *sh_addr_vec) {

@@ -67,11 +67,6 @@ public:
             "TRANSACTION",
             value<explorer::config::transaction>(&argument_.transaction)->required(),
             "The input Base16 transaction to broadcast."
-        )
-        (
-            "fee,f",
-            value<uint64_t>(&argument_.fee)->default_value(1000000000),
-            "The max tx fee. default_value 10 etp"
         );
 
         return options;
@@ -87,7 +82,6 @@ public:
     struct argument
     {
         explorer::config::transaction transaction;
-        uint64_t                      fee;
     } argument_;
 
     struct option

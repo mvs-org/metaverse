@@ -66,6 +66,7 @@ public:
     void to_data_t(writer& sink) const;
     std::string to_string(uint32_t flags) const;
     bool is_valid() const;
+    bool is_null() const;
     code check_attachment_address(bc::blockchain::block_chain_impl& chain) const;
     std::string get_script_address() const;
     void reset();
@@ -80,6 +81,7 @@ public:
     std::string get_asset_cert_address() const;
     asset_cert_type get_asset_cert_type() const;
     const data_chunk& get_attenuation_model_param() const;
+    uint32_t get_lock_sequence() const;
     bool is_asset() const;
     bool is_asset_transfer() const;
     bool is_asset_issue() const;
@@ -113,5 +115,7 @@ public:
 
 } // namespace chain
 } // namespace libbitcoin
+
+using output = libbitcoin::chain::output;
 
 #endif

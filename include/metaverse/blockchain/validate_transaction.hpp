@@ -27,13 +27,14 @@
 #include <memory>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/blockchain/define.hpp>
-#include <metaverse/blockchain/transaction_pool.hpp>
-#include <metaverse/blockchain/block_chain_impl.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
 
 class validate_block;
+class transaction_pool;
+class block_chain_impl;
+class block_chain;
 
 /// This class is not thread safe.
 /// This is a utility for transaction_pool::validate and validate_block.
@@ -55,12 +56,14 @@ public:
     void start(validate_handler handler);
 
     static bool check_consensus(const chain::script& prevout_script,
-        const chain::transaction& current_tx, size_t input_index,
+        const chain::transaction& current_tx, uint64_t input_index,
         uint32_t flags);
 
-    code check_transaction_connect_input(size_t last_height);
+    code check_transaction_connect_input(uint64_t last_height);
     code check_transaction() const;
     code check_transaction_basic() const;
+    code check_sequence_locks() const;
+    code check_final_tx() const;
     code check_asset_issue_transaction() const;
     code check_asset_cert_transaction() const;
     code check_secondaryissue_transaction() const;
@@ -72,10 +75,10 @@ public:
     code check_attachment_to_did(const output& output) const;
     code connect_attachment_from_did(const output& output) const;
 
-    bool connect_input(const chain::transaction& previous_tx, size_t parent_height);
+    bool connect_input(const chain::transaction& previous_tx, uint64_t parent_height);
 
-    static bool tally_fees(blockchain::block_chain_impl& chain,
-        const chain::transaction& tx, uint64_t value_in, uint64_t& fees);
+    static bool tally_fees(block_chain_impl& chain,
+        const chain::transaction& tx, uint64_t value_in, uint64_t& fees, bool is_coinstake = false);
     static bool check_special_fees(bool is_testnet, const chain::transaction& tx, uint64_t fees);
 
     bool check_asset_amount(const transaction& tx) const;
@@ -87,32 +90,33 @@ public:
     //check input did match output did
     bool check_did_symbol_match(const transaction& tx) const;
 
-    static bool is_nova_feature_activated(blockchain::block_chain_impl& chain);
+    static bool is_nova_feature_activated(block_chain_impl& chain);
 
     bool get_previous_tx(chain::transaction& prev_tx, uint64_t& prev_height, const chain::input&) const;
 
-    transaction& get_tx() { return *tx_; }
-    const transaction& get_tx() const { return *tx_; }
-    blockchain::block_chain_impl& get_blockchain() { return blockchain_; }
-    const blockchain::block_chain_impl& get_blockchain() const { return blockchain_; }
+    transaction& get_tx();
+    const transaction& get_tx() const;
+    block_chain_impl& get_blockchain();
+    const block_chain_impl& get_blockchain() const;
+    const validate_block* get_validate_block() const;
 
 private:
     code basic_checks() const;
     bool is_standard() const;
     void handle_duplicate_check(const code& ec);
-    void reset(size_t last_height);
+    void reset(uint64_t last_height);
 
     // Last height used for checking coinbase maturity.
-    void set_last_height(const code& ec, size_t last_height);
+    void set_last_height(const code& ec, uint64_t last_height);
 
     // Begin looping through the inputs, fetching the previous tx
     void next_previous_transaction();
-    void previous_tx_index(const code& ec, size_t parent_height);
+    void previous_tx_index(const code& ec, uint64_t parent_height);
 
     // If previous_tx_index didn't find it then check in pool instead
     void search_pool_previous_tx();
     void handle_previous_tx(const code& ec,
-        const chain::transaction& previous_tx, size_t parent_height);
+        const chain::transaction& previous_tx, uint64_t parent_height);
 
     // After running connect_input, we check whether this validated previous
     // output was not already spent by another input in the blockchain.
@@ -132,7 +136,7 @@ private:
     const validate_block* const validate_block_;
 
     const hash_digest tx_hash_;
-    size_t last_block_height_;
+    uint64_t last_block_height_;
     uint64_t value_in_;
     uint64_t asset_amount_in_;
     std::vector<asset_cert_type> asset_certs_in_;

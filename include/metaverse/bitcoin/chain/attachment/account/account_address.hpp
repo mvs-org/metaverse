@@ -48,7 +48,8 @@ enum account_address_status : uint8_t
     diabale = 0,
     enable = 1, // common address
     multisig_addr = 2, // multisig address
-    stealth_addr = 3 // stealth address
+    stealth_addr = 3, // stealth address
+    script_addr = 4, // scirpt address
 };
 
 class BC_API account_address 
@@ -103,6 +104,9 @@ private:
 
 } // namespace chain
 } // namespace libbitcoin
+
+using account_address_status = libbitcoin::chain::account_address_status;
+using account_address = libbitcoin::chain::account_address;
 
 #endif
 

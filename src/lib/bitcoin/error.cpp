@@ -264,6 +264,34 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
         case error::sequence_locked:
             return "transaction currently locked";
 
+        case error::sync_disabled:
+            return "block sync is disabled";
+        case error::block_version_not_match:
+            return "block version not match";
+        case error::witness_sign_invalid:
+            return "witness sign is invalid";
+        case error::witness_mismatch:
+            return "witness mismatch";
+        case error::witness_vote_error:
+            return "witness vote error";
+        case error::witness_update_error:
+            return "witness update error";
+
+        case error::proof_of_stake:
+            return "proof of stake failed";
+        case error::illegal_coinstake:
+            return "illegal coinstake";
+        case error::miss_coinstake:
+            return "miss coinstake";
+        case error::extra_coinstakes:
+            return "more than one coinstake";
+        case error::coinstake_version_invalid:
+            return "coinstake version invalid";
+        case error::cointstake_signature_invalid:
+            return "validate coinstake block signature failed";
+        case error::check_pos_genesis_error:
+            return "check pos genesis block failed";
+
         // unknown errors
         case error::unknown:
         default:

@@ -42,7 +42,7 @@ console_result getblock::invoke(Json::Value& jv_output,
     if (argument_.hash_or_height.size() < 18) {
 
         // fetch_block via height
-        auto block_height = std::stoull(argument_.hash_or_height);
+        auto block_height = to_uint64_throw(argument_.hash_or_height, "wrong block height!");
 
         std::promise<code> p;
         auto& blockchain = node.chain_impl();

@@ -155,8 +155,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 		let processes = GetBSDProcessList()!
 		let metaverseProcess = processes.index(where: {
 			var name = $0.kp_proc.p_comm
+			let length = MemoryLayout.size(ofValue: name)
 			let str = withUnsafePointer(to: &name) {
-				$0.withMemoryRebound(to: UInt8.self, capacity: MemoryLayout.size(ofValue: name)) {
+				$0.withMemoryRebound(to: UInt8.self, capacity: length) {
 				String(cString: $0)
 				}
 			}

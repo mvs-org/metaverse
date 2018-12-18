@@ -76,9 +76,10 @@ private:
     void handle_channel_start(const code& ec, const std::string& hostname,
         uint16_t port, channel::ptr channel, channel_handler handler);
     void handle_channel_stop(const code& ec, const std::string& hostname,
-        uint16_t port);
+        uint16_t port, channel::ptr channel);
 
     bc::atomic<connector::ptr> connector_;
+    deadline::ptr connect_timer_;
 };
 
 } // namespace network

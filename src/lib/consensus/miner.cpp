@@ -18,32 +18,37 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/consensus/miner.hpp>
-#include <metaverse/blockchain/block_chain.hpp>
-#include <metaverse/blockchain/block_chain_impl.hpp>
-#include <metaverse/blockchain/validate_block.hpp>
-#include <metaverse/node/p2p_node.hpp>
+#include <metaverse/macros_define.hpp>
 
 #include <algorithm>
 #include <functional>
 #include <system_error>
-#include <boost/thread.hpp>
+#include <chrono>
+#include <ctime>
+//#include <boost/thread.hpp>
+//#include <boost/chrono.hpp>
 #include <metaverse/consensus/miner/MinerAux.h>
 #include <metaverse/consensus/libdevcore/BasicType.h>
+#include <metaverse/consensus/witness.hpp>
 #include <metaverse/bitcoin/chain/script/operation.hpp>
 #include <metaverse/bitcoin/config/hash160.hpp>
 #include <metaverse/bitcoin/wallet/ec_public.hpp>
+#include <metaverse/bitcoin/utility/random.hpp>
 #include <metaverse/bitcoin/constants.hpp>
 #include <metaverse/blockchain/validate_block.hpp>
 #include <metaverse/blockchain/validate_transaction.hpp>
+#include <metaverse/blockchain/block_chain.hpp>
+#include <metaverse/blockchain/block_chain_impl.hpp>
+#include <metaverse/node/p2p_node.hpp>
+#include <metaverse/macros_define.hpp>
 
-#define LOG_HEADER "consensus"
+#define LOG_HEADER "Miner"
 using namespace std;
 
 namespace libbitcoin {
 namespace consensus {
 
-static BC_CONSTEXPR uint32_t block_version = 1;
-static BC_CONSTEXPR unsigned int min_tx_fee = 10000;
+static BC_CONSTEXPR uint32_t min_tx_fee     = 10000;
 
 // tuples: (priority, fee_per_kb, fee, transaction_ptr)
 typedef boost::tuple<double, double, uint64_t, miner::transaction_ptr> transaction_priority;
@@ -66,15 +71,28 @@ bool sort_by_priority(const transaction_priority& a, const transaction_priority&
 };
 } // end of anonymous namespace
 
+std::string timestamp_to_string(uint32_t timestamp)
+{
+    typedef std::chrono::system_clock wall_clock;
+    auto tp = wall_clock::from_time_t(timestamp);
+    std::time_t rawTime = std::chrono::system_clock::to_time_t(tp);
+
+    char buf[sizeof("yyyy-mm-dd hh:mm:ss")] = {'\0'};
+    if (std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", localtime(&rawTime)) == 0)
+        buf[0] = '\0'; // empty if case strftime fails
+    return std::string(buf);
+}
+
 miner::miner(p2p_node& node)
     : node_(node)
     , state_(state::init_)
     , new_block_number_(0)
     , new_block_limit_(0)
+    , accept_block_version_(chain::block_version_pow)
     , setting_(node_.chain_impl().chain_settings())
 {
     if (setting_.use_testnet_rules) {
-        bc::HeaderAux::set_as_testnet();
+        HeaderAux::set_as_testnet();
     }
 }
 
@@ -143,12 +161,18 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
             auto& tx = **i;
             auto hash = tx.hash();
 
+            if (sets.count(hash)) {
+                // already exist, keep unique
+                i = transactions.erase(i);
+                continue;
+            }
+
             uint64_t total_input_value = 0;
             bool ready = get_input_etp(tx, transactions, total_input_value, previous_out_map);
             if (!ready) {
                 // erase tx but not delete it from pool if parent tx is not ready
                 i = transactions.erase(i);
-                break;
+                continue;
             }
 
             uint64_t total_output_value = tx.total_output_value();
@@ -156,39 +180,43 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
 
             // check fees
             if (fee < min_tx_fee || !blockchain::validate_transaction::check_special_fees(setting_.use_testnet_rules, tx, fee)) {
+#ifdef MVS_DEBUG
+                log::debug(LOG_HEADER) << "check fees failed, delete_tx " << encode_hash(hash);
+#endif
                 i = transactions.erase(i);
                 // delete it from pool if not enough fee
                 node_.pool().delete_tx(hash);
-                break;
+                continue;
             }
 
-            auto transaction_is_ok = true;
-            for (auto& output : tx.outputs) {
-                if (tx.version >= transaction_version::check_output_script
-                        && output.script.pattern() == script_pattern::non_standard) {
+            if (!setting_.transaction_pool_consistency) {
+                auto transaction_is_ok = true;
+                // check double spending
+                for (const auto& input : tx.inputs) {
+                    if (node_.chain_impl().get_spends_output(input.previous_output)) {
 #ifdef MVS_DEBUG
-                    log::error(LOG_HEADER) << "transaction output script error! tx:" << tx.to_string(1);
+                        log::debug(LOG_HEADER) << "check double spending failed, delete_tx " << encode_hash(hash);
 #endif
-                    node_.pool().delete_tx(hash);
-                    transaction_is_ok = false;
-                    break;
+                        i = transactions.erase(i);
+                        node_.pool().delete_tx(hash);
+                        transaction_is_ok = false;
+                        break;
+                    }
+                }
+                if (!transaction_is_ok) {
+                    continue;
                 }
             }
 
-            if (transaction_is_ok && (sets.find(hash) == sets.end())) {
-                tx_fee_map[hash] = fee;
-                sets.insert(hash);
-                ++i;
-            }
-            else {
-                i = transactions.erase(i);
-            }
+            tx_fee_map[hash] = fee;
+            sets.insert(hash);
+            ++i;
         }
     }
     return transactions.empty() == false;
 }
 
-bool miner::script_hash_signature_operations_count(size_t &count, const chain::input& input, vector<transaction_ptr>& transactions)
+bool miner::script_hash_signature_operations_count(uint64_t &count, const chain::input& input, vector<transaction_ptr>& transactions)
 {
     const auto& previous_output = input.previous_output;
     transaction previous_tx;
@@ -208,34 +236,22 @@ bool miner::script_hash_signature_operations_count(size_t &count, const chain::i
     }
 
     const auto& previous_tx_out = previous_tx.outputs[previous_output.index];
-    return blockchain::validate_block::script_hash_signature_operations_count(count, previous_tx_out.script, input.script);
+    return blockchain::validate_block::script_hash_signature_operations_count(
+        count, previous_tx_out.script, input.script);
 }
 
 bool miner::script_hash_signature_operations_count(
-    size_t &count, const chain::input::list& inputs, vector<transaction_ptr>& transactions)
+    uint64_t &count, const chain::input::list& inputs, vector<transaction_ptr>& transactions)
 {
     count = 0;
     for (const auto& input : inputs)
     {
-        size_t c = 0;
+        uint64_t c = 0;
         if (script_hash_signature_operations_count(c, input, transactions) == false)
             return false;
         count += c;
     }
     return true;
-}
-
-#define VALUE(a) (a < 'a' ? (a - '0') : (a - 'a' + 10))
-std::string transfer_public_key(const string& key)
-{
-    string pub_key;
-    for (auto i = key.begin(); i != key.end(); i += 2) {
-        unsigned char a = 0;
-        a = (VALUE(*i) << 4)  + VALUE(*(i + 1));
-        pub_key.push_back(a);
-    }
-
-    return pub_key;
 }
 
 miner::block_ptr miner::create_genesis_block(bool is_mainnet)
@@ -260,12 +276,12 @@ miner::block_ptr miner::create_genesis_block(bool is_mainnet)
 
     // init for testnet/mainnet
     if (!is_mainnet) {
-        bc::wallet::payment_address testnet_genesis_address("tPd41bKLJGf1C5RRvaiV2mytqZB6WfM1vR");
+        wallet::payment_address testnet_genesis_address("tPd41bKLJGf1C5RRvaiV2mytqZB6WfM1vR");
         tx_new.outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(testnet_genesis_address));
         pblock->header.timestamp = 1479881397;
     }
     else {
-        bc::wallet::payment_address genesis_address("MGqHvbaH9wzdr6oUDFz4S1HptjoKQcjRve");
+        wallet::payment_address genesis_address("MGqHvbaH9wzdr6oUDFz4S1HptjoKQcjRve");
         tx_new.outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(genesis_address));
         pblock->header.timestamp = 1486796400;
     }
@@ -289,7 +305,7 @@ miner::block_ptr miner::create_genesis_block(bool is_mainnet)
 
 miner::transaction_ptr miner::create_coinbase_tx(
     const wallet::payment_address& pay_address, uint64_t value,
-    uint64_t block_height, int lock_height, uint32_t reward_lock_time)
+    uint64_t block_height, int lock_height)
 {
     transaction_ptr ptransaction = make_shared<message::transaction_message>();
 
@@ -301,7 +317,6 @@ miner::transaction_ptr miner::create_coinbase_tx(
 
     ptransaction->outputs.resize(1);
     ptransaction->outputs[0].value = value;
-    ptransaction->locktime = reward_lock_time;
     if (lock_height > 0) {
         ptransaction->outputs[0].script.operations = chain::operation::to_pay_key_hash_with_lock_height_pattern(short_hash(pay_address), lock_height);
     } else {
@@ -310,8 +325,12 @@ miner::transaction_ptr miner::create_coinbase_tx(
 
     return ptransaction;
 }
-
+#ifdef PRIVATE_CHAIN
+int bucket_size = 200;
+#else
 int bucket_size = 500000;
+#endif
+
 vector<uint64_t> lock_heights = {25200, 108000, 331200, 655200, 1314000};
 vector<uint64_t> coinage_rewards = {95890, 666666, 3200000, 8000000, 20000000};
 
@@ -325,9 +344,51 @@ int miner::get_lock_heights_index(uint64_t height)
     return ret;
 }
 
-uint64_t miner::calculate_block_subsidy(uint64_t block_height, bool is_testnet)
+uint64_t miner::calculate_block_subsidy(uint64_t block_height, bool is_testnet, uint32_t version)
 {
-    return uint64_t(3 * coin_price() * pow(0.95, block_height / bucket_size));
+    if (version == chain::block_version_pow) {
+        return calculate_block_subsidy_pow(block_height, is_testnet);
+    }
+
+    if (version == chain::block_version_pos) {
+        return calculate_block_subsidy_pos(block_height, is_testnet);
+    }
+
+    if (version == chain::block_version_dpos) {
+        return calculate_block_subsidy_dpos(block_height, is_testnet);
+    }
+
+    throw std::logic_error{"calculate_block_subsidy: unknown block version! " + std::to_string(version)};
+}
+
+uint64_t miner::calculate_block_subsidy_pow(uint64_t block_height, bool is_testnet)
+{
+    auto rate = block_height / bucket_size;
+    if(block_height > pos_enabled_height)
+    {
+        rate = pos_enabled_height / bucket_size;
+        auto period_left = pos_enabled_height % bucket_size;
+        auto period_right = (bucket_size - period_left) * 2;
+        auto period_end = pos_enabled_height + period_right;
+
+        if(block_height >= period_end){
+            rate = rate + 1 + (block_height - period_end) / (2 * bucket_size);
+        }
+    }
+
+    return uint64_t(3 * coin_price() * pow(0.95, rate));
+}
+
+uint64_t miner::calculate_block_subsidy_pos(uint64_t block_height, bool is_testnet)
+{
+    return coin_price(1);
+}
+
+uint64_t miner::calculate_block_subsidy_dpos(uint64_t block_height, bool is_testnet)
+{
+    auto result = calculate_block_subsidy_pow(block_height, is_testnet);
+    result /= witness::get().get_witness_number();
+    return result;
 }
 
 uint64_t miner::calculate_lockblock_reward(uint64_t lcok_heights, uint64_t num)
@@ -351,16 +412,17 @@ struct transaction_dependent {
         : dpendens(_dpendens), is_need_process(_is_need_process) { hash = make_shared<hash_digest>(_hash);}
 };
 
-miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_address)
+uint32_t miner::get_tx_sign_length(transaction_ptr tx)
+{
+    return blockchain::validate_block::validate_block::legacy_sigops_count(*tx);
+}
+
+bool miner::get_block_transactions(
+    uint64_t last_height,
+    std::vector<transaction_ptr>& txs, std::vector<transaction_ptr>& reward_txs,
+    uint64_t& total_fee, uint32_t& total_tx_sig_length)
 {
     block_ptr pblock;
-    vector<transaction_ptr> transactions;
-    map<hash_digest, transaction_dependent> transaction_dependents;
-    previous_out_map_t previous_out_map;
-    tx_fee_map_t tx_fee_map;
-    get_transaction(transactions, previous_out_map, tx_fee_map);
-
-    vector<transaction_priority> transaction_prioritys;
     block_chain_impl& block_chain = node_.chain_impl();
 
     uint64_t current_block_height = 0;
@@ -368,32 +430,40 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     if (!block_chain.get_last_height(current_block_height)
             || !block_chain.get_header(prev_header, current_block_height)) {
         log::warning(LOG_HEADER) << "get_last_height or get_header fail. current_block_height:" << current_block_height;
-        return pblock;
+        return false;
     } else {
         pblock = make_shared<block>();
     }
 
+    vector<transaction_ptr> transactions;
+    vector<transaction_priority> transaction_prioritys;
+    map<hash_digest, transaction_dependent> transaction_dependents;
+    previous_out_map_t previous_out_map;
+    tx_fee_map_t tx_fee_map;
+
+    if (!witness::is_begin_of_epoch(current_block_height + 1)){
+        get_transaction(transactions, previous_out_map, tx_fee_map);
+    }
+
     // Create coinbase tx
-    pblock->transactions.push_back(*create_coinbase_tx(pay_address, 0, current_block_height + 1, 0, 0));
+    pblock->transactions.push_back(*create_coinbase_tx(pay_address_, 0, current_block_height + 1, 0));
 
     // Largest block you're willing to create:
-    unsigned int block_max_size = blockchain::max_block_size / 2;
+    uint32_t block_max_size = blockchain::max_block_size / 2;
     // Limit to betweeen 1K and max_block_size-1K for sanity:
-    block_max_size = max((unsigned int)1000, min((unsigned int)(blockchain::max_block_size - 1000), block_max_size));
+    block_max_size = max((uint32_t)1000, min((uint32_t)(blockchain::max_block_size - 1000), block_max_size));
 
     // How much of the block should be dedicated to high-priority transactions,
     // included regardless of the fees they pay
-    unsigned int block_priority_size = 27000;
+    uint32_t block_priority_size = 27000;
     block_priority_size = min(block_max_size, block_priority_size);
 
     // Minimum block size you want to create; block will be filled with free transactions
     // until there are no more or the block reaches this size:
-    unsigned int block_min_size = 0;
+    uint32_t block_min_size = 0;
     block_min_size = min(block_max_size, block_min_size);
 
-    uint64_t total_fee = 0;
-    unsigned int block_size = 0;
-    unsigned int total_tx_sig_length = blockchain::validate_block::validate_block::legacy_sigops_count(*pblock->transactions.begin());
+    uint32_t block_size = 0;
     for (auto tx : transactions)
     {
         auto tx_hash = tx->hash();
@@ -406,7 +476,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
 
             if (prev_height != max_uint64) {
                 uint64_t input_value = prev_output.value;
-                priority += (double)input_value * (current_block_height - prev_height + 1);
+                priority += (double)input_value * (last_height - prev_height + 1);
             }
             else {
                 transaction_dependents[input.previous_output.hash].hash = make_shared<hash_digest>(tx_hash);
@@ -427,13 +497,11 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
         transaction_prioritys.push_back(transaction_priority(priority, fee_per_kb, tx_fee, tx));
     }
 
-    vector<transaction_ptr> blocked_transactions;
     auto sort_func = sort_by_fee_per_kb;
     bool is_resort = false;
     make_heap(transaction_prioritys.begin(), transaction_prioritys.end(), sort_func);
 
     transaction_priority *next_transaction_priority = NULL;
-    uint32_t reward_lock_time = current_block_height - 1;
     while (!transaction_prioritys.empty() || next_transaction_priority)
     {
         transaction_priority temp_priority;
@@ -472,8 +540,8 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
                 int lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
                 coinage_reward_coinbase = create_coinbase_tx(wallet::payment_address::extract(ptx->outputs[0].script),
                                           calculate_lockblock_reward(lock_height, output.value),
-                                          current_block_height + 1, lock_height, reward_lock_time);
-                unsigned int tx_sig_length = blockchain::validate_block::validate_block::legacy_sigops_count(*coinage_reward_coinbase);
+                                          last_height + 1, lock_height);
+                uint32_t tx_sig_length = get_tx_sign_length(coinage_reward_coinbase);
                 if (total_tx_sig_length + tx_sig_length >= blockchain::max_block_script_sigops) {
                     continue;
                 }
@@ -481,7 +549,6 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
                 total_tx_sig_length += tx_sig_length;
                 serialized_size += coinage_reward_coinbase->serialized_size(1);
                 coinage_reward_coinbases.push_back(coinage_reward_coinbase);
-                --reward_lock_time;
             }
         }
 
@@ -489,7 +556,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
             continue;
 
         // Legacy limits on sigOps:
-        unsigned int tx_sig_length = blockchain::validate_block::validate_block::legacy_sigops_count(*ptx);
+        uint32_t tx_sig_length = get_tx_sign_length(ptx);
         if (total_tx_sig_length + tx_sig_length >= blockchain::max_block_script_sigops)
             continue;
 
@@ -507,17 +574,19 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
             make_heap(transaction_prioritys.begin(), transaction_prioritys.end(), sort_func);
         }
 
-        size_t c;
+        uint64_t c;
         if (!miner::script_hash_signature_operations_count(c, ptx->inputs, transactions)
                 && total_tx_sig_length + tx_sig_length + c >= blockchain::max_block_script_sigops)
             continue;
         tx_sig_length += c;
 
-        blocked_transactions.push_back(ptx);
-        for (auto& i : coinage_reward_coinbases) {
-            pblock->transactions.push_back(*i);
+        // update txs
+        txs.push_back(ptx);
+        for (auto i : coinage_reward_coinbases) {
+            reward_txs.push_back(i);
         }
 
+        // update fee
         block_size += serialized_size;
         total_tx_sig_length += tx_sig_length;
         total_fee += fee;
@@ -530,43 +599,506 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
         }
     }
 
-    for (auto i : blocked_transactions) {
+    return true;
+}
+
+miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_address)
+{
+    if (get_accept_block_version() == chain::block_version_pow) {
+        return create_new_block_pow(pay_address);
+    }
+
+    if (get_accept_block_version() == chain::block_version_pos) {
+        return create_new_block_pos(pay_address);
+    }
+
+    if (get_accept_block_version() == chain::block_version_dpos) {
+        return create_new_block_dpos(pay_address);
+    }
+
+    throw std::logic_error{"create_new_block: unknown accept block version! " + std::to_string(get_accept_block_version())};
+}
+
+miner::block_ptr miner::create_new_block_pow(const wallet::payment_address& pay_address)
+{
+    block_chain_impl& block_chain = node_.chain_impl();
+
+    // Get last block
+    uint64_t last_height = 0;
+    header prev_header;
+    if (!block_chain.get_last_height(last_height)
+            || !block_chain.get_header(prev_header, last_height)) {
+        log::warning(LOG_HEADER) << "get_last_height or get_header fail. last_height:" << last_height;
+        return nullptr;
+    }
+
+    uint64_t block_height = last_height + 1;
+    uint32_t block_time = get_adjust_time(block_height);
+
+    // create block
+    block_ptr pblock = make_shared<block>();
+
+    // Fill in header
+    pblock->header.version = chain::block_version_pow;
+    pblock->header.number = block_height;
+    pblock->header.nonce = 0;
+    pblock->header.mixhash = 0;
+    pblock->header.timestamp = std::max(block_time, prev_header.timestamp);
+    pblock->header.previous_block_hash = prev_header.hash();
+    pblock->header.bits = get_next_target_required(pblock->header, prev_header, false);
+
+    // Create coinbase tx
+    transaction_ptr coinbase = create_coinbase_tx(pay_address, 0, block_height, 0);
+    uint32_t total_tx_sig_length = get_tx_sign_length(coinbase);
+
+    // Get txs
+    uint64_t total_fee = 0;
+    vector<transaction_ptr> txs;
+    vector<transaction_ptr> reward_txs;
+    get_block_transactions(last_height, txs, reward_txs, total_fee, total_tx_sig_length);
+
+    // Update coinbase reward
+    coinbase->outputs[0].value =
+        total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, pblock->header.version);
+
+    if (witness::is_begin_of_epoch(block_height)
+        && !witness::get().add_witness_vote_result(*coinbase, block_height)) {
+        return nullptr;
+    }
+
+    // Put coinbase first
+    pblock->transactions.push_back(*coinbase);
+
+    // Put coinage reward_txs before txs.
+    for (auto i : reward_txs) {
         pblock->transactions.push_back(*i);
     }
 
-    pblock->transactions[0].outputs[0].value =
-        total_fee + calculate_block_subsidy(current_block_height + 1, setting_.use_testnet_rules);
+    // Put txs
+    for (auto i : txs) {
+        pblock->transactions.push_back(*i);
+    }
 
     // Fill in header
-    pblock->header.number = current_block_height + 1;
     pblock->header.transaction_count = pblock->transactions.size();
-    pblock->header.previous_block_hash = prev_header.hash();
     pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
-    pblock->header.timestamp = get_adjust_time(pblock->header.number);
-    pblock->header.version = block_version;
-    pblock->header.bits = HeaderAux::calculateDifficulty(pblock->header, prev_header);
-    pblock->header.nonce = 0;
-    pblock->header.mixhash = 0;
 
     return pblock;
 }
 
-unsigned int miner::get_adjust_time(uint64_t height) const
+miner::block_ptr miner::create_new_block_dpos(const wallet::payment_address& pay_address)
+{
+    block_chain_impl& block_chain = node_.chain_impl();
+
+    // Get last block
+    uint64_t last_height = 0;
+    header prev_header;
+    if (!block_chain.get_last_height(last_height)
+            || !block_chain.get_header(prev_header, last_height)) {
+        log::warning(LOG_HEADER) << "get_last_height or get_header fail. last_height:" << last_height;
+        return nullptr;
+    }
+
+    uint64_t block_height = last_height + 1;
+    uint32_t block_time = get_adjust_time(block_height);
+
+    if (is_stop_miner(block_height, nullptr)) {
+        return nullptr;
+    }
+
+    if (!witness::get().verify_signer(public_key_data_, block_height)) {
+        // It is not my turn at current height.
+        sleep_for_mseconds(500, true);
+        return nullptr;
+    }
+
+    // create block
+    block_ptr pblock = make_shared<block>();
+
+    // Fill in header
+    pblock->header.version = chain::block_version_dpos;
+    pblock->header.number = block_height;
+    pblock->header.nonce = 0;
+    pblock->header.mixhash = 0;
+    pblock->header.timestamp = std::max(block_time, prev_header.timestamp);
+    pblock->header.previous_block_hash = prev_header.hash();
+    pblock->header.bits = prev_header.bits;
+
+    // Create coinbase tx
+    transaction_ptr coinbase = create_coinbase_tx(pay_address, 0, block_height, 0);
+    uint32_t total_tx_sig_length = get_tx_sign_length(coinbase);
+
+    // Get txs
+    uint64_t total_fee = 0;
+    vector<transaction_ptr> txs;
+    vector<transaction_ptr> reward_txs;
+    get_block_transactions(last_height, txs, reward_txs, total_fee, total_tx_sig_length);
+
+    // Update coinbase reward
+    coinbase->outputs[0].value =
+        total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, pblock->header.version);
+
+    if (witness::is_begin_of_epoch(block_height)
+        && !witness::get().add_witness_vote_result(*coinbase, block_height)) {
+        return nullptr;
+    }
+
+    // Put coinbase first
+    pblock->transactions.push_back(*coinbase);
+
+    // Put coinage reward_txs before txs.
+    for (auto i : reward_txs) {
+        pblock->transactions.push_back(*i);
+    }
+
+    // Put txs
+    for (auto i : txs) {
+        pblock->transactions.push_back(*i);
+    }
+
+    if (!pblock->can_use_dpos_consensus()) {
+        return nullptr;
+    }
+
+    // Fill in header
+    pblock->header.transaction_count = pblock->transactions.size();
+    pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
+
+    // add witness's signature to the current block header
+    bc::endorsement endorse;
+    if (!witness::sign(endorse, private_key_, pblock->header)) {
+        log::error(LOG_HEADER) << "witness sign failed in create_new_block";
+        return nullptr;
+    }
+
+    auto& coinbase_tx = pblock->transactions.front();
+    auto& coinbase_script = coinbase_tx.inputs.front().script;
+    auto& coinbase_input_ops = coinbase_script.operations;
+    coinbase_input_ops.push_back({ chain::opcode::special, endorse });
+    coinbase_input_ops.push_back({ chain::opcode::special, public_key_data_ });
+
+#ifdef PRIVATE_CHAIN
+    log::info(LOG_HEADER)
+        << "create a DPoS block with signatures at height " << block_height
+        << ", coinbase input script is "
+        << coinbase_script.to_string(chain::get_script_context());
+#endif
+
+    return pblock;
+}
+
+miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_address)
+{
+    block_chain_impl& block_chain = node_.chain_impl();
+
+    // Get last block
+    uint64_t last_height = 0;
+    header prev_header;
+    if (!block_chain.get_last_height(last_height)
+            || !block_chain.get_header(prev_header, last_height)) {
+        log::warning(LOG_HEADER) << "get_last_height or get_header fail. last_height:" << last_height;
+        return nullptr;
+    }
+
+    uint64_t block_height = last_height + 1;
+
+    // Check if PoS is eanbled at last_height
+    if (block_height < pos_enabled_height) {
+        log::warning(LOG_HEADER) << "PoS is not allowed at block height:" << last_height;
+        return nullptr;
+    }
+
+    // Check deposited stake
+    if (!block_chain.check_pos_capability(last_height, pay_address)) {
+        log::error(LOG_HEADER) << "PoS mining is not allowed. no enough stake is deposited at address " << pay_address;
+        sleep_for_mseconds(10 * 1000);
+        return nullptr;
+    }
+
+    // check utxo stake
+    chain::output_info::list stake_outputs;
+    if (!block_chain.select_utxo_for_staking(last_height, pay_address, stake_outputs, 1000)) {
+        log::error(LOG_HEADER) << "PoS mining is not allowed. no enough stake is holded at address " << pay_address;
+        sleep_for_mseconds(10 * 1000);
+        return nullptr;
+    }
+
+    // create block
+    block_ptr pblock = make_shared<block>();
+
+    // Fill in header
+    pblock->header.version = chain::block_version_pos;  // pos
+    pblock->header.number = block_height;
+    pblock->header.previous_block_hash = prev_header.hash();
+    pblock->header.nonce = 0;
+    pblock->header.mixhash = 0;
+    pblock->header.bits = get_next_target_required(pblock->header, prev_header, true);
+
+    // create coinbase tx
+    transaction_ptr coinbase = create_coinbase_tx(pay_address, 0, block_height, 0);
+    uint32_t total_tx_sig_length = get_tx_sign_length(coinbase);
+
+    // create coinstake
+    uint32_t start_time = get_adjust_time(block_height);
+    uint32_t block_time = start_time;
+    transaction_ptr coinstake(nullptr);
+
+    while (nullptr == coinstake && block_time < (start_time  + block_timespan_window / 2)) {
+        pblock->header.timestamp = std::max(block_time, prev_header.timestamp + 1);
+        coinstake = create_coinstake_tx(private_key_, pay_address, pblock, stake_outputs);
+        if (coinstake) {
+            break;
+        }
+
+        if (is_stop_miner(block_height, pblock)) {
+            break;
+        }
+
+        uint32_t sleep_time = pseudo_random(200, 300);
+        sleep_for_mseconds(sleep_time);
+        block_time = get_adjust_time(block_height);
+    }
+
+    if (nullptr == coinstake) {
+        return nullptr;
+    }
+
+    total_tx_sig_length += get_tx_sign_length(coinstake);
+
+    // create pos genesis tx
+    transaction_ptr genesis_tx(nullptr);
+    if (!block_chain.pos_exist_before(block_height)) {
+        genesis_tx = create_pos_genesis_tx(block_height, block_time);
+        total_tx_sig_length += get_tx_sign_length(genesis_tx);
+    }
+
+    // Get txs
+    uint64_t total_fee = 0;
+    vector<transaction_ptr> txs;
+    vector<transaction_ptr> reward_txs;
+    get_block_transactions(last_height, txs, reward_txs, total_fee, total_tx_sig_length);
+
+    // Update coinbase reward
+    coinbase->outputs[0].value =
+        total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, pblock->header.version);
+
+    if (witness::is_begin_of_epoch(block_height)
+        && !witness::get().add_witness_vote_result(*coinbase, block_height)) {
+        return nullptr;
+    }
+
+    // Put coinbase first
+    pblock->transactions.push_back(*coinbase);
+
+    // Put coinstake second
+    pblock->transactions.push_back(*coinstake);
+
+    // Put pos genesis tx third
+    if (nullptr != genesis_tx) {
+        pblock->transactions.push_back(*genesis_tx);
+    }
+
+    // Put coinage reward_txs before txs.
+    for (auto i : reward_txs) {
+        pblock->transactions.push_back(*i);
+    }
+
+    // Put txs
+    for (auto i : txs) {
+        pblock->transactions.push_back(*i);
+    }
+
+    // Fill in header
+    pblock->header.transaction_count = pblock->transactions.size();
+    pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
+
+    // Sign block
+    if (!sign(pblock->blocksig, private_key_, pblock->header.hash())) {
+        log::error(LOG_HEADER) << "PoS mining failed. cann't sign block.";
+        return nullptr;
+    }
+
+#ifdef PRIVATE_CHAIN
+    log::info(LOG_HEADER)
+        << "create a PoS block at height " << block_height
+        << ", header hash is " << encode_hash(pblock->header.hash());
+#endif
+    return pblock;
+}
+
+u256 miner::get_next_target_required(const chain::header& header, const chain::header& prev_header, bool is_staking)
+{
+    block_chain_impl& block_chain = node_.chain_impl();
+    header::ptr last_header = block_chain.get_last_block_header(prev_header, is_staking);
+    header::ptr llast_header;
+
+    if (last_header && last_header->number > 2) {
+        auto height = last_header->number - 1;
+        chain::header prev_last_header;
+        if (block_chain.get_header(prev_last_header, height)) {
+            llast_header = block_chain.get_last_block_header(prev_last_header, is_staking);
+        }
+    }
+
+    return HeaderAux::calculate_difficulty(header, last_header, llast_header, is_staking);
+}
+
+bool miner::sign_coinstake_tx(
+    const ec_secret& private_key,
+    transaction_ptr coinstake)
+{
+    const uint8_t hash_type = chain::signature_hash_algorithm::all;
+
+    for (uint64_t i = 0; i < coinstake->inputs.size(); ++i) {
+        const chain::script& contract = coinstake->inputs[i].script;
+        // gen sign
+        endorsement endorse;
+        if (!chain::script::create_endorsement(endorse, private_key,
+                                               contract, *coinstake, i, hash_type)) {
+            log::error(LOG_HEADER) << "sign_coinstake_tx: get_input_sign sign failure!";
+            return false;
+        }
+
+        // do script
+        wallet::ec_private ec_private_key(private_key, 0u, true);
+        auto &&public_key = ec_private_key.to_public();
+        data_chunk public_key_data;
+        public_key.to_data(public_key_data);
+
+        chain::script ss;
+        ss.operations.push_back({chain::opcode::special, endorse});
+        ss.operations.push_back({chain::opcode::special, public_key_data});
+
+        // if pre-output script is deposit tx.
+        if (contract.pattern() == chain::script_pattern::pay_key_hash_with_lock_height) {
+            uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(
+                    contract.operations);
+            ss.operations.push_back({chain::opcode::special, script_number(lock_height).data()});
+        }
+
+        coinstake->inputs[i].script = ss;
+    }
+    return true;
+}
+
+miner::transaction_ptr miner::create_pos_genesis_tx(uint64_t block_height, uint32_t block_time)
+{
+    auto& fmt = boost::format("MVS start POS at %1%") % timestamp_to_string(block_time);
+    const string text(fmt.str());
+
+    transaction_ptr genesis_tx = make_shared<message::transaction_message>();
+
+    genesis_tx->inputs.resize(1);
+    genesis_tx->inputs[0].previous_output = output_point(null_hash, max_uint32);
+    genesis_tx->inputs[0].script.operations = {{chain::opcode::raw_data, {text.begin(), text.end()}}};
+
+    genesis_tx->outputs.resize(1);
+    wallet::payment_address pay_address(get_foundation_address(setting_.use_testnet_rules));
+    genesis_tx->outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(pay_address));
+    genesis_tx->outputs[0].value = pos_genesis_reward;
+
+    return genesis_tx;
+}
+
+miner::transaction_ptr miner::create_coinstake_tx(
+    const ec_secret& private_key,
+    const wallet::payment_address& pay_address,
+    block_ptr pblock, const chain::output_info::list& stake_outputs)
+{
+    block_chain_impl& block_chain = node_.chain_impl();
+    transaction_ptr coinstake = make_shared<message::transaction_message>();
+    coinstake->version = transaction_version::first;
+
+    uint64_t nCredit = 0;
+    for (const auto& stake: stake_outputs) {
+        if (!block_chain.check_pos_utxo_height_and_value(
+            stake.height, pblock->header.number, stake.data.value)) {
+            continue;
+        }
+
+        if (MinerAux::verify_stake(pblock->header, stake)) {
+            coinstake->inputs.clear();
+            coinstake->outputs.clear();
+
+            nCredit = stake.data.value;
+
+            // generate inputs
+            coinstake->inputs.emplace_back(stake.point, stake.data.script, max_input_sequence);
+
+            // generate outputs
+            coinstake->outputs.emplace_back(0, chain::script(), ATTACH_NULL_TYPE);
+
+            break;
+        }
+    }
+
+    if (coinstake->inputs.empty())
+        return nullptr;
+
+    const uint64_t pos_split_limit = pos_stake_min_value * 2;
+
+    // Attempt to add more inputs
+    for (const auto& stake: stake_outputs) {
+        if (stake.data.value >= pos_stake_min_value) {
+            continue;
+        }
+
+        if (nCredit >= pos_split_limit) {
+            break;
+        }
+
+        if (coinstake->inputs.size() >= pos_coinstake_max_utxos) {
+            break;
+        }
+
+        coinstake->inputs.emplace_back(stake.point, stake.data.script, max_input_sequence);
+        nCredit += stake.data.value;
+    }
+
+    auto&& script_operation = chain::operation::to_pay_key_hash_pattern(short_hash(pay_address));
+    // auto payment_script = chain::script{script_operation};
+
+    coinstake->outputs.emplace_back(nCredit, chain::script{script_operation},
+        attachment(ETP_TYPE, 1, chain::etp(nCredit)));
+
+    // split the output
+    if (nCredit >= pos_split_limit) {
+        auto value = nCredit - pos_stake_min_value;
+        coinstake->outputs[1].value = value;
+        coinstake->outputs[1].attach_data = {ETP_TYPE, 1, chain::etp(value)};
+
+        value = pos_stake_min_value;
+        coinstake->outputs.emplace_back(value, chain::script{script_operation},
+            attachment(ETP_TYPE, 1, chain::etp(value)));
+    }
+
+    // sign coinstake
+    if (!sign_coinstake_tx(private_key, coinstake)) {
+        return nullptr;
+    }
+
+    return coinstake;
+}
+
+chain::block_version miner::get_accept_block_version() const
+{
+    return accept_block_version_;
+}
+
+void miner::set_accept_block_version(chain::block_version v)
+{
+    accept_block_version_ = v;
+}
+
+uint32_t miner::get_adjust_time(uint64_t height) const
 {
     typedef std::chrono::system_clock wall_clock;
     const auto now = wall_clock::now();
     unsigned int t = wall_clock::to_time_t(now);
-
-    if (height >= future_blocktime_fork_height) {
-        return t;
-    }
-    else {
-        unsigned int t_past = get_median_time_past(height);
-        return max(t, t_past + 1);
-    }
+    return t;
 }
 
-unsigned int miner::get_median_time_past(uint64_t height) const
+uint32_t miner::get_median_time_past(uint64_t height) const
 {
     block_chain_impl& block_chain = node_.chain_impl();
 
@@ -611,19 +1143,38 @@ std::string to_string(_T const& _t)
     return o.str();
 }
 
-void miner::work(const wallet::payment_address pay_address)
+void miner::sleep_for_mseconds(uint32_t interval, bool force)
 {
-    log::info(LOG_HEADER) << "solo miner start with address: " << pay_address.encoded();
+    if (force || (get_accept_block_version() == chain::block_version_pos)) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+    }
+}
+
+void miner::work(const wallet::payment_address& pay_address)
+{
+    log::info(LOG_HEADER)
+        << "solo miner start with address: "
+        << pay_address.encoded()
+        << ", accept consensus " + chain::get_block_version(get_accept_block_version());
+
     while (state_ != state::exit_) {
         block_ptr block = create_new_block(pay_address);
         if (block) {
-            if (MinerAux::search(block->header, std::bind(&miner::is_stop_miner, this, block->header.number))) {
+            bool can_store = (get_accept_block_version() == chain::block_version_pos)
+                || block->header.version == chain::block_version_dpos
+                || MinerAux::search(block->header, std::bind(&miner::is_stop_miner, this, block->header.number, block));
+            if (can_store) {
                 boost::uint64_t height = store_block(block);
                 if (height == 0) {
+                    sleep_for_mseconds(500);
                     continue;
                 }
 
-                log::info(LOG_HEADER) << "solo miner create new block at heigth:" << height;
+                log::info(LOG_HEADER) << "solo miner create "
+                    << chain::get_block_version(block->header)
+                    << " block at height: " << height
+                    << ", bits: " << block->header.bits
+                    << ", time: " << timestamp_to_string(block->header.timestamp);
 
                 ++new_block_number_;
                 if ((new_block_limit_ != 0) && (new_block_number_ >= new_block_limit_)) {
@@ -632,31 +1183,44 @@ void miner::work(const wallet::payment_address pay_address)
                     break;
                 }
             }
+
+            sleep_for_mseconds(1000);
+        }
+        else {
+            sleep_for_mseconds(300);
         }
     }
 }
 
-bool miner::is_stop_miner(uint64_t block_height) const
+bool miner::is_stop_miner(uint64_t block_height, block_ptr block) const
 {
-    return (state_ == state::exit_) || (get_height() > block_height);
+    if (state_ == state::exit_) {
+        return true;
+    }
+
+    auto latest_height = get_height();
+    if ((latest_height > block_height) ||
+        (block && latest_height >= block->header.number)) {
+        return true;
+    }
+
+    return false;
 }
 
 bool miner::start(const wallet::payment_address& pay_address, uint16_t number)
 {
+    if (get_accept_block_version() == chain::block_version_dpos) {
+        if (private_key_.empty() || public_key_data_.empty()) {
+            return false;
+        }
+    }
+
     if (!thread_) {
         new_block_limit_ = number;
         thread_.reset(new boost::thread(bind(&miner::work, this, pay_address)));
     }
-    return true;
-}
 
-bool miner::start(const std::string& public_key, uint16_t number)
-{
-    wallet::payment_address pay_address = libbitcoin::wallet::ec_public(public_key).to_payment_address();
-    if (pay_address) {
-        return start(pay_address, number);
-    }
-    return false;
+    return true;
 }
 
 bool miner::stop()
@@ -680,21 +1244,7 @@ uint64_t miner::get_height() const
     return height;
 }
 
-bool miner::set_miner_public_key(const string& public_key)
-{
-    libbitcoin::wallet::ec_public ec_public_key(public_key);
-    pay_address_ = ec_public_key.to_payment_address();
-    if (pay_address_) {
-        log::debug(LOG_HEADER) << "set_miner_public_key[" << pay_address_.encoded() << "] success";
-        return true;
-    }
-    else {
-        log::error(LOG_HEADER) << "set_miner_public_key[" << public_key << "] is not availabe!";
-        return false;
-    }
-}
-
-bool miner::set_miner_payment_address(const bc::wallet::payment_address& address)
+bool miner::set_miner_payment_address(const wallet::payment_address& address)
 {
     if (address) {
         log::debug(LOG_HEADER) << "set_miner_payment_address[" << address.encoded() << "] success";
@@ -756,22 +1306,18 @@ bool miner::put_result(const std::string& nonce, const std::string& mix_hash,
     }
 
     if (header_hash == "0x" + to_string(HeaderAux::hashHead(new_block_->header))) {
-        auto s_nonce = "0x" + nonce;
-        uint64_t n_nonce;
-#ifdef MAC_OSX
-        size_t sz = 0;
-        n_nonce = std::stoull(s_nonce, &sz, 16);
-#else
-        if (sscanf(s_nonce.c_str(), "%lx", &n_nonce) != 1) {
-            log::error(LOG_HEADER) << "nonce change error\n";
-            return false;
+        uint64_t height = 0;
+        try {
+            uint64_t n_nonce = std::stoull(nonce, 0, 16);
+            // nounce_mask defination is moved to the caller
+            uint64_t nonce_t = n_nonce ^ nounce_mask;
+            new_block_->header.nonce = (u64) nonce_t;
+            new_block_->header.mixhash = (FixedHash<32>::Arith)h256(mix_hash);
+            height = store_block(new_block_);
+        } catch (const std::exception& e) {
+            log::debug(LOG_HEADER) << "put_result caught exception: " << e.what();
         }
-#endif
-        // nounce_mask defination is moved to the caller by chengzhiping 2018-3-15.
-        uint64_t nonce_t = n_nonce ^ nounce_mask;
-        new_block_->header.nonce = (u64) nonce_t;
-        new_block_->header.mixhash = (FixedHash<32>::Arith)h256(mix_hash);
-        uint64_t height = store_block(new_block_);
+
         if (height != 0) {
             log::debug(LOG_HEADER) << "put_result nonce:" << nonce << " mix_hash:"
                                    << mix_hash << " success with height:" << height;
@@ -822,18 +1368,56 @@ bool miner::get_block_header(chain::header& block_header, const string& para)
             height = 0;
         }
         else if (para[0] >= '0' && para[0] <= '9') {
-            height = atol(para.c_str());
+            height = std::stoull(para);
         }
         else {
             return false;
         }
 
-        if (block_chain.get_header(block_header, height))
+        if (block_chain.get_header(block_header, height)) {
+            block_header.transaction_count = block_chain.get_transaction_count(height);
             return true;
+        }
     }
 
     return false;
 }
 
+bool miner::is_witness() const
+{
+    if (public_key_data_.empty()) {
+        return false;
+    }
+    return witness::get().is_witness(witness::to_witness_id(public_key_data_));
 }
+
+bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& prikey)
+{
+    // set private key
+    if (!decode_base16(private_key_, prikey)
+        || !bc::verify(private_key_) || private_key_.empty()) {
+        log::error(LOG_HEADER) << "miner verify private key failed";
+        return false;
+    }
+
+    // set public key, ref. signrawtx
+    wallet::ec_private ec_private_key(private_key_, 0u, true);
+    auto&& public_key = ec_private_key.to_public();
+    public_key.to_data(public_key_data_);
+
+    if (public_key_data_.empty()) {
+        log::error(LOG_HEADER) << "miner set mining public key failed";
+        return false;
+    }
+
+#ifdef PRIVATE_CHAIN
+    log::info(LOG_HEADER)
+        << "miner set mining public key " << encode_base16(public_key_data_);
+#endif
+
+    return true;
 }
+
+
+} // consensus
+} // libbitcoin

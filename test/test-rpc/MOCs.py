@@ -124,7 +124,7 @@ class Input:
         i.previous_output = PrevOutput.from_json(  json_report["previous_output"] )
         i.script = json_report["script"]
         i.sequence = json_report["sequence"]
-        if i.previous_output.index <> 0xFFFFFFFF:
+        if i.previous_output.index != 0xFFFFFFFF:
             i.address = json_report["address"]
 
         return i

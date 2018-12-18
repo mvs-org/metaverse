@@ -35,8 +35,20 @@ console_result deposit::invoke(Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    if(!argument_.address.empty() && !blockchain.is_valid_address(argument_.address))
-        throw address_invalid_exception{"invalid address!"};
+
+    attachment attach;
+    std::string addr;
+
+    if (argument_.address.empty()) {
+        auto pvaddr = blockchain.get_account_addresses(auth_.name);
+        if(!pvaddr || pvaddr->empty())
+            throw address_list_nullptr_exception{"nullptr for address list"};
+
+        addr = get_random_payment_address(pvaddr, blockchain);
+    }
+    else {
+        addr = get_address(argument_.address, attach, false, blockchain);
+    }
 
     if (argument_.deposit != 7 && argument_.deposit != 30
         && argument_.deposit != 90 && argument_.deposit != 182
@@ -45,18 +57,9 @@ console_result deposit::invoke(Json::Value& jv_output,
         throw account_deposit_period_exception{"deposit must be one in [7, 30, 90, 182, 365]."};
     }
 
-    auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr || pvaddr->empty())
-        throw address_list_nullptr_exception{"nullptr for address list"};
-
-    auto addr = argument_.address;
-    if (addr.empty()) {
-        addr = get_random_payment_address(pvaddr, blockchain);
-    }
-
     // receiver
     std::vector<receiver_record> receiver{
-        {addr, "", argument_.amount, 0, utxo_attach_type::deposit, attachment()}
+        {addr, "", argument_.amount, 0, utxo_attach_type::deposit, attach}
     };
     auto deposit_helper = depositing_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
             std::move(addr), std::move(receiver), argument_.deposit, argument_.fee);

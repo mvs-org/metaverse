@@ -7,30 +7,30 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4C05ECA81F502042006CCA1D /* mvsd in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C05ECA71F502042006CCA1D /* mvsd */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		49F4E035215B20F000B18D78 /* mvsd in Copy Files */ = {isa = PBXBuildFile; fileRef = 49F4E034215B20EF00B18D78 /* mvsd */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		4CD414641F4FF0F800A6CA41 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4CD414631F4FF0F800A6CA41 /* Assets.xcassets */; };
 		4CE027CD1F4FC6FE004FB704 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4CE027CB1F4FC6FE004FB704 /* MainMenu.xib */; };
-		4CE027CF1F4FC70A004FB704 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4CE027CE1F4FC70A004FB704 /* Info.plist */; };
 		4CEF0CD41F553C3400328974 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CEF0CD31F553C3400328974 /* AppDelegate.swift */; };
 		4CEF0CD61F553C4700328974 /* GetBSDProcessList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CEF0CD51F553C4700328974 /* GetBSDProcessList.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		0A7A475B1E3D2C800093D1AB /* CopyFiles */ = {
+		0A7A475B1E3D2C800093D1AB /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 8;
+			buildActionMask = 12;
 			dstPath = "";
 			dstSubfolderSpec = 6;
 			files = (
-				4C05ECA81F502042006CCA1D /* mvsd in CopyFiles */,
+				49F4E035215B20F000B18D78 /* mvsd in Copy Files */,
 			);
-			runOnlyForDeploymentPostprocessing = 1;
+			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		0ACF9ABE1E30FAB600D5C935 /* Metaverse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Metaverse.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		4C05ECA71F502042006CCA1D /* mvsd */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = mvsd; path = ../build/bin/mvsd; sourceTree = "<group>"; };
+		49F4E034215B20EF00B18D78 /* mvsd */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = mvsd; path = "installer/mvs-pkg/bin/mvsd"; sourceTree = "<group>"; };
 		4CD414631F4FF0F800A6CA41 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Metaverse/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		4CE027CC1F4FC6FE004FB704 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = MainMenu.xib; sourceTree = "<group>"; };
 		4CE027CE1F4FC70A004FB704 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Metaverse/Info.plist; sourceTree = SOURCE_ROOT; };
@@ -52,7 +52,7 @@
 		0ACF9AB51E30FAB600D5C935 = {
 			isa = PBXGroup;
 			children = (
-				4C05ECA71F502042006CCA1D /* mvsd */,
+				49F4E034215B20EF00B18D78 /* mvsd */,
 				0ACF9AC01E30FAB600D5C935 /* Metaverse */,
 				0ACF9ABF1E30FAB600D5C935 /* Products */,
 			);
@@ -97,7 +97,7 @@
 				0ACF9ABA1E30FAB600D5C935 /* Sources */,
 				0ACF9ABB1E30FAB600D5C935 /* Frameworks */,
 				0ACF9ABC1E30FAB600D5C935 /* Resources */,
-				0A7A475B1E3D2C800093D1AB /* CopyFiles */,
+				0A7A475B1E3D2C800093D1AB /* Copy Files */,
 			);
 			buildRules = (
 			);
@@ -115,13 +115,13 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0800;
-				LastUpgradeCheck = 0830;
+				LastUpgradeCheck = 0940;
 				ORGANIZATIONNAME = "Metaverse Fundation";
 				TargetAttributes = {
 					0ACF9ABD1E30FAB600D5C935 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = 6EDHACMBKZ;
-						LastSwiftMigration = 0830;
+						DevelopmentTeam = Z9LLD4BACL;
+						LastSwiftMigration = 0940;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -149,7 +149,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4CE027CF1F4FC70A004FB704 /* Info.plist in Resources */,
 				4CE027CD1F4FC6FE004FB704 /* MainMenu.xib in Resources */,
 				4CD414641F4FF0F800A6CA41 /* Assets.xcassets in Resources */,
 			);
@@ -190,15 +189,23 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
@@ -206,6 +213,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 9D4XG38K67;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -241,15 +249,23 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
@@ -257,6 +273,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 9D4XG38K67;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -269,6 +286,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = Metaverse;
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
@@ -280,9 +298,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = 6EDHACMBKZ;
+				DEVELOPMENT_TEAM = Z9LLD4BACL;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				INFOPLIST_FILE = "$(SRCROOT)/Metaverse/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
@@ -299,9 +318,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = 6EDHACMBKZ;
+				DEVELOPMENT_TEAM = Z9LLD4BACL;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				INFOPLIST_FILE = "$(SRCROOT)/Metaverse/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
@@ -322,7 +342,7 @@
 				0ACF9ACA1E30FAB600D5C935 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = Release;
 		};
 		0ACF9ACB1E30FAB600D5C935 /* Build configuration list for PBXNativeTarget "Metaverse" */ = {
 			isa = XCConfigurationList;
@@ -331,7 +351,7 @@
 				0ACF9ACD1E30FAB600D5C935 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

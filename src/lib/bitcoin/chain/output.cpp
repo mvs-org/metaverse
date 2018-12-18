@@ -34,10 +34,13 @@ namespace libbitcoin {
 namespace chain {
 
 
-output::output(){}
+output::output()
+{
+    reset();
+}
 
 output::output(output&& other)
-: output(std::move(other.value), std::move(other.script),std::move(other.attach_data))
+: output(other.value, std::move(other.script), std::move(other.attach_data))
 {
 }
 output::output(const output& other)
@@ -153,6 +156,11 @@ bool output::is_valid() const
         || attach_data.is_valid(); // added for asset issue/transfer
 }
 
+bool output::is_null() const
+{
+    return !is_valid();
+}
+
 std::string output::get_script_address() const
 {
     auto payment_address = wallet::payment_address::extract(script);
@@ -238,6 +246,8 @@ uint64_t output::serialized_size() const
 
 std::string output::to_string(uint32_t flags) const
 {
+    flags = chain::get_script_context();
+
     std::ostringstream ss;
 
     ss << "\tvalue = " << value << "\n"
@@ -581,6 +591,14 @@ const data_chunk& output::get_attenuation_model_param() const
 {
     BITCOIN_ASSERT(operation::is_pay_key_hash_with_attenuation_model_pattern(script.operations));
     return operation::get_model_param_from_pay_key_hash_with_attenuation_model(script.operations);
+}
+
+uint32_t output::get_lock_sequence() const
+{
+    if (operation::is_pay_key_hash_with_sequence_lock_pattern(script.operations)) {
+        return operation::get_lock_sequence_from_pay_key_hash_with_sequence_lock(script.operations);
+    }
+    return max_input_sequence;
 }
 
 } // namspace chain

@@ -56,6 +56,7 @@ public:
 
 protected:
     bool stopped();
+    bool stopped(const code& ec);
     bool started(bool result);
     bool finished(bool result);
     bool forward(socket& from, socket& to);

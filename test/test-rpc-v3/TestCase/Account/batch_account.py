@@ -11,7 +11,7 @@ class TestAccount(MVSTestCaseBase):
 
         batch_amount = 5000
         lastwords = []
-        for i in xrange(batch_amount):
+        for i in range(batch_amount):
             ec, message = mvs_rpc.new_account("Account_%s" % i, "123456")
             self.assertEqual(ec, 0, message)
             lastwords.append( message[-1] )
@@ -20,7 +20,7 @@ class TestAccount(MVSTestCaseBase):
             # each simple account record size < 300, but when getnew address, the account record will be create twice, so 600 is the reasonable record size.
             self.assertGreater(600 * batch_amount, current_payload_size - origin_payload_size, "each account record size shall be less than 600.")
         finally:
-            for i in xrange(batch_amount):
+            for i in range(batch_amount):
                 ec, message = mvs_rpc.delete_account("Account_%s" % i, "123456", lastwords[i])
                 self.assertEqual(ec, 0, message)
 
@@ -38,7 +38,7 @@ class TestAccount(MVSTestCaseBase):
             origin_payload_size = database.get_payload_size(account_table_file)
 
             durations = []
-            for i in xrange(round):
+            for i in range(round):
                 duration, ret = common.duration_call(mvs_rpc.new_address, Zac.name, Zac.password)
                 self.assertEqual(ret[0], 0, "mvs_rpc.new_address failed!")
                 self.assertLess(duration, max_duration)

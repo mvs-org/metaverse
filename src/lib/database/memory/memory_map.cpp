@@ -318,24 +318,45 @@ memory_ptr memory_map::reserve(size_t size)
 // the required allocation and all resizing before writing a block.
 memory_ptr memory_map::reserve(size_t size, size_t expansion)
 {
-    // Critical Section (internal)
+    ///////////////////////////////////////////////////////////////////////////
+    // Internally preventing resize during close is not possible because of
+    // cross-file integrity. So we must coalesce all threads before closing.
+
+    // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     const auto memory = REMAP_ALLOCATOR(mutex_);
 
+    // The store should only have been closed after all threads terminated.
+    if (closed_)
+    {
+        REMAP_DOWNGRADE(memory, data_);
+        throw std::runtime_error("Resize failure, store already closed.");
+    }
+
     if (size > file_size_)
     {
-        const auto target = size * expansion / EXPANSION_DENOMINATOR;
+        const size_t target = size * expansion / EXPANSION_DENOMINATOR;
 
+        mutex_.unlock_upgrade_and_lock();
+        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        // TODO: isolate cause and if recoverable (disk size) return nullptr.
+        // All existing database pointers are invalidated by this call.
         if (!truncate_mapped(target))
         {
             handle_error("resize", filename_);
             throw std::runtime_error("Resize failure, disk space may be low.");
         }
+
+        //---------------------------------------------------------------------
+        mutex_.unlock_and_lock_upgrade();
     }
 
     logical_size_ = size;
     REMAP_DOWNGRADE(memory, data_);
 
+    // Always return in shared lock state.
+    // The critical section does not end until this shared pointer is freed.
     return memory;
     ///////////////////////////////////////////////////////////////////////////
 }

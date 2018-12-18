@@ -169,7 +169,7 @@ class TestSendETP(MVSTestCaseBase):
         # invalid address!
         invalid_address = common.gen_invalid_address( Alice.addresslist[1] )
         ec, message = mvs_rpc.deposit(Alice.name, Alice.password, 10**8, address=invalid_address)
-        self.assertEqual(ec, 4010, message)
+        self.assertEqual(ec, 7006, message)
 
         # invalid deposit
         deposits = [7, 30, 90, 182, 365]
@@ -195,7 +195,7 @@ class TestSendETP(MVSTestCaseBase):
         ec, message = mvs_rpc.list_balances(Zac.name, Zac.password)
         self.assertEqual(ec, 0, message)
 
-        balance =filter(lambda x: x["address"] == address, message)
+        balance =list( filter(lambda x: x["address"] == address, message) )
         self.assertEqual(len(balance), 1)
         self.assertEqual(balance[0], {
             "address": address,
@@ -221,7 +221,7 @@ class TestSendETP(MVSTestCaseBase):
         ec, message = mvs_rpc.list_balances(Zac.name, Zac.password)
         self.assertEqual(ec, 0, message)
 
-        balance = filter(lambda x: x["address"] == address, message)
+        balance = list( filter(lambda x: x["address"] == address, message) )
         self.assertEqual(len(balance), 1)
         self.assertEqual(balance[0], {
             "address": address,

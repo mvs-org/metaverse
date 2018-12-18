@@ -60,6 +60,7 @@ void session_manual::handle_started(const code& ec, result_handler handler)
     }
 
     connector_.store(create_connector());
+    connect_timer_ = std::make_shared<deadline>(pool_, asio::seconds(2));
 
     // This is the end of the start sequence.
     handler(error::success);
@@ -106,14 +107,19 @@ void session_manual::handle_connect(const code& ec, channel::ptr channel,
     const std::string& hostname, uint16_t port, channel_handler handler,
     uint32_t retries)
 {
+    if (channel && blacklisted(channel->authority())) {
+        log::debug(LOG_NETWORK)
+            << "Suspended blacklisted/banned manual connection [" << channel->authority() << "]";
+
+        handler(error::address_blocked, nullptr);
+        return;
+    }
+
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Failure connecting [" << config::endpoint(hostname, port)
             << "] manually: " << ec.message();
-
-        auto shared_this = shared_from_base<session_manual>();
-        const auto timer = std::make_shared<deadline>(pool_, asio::seconds(3));
 
         // Retry logic.
         if (settings_.manual_attempt_limit == 0)
@@ -126,13 +132,13 @@ void session_manual::handle_connect(const code& ec, channel::ptr channel,
         return;
     }
 
-    log::debug(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Connected manual channel [" << config::endpoint(hostname, port)
         << "] as [" << channel->authority() << "]";
 
     register_channel(channel,
         BIND5(handle_channel_start, _1, hostname, port, channel, handler),
-        BIND3(handle_channel_stop, _1, hostname, port));
+        BIND4(handle_channel_stop, _1, hostname, port, channel));
 }
 
 void session_manual::handle_channel_start(const code& ec,
@@ -147,7 +153,7 @@ void session_manual::handle_channel_start(const code& ec,
             << "] " << ec.message();
 
         // Special case for already connected, do not keep trying.
-        if (ec == (code)error::address_in_use)
+        if (ec.value() == error::address_in_use)
         {
             handler(ec, channel);
             return;
@@ -172,30 +178,29 @@ void session_manual::attach_protocols(channel::ptr channel)
 void session_manual::delay_new_connection(const std::string& hostname, uint16_t port
         , channel_handler handler, uint32_t retries)
 {
-    auto timer = std::make_shared<deadline>(pool_, asio::seconds(2));
     auto self = shared_from_this();
-    timer->start([this, timer, self, hostname, port, handler, retries](const code& ec){
-        if (stopped())
-        {
+    connect_timer_->start([this, self, hostname, port, handler, retries](const code& ec){
+        if (ec || stopped()) {
             return;
         }
-        auto pThis = shared_from_this();
-        auto action = [this, pThis, hostname, port, handler, retries](){
-            start_connect(hostname, port, handler, retries);
-        };
-        pool_.service().post(action);
+        pool_.service().post(
+            std::bind(&session_manual::start_connect,
+                shared_from_base<session_manual>(),
+                hostname, port, handler, retries));
     });
 }
 
 // After a stop we don't use the caller's start handler, but keep connecting.
 void session_manual::handle_channel_stop(const code& ec,
-    const std::string& hostname, uint16_t port)
+    const std::string& hostname, uint16_t port, channel::ptr channel)
 {
-    log::debug(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Manual channel stopped: " << ec.message();
 
-    if (stopped() || (ec.value() == error::service_stopped))
+    if (stopped(ec) || (channel && blacklisted(channel->authority()))) {
+        connect_timer_->stop();
         return;
+    }
 
     delay_new_connection(hostname, port, [](code, channel::ptr){}, settings_.manual_attempt_limit);
 

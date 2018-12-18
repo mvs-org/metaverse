@@ -31,6 +31,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <metaverse/server.hpp>
+#include <metaverse/macros_define.hpp>
 #include <metaverse/bitcoin/utility/backtrace.hpp>
 #include <metaverse/bitcoin/utility/path.hpp>
 
@@ -232,6 +233,13 @@ bool executor::run()
     // Now that the directory is verified we can create the node for it.
     node_ = std::make_shared<server_node>(metadata_.configured);
 
+#ifdef PRIVATE_CHAIN
+    log::info(LOG_SERVER) << "running prinet";
+#else
+    log::info(LOG_SERVER)
+        << (!node_->is_use_testnet_rules() ? "running mainnet" : "running testnet");
+#endif
+
     // The callback may be returned on the same thread.
     node_->start(
         std::bind(&executor::handle_started,
@@ -254,7 +262,7 @@ bool executor::run()
 // Handle the completion of the start sequence and begin the run sequence.
 void executor::handle_started(const code& ec)
 {
-    if (ec)
+    if (ec && ec.value() != error::operation_failed)
     {
         log::error(LOG_SERVER) << format(BS_NODE_START_FAIL) % ec.message();
         stop(ec);
@@ -279,7 +287,9 @@ void executor::handle_running(const code& ec)
 {
     if (ec)
     {
-        log::info(LOG_SERVER) << format(BS_NODE_START_FAIL) % ec.message();
+        if (ec.value() != error::service_stopped) {
+            log::info(LOG_SERVER) << format(BS_NODE_START_FAIL) % ec.message();
+        }
         stop(ec);
         return;
     }

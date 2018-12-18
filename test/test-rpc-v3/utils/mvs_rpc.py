@@ -32,7 +32,6 @@ class RPC:
             else:
                 optional_params.append(key)
                 optional_params.append(value)
-
         ret = {
             'method': self.method,
             'id': self.id,
@@ -56,7 +55,7 @@ class RPC:
             result = rpc_rsp.json()['result']
             if result != None and isinstance(result, dict):
                 if self.method not in self.method_keys:
-                    keys = result.keys()
+                    keys = list( result.keys() )
                     keys.sort()
                     self.method_keys[self.method] = keys
 
@@ -114,7 +113,7 @@ class RPC:
             ret.append((method, max_ * 1000, min_ *
                         1000, avg_ * 1000, len(times)))
         ret.sort(
-            lambda x, y: cmp(x[3], y[3]),
+            key=lambda x : x[3],
             reverse=True
         )
 
@@ -197,8 +196,11 @@ def getblockheader(hash=None, height=None):
 
 
 @mvs_api
-def dump_keyfile(account, password, lastword, keyfile=""):
-    return "dumpkeyfile", [account, password, lastword, keyfile], {}, None
+def dump_keyfile(account, password, lastword, keyfile="", to_report=False):
+    args = [account, password, lastword, keyfile]
+    if to_report:
+        args.append('-d')
+    return "dumpkeyfile", args, {}, None
 
 
 @mvs_api
@@ -209,6 +211,9 @@ def import_keyfile(account, password, keystore_file, keyfile_content=None):
         args = [account, password, keystore_file]
     return "importkeyfile", args, {}, None
 
+@mvs_api
+def import_address(account, password, addr_or_script, decs=None):
+    return "importaddress", [account, password, addr_or_script], {'-d':decs}, None
 
 @mvs_api
 def new_account(account, password):
@@ -363,7 +368,7 @@ def list_didaddresses(did_symbol):
 
 @mvs_api
 def get_asset(asset_symbol=None, cert=False):
-    positional = filter(None, [asset_symbol])
+    positional = list( filter(None, [asset_symbol]) )
     if cert:
         positional.append("--cert")
     return "getasset", positional, {}, None
@@ -382,7 +387,7 @@ def get_accountasset(account, password, asset_symbol=None, cert=False):
     args = [account, password, asset_symbol]
     if cert:
         args.append('--cert')
-    return "getaccountasset", filter(None, args), {}, None
+    return "getaccountasset", list( filter(None, args) ), {}, None
 
 
 @mvs_api
@@ -421,7 +426,7 @@ def delete_localasset(account, password, symbol):
 
 @mvs_api
 def list_assets(account=None, password=None, cert=False):
-    positional = filter(None, [account, password])
+    positional = list( filter(None, [account, password]) )
     if cert:
         positional.append('--cert')
     return "listassets", positional, {}, None
@@ -445,6 +450,11 @@ def set_miningaccount(account, password, address):
 @mvs_api
 def start_mining(account, password, address=None, number=None):
     return "startmining", [account, password], {'-a': address, '-n': number}, None
+
+
+@mvs_api
+def stop_mining():
+    return "stopmining", [], {}, None
 
 
 @mvs_api_v3
@@ -496,11 +506,7 @@ def eth_get_work():
     '''
     {"jsonrpc": "3.0", "method": method, "params": params, "id": 0}
     '''
-    def result_handler(result):
-        header_hash, seed_hash, boundary = result
-        return common.toHex(header_hash), seed_hash, boundary
-
-    return "eth_getWork", [], {}, result_handler
+    return "eth_getWork", [], {}, None
 
 
 @mvs_api
@@ -518,12 +524,12 @@ def deposit(account, password, amount, address=None, deposit=None, fee=None):
 
 
 @mvs_api
-def send(account, password, to_, amount, fee=None, desc=None, remark=None):
+def send(account, password, to_, amount, fee=None, desc=None, locktime=None):
     positional = [account, password, to_, amount]
     optional = {
         '-f': fee,
         '-m': desc,
-        "-r": remark
+        "-x": locktime
     }
 
     return "send", positional, optional, None
@@ -599,10 +605,30 @@ def didsend_asset_from(account, password, from_, to_, symbol, amount, fee=None):
     '''
     return "didsendassetfrom", [account, password, from_, to_, symbol, amount], {'--fee': fee}, None
 
+@mvs_api
+def sendmore_asset(account, password, symbol, receivers, mychange=None, fee=None):
+    '''
+
+    :param account:
+    :param password:
+    :param receivers: {address1:amount1, address2:amount2, ...} amount in bits
+    :param symbol:
+    :param mychange:
+    :param fee:
+    :return:
+    '''
+    positional = [account, password, symbol]
+    optional = {
+        '-f': fee,
+        '-m': mychange,
+        '-r': ["%s:%s" % (i, receivers[i]) for i in receivers]
+    }
+    return "sendmoreasset", positional, optional, None
+
 
 @mvs_api
 def burn(account, password, symbol, amount=0, cert=None, is_mit=False):
-    positional = filter(None, [account, password, symbol, amount])
+    positional = list( filter(None, [account, password, symbol, amount]) )
     if is_mit:
         positional.append("--mit")
     return "burn", positional, {'--cert': cert}, None
@@ -694,7 +720,7 @@ def get_block(hash_or_height, json=True, tx_json=True):
 
 
 @mvs_api
-def create_rawtx(type, senders, receivers, deposit=None, mychange=None, message=None, symbol=None, fee=None):
+def create_rawtx(type, senders, receivers, deposit=None, mychange=None, message=None, symbol=None, fee=None, utxos=None, locktime=None):
     '''
     -d [--deposit]       Deposits support [7, 30, 90, 182, 365] days.
                          defaluts to 7 days
@@ -711,16 +737,22 @@ def create_rawtx(type, senders, receivers, deposit=None, mychange=None, message=
                          [addr1, addr2, ...]
     -t [--type]          Transaction type. 0 -- transfer etp, 1 -- deposit
                          etp, 3 -- transfer asset
+    -u [--utxos]         Use the specific UTXO as input. format:
+                         "tx-hash:output-index[:sequence]"
     '''
+    # utxos: [tx-hash(str), output-index(int), sequence(int)]
+    utxos = None if utxos== None else [':'.join( [txhash, str(output_index), str(sequence)] ) for (txhash, output_index, sequence) in utxos]
     return "createrawtx", [], {
         '-r': ["%s:%s" % (i, receivers[i]) for i in receivers],
         '-s': [i for i in senders],
+        '-u': utxos,
         '-t': type,
         '-d': deposit,
         '-f': fee,
         '-i': message,
         '-m': mychange,
-        '-n': symbol
+        '-n': symbol,
+        '-x': locktime,
     }, None
 
 
@@ -790,13 +822,13 @@ def transfer_mit(account, password, to_did, symbol, fee=None):
 
 @mvs_api
 def list_mits(account=None, password=None):
-    positional = filter(None, [account, password])
+    positional = list( filter(None, [account, password]) )
     return "listmits", positional, {}, None
 
 
 @mvs_api
 def get_mit(symbol=None, tracing=False, page_index=1, page_limit=100):
-    positional = filter(None, [symbol])
+    positional = list( filter(None, [symbol]) )
     if symbol != None and tracing:
         positional.append("--trace")
         return "getmit", positional, {'--index': page_index, '--limit': page_limit}, None
@@ -829,5 +861,5 @@ def swap_token(account, password, symbol, amount, foreign_addr, change=None, fro
 
 if __name__ == "__main__":
     rc = RemoteCtrl("10.10.10.35")
-    print rc.list_balances('lxf', '123')
-    print list_balances('lxf', '123')
+    print( rc.list_balances('lxf', '123') )
+    print( list_balances('lxf', '123') )

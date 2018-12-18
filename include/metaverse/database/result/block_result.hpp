@@ -51,6 +51,9 @@ public:
     /// A transaction hash where index < transaction_count.
     hash_digest transaction_hash(size_t index) const;
 
+    // the signature for pos block
+    ec_signature blocksig() const;
+
 private:
     const memory_ptr slab_;
 };

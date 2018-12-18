@@ -21,7 +21,7 @@ class TestMultiSig(MVSTestCaseBase):
         ec, message = mvs_rpc.list_balances(Zac.name, Zac.password, (amount, amount))
         self.assertEqual(ec, 0 , message)
 
-        balances = filter(filter_balances, message)
+        balances = list( filter(filter_balances, message) )
         self.assertNotEqual(balances, None, balances)
         self.assertEqual(len(balances), 1)
 
@@ -49,7 +49,7 @@ class TestMultiSig(MVSTestCaseBase):
         ec, message = mvs_rpc.list_balances(Zac.name, Zac.password, (0, amount))
         self.assertEqual(ec, 0, message)
 
-        balances = filter(filter_balances, message)
+        balances = list( filter(filter_balances, message) )
         self.assertEqual(len(balances), 1)
         self.assertEqual(balances[0]['unspent'], 0)
 
@@ -72,7 +72,7 @@ class TestMultiSig(MVSTestCaseBase):
         ec, message = mvs_rpc.list_balances(Zac.name, Zac.password, (amount, amount))
         self.assertEqual(ec, 0 , message)
 
-        balances = filter(filter_balances, message)
+        balances = list( filter(filter_balances, message) )
         self.assertNotEqual(balances, None, balances)
         self.assertEqual(len(balances), 1)
 
@@ -98,6 +98,6 @@ class TestMultiSig(MVSTestCaseBase):
         ec, message = mvs_rpc.list_balances(Zac.name, Zac.password, (0, amount))
         self.assertEqual(ec, 0, message)
 
-        balances = filter(filter_balances, message)
+        balances = list( filter(filter_balances, message) )
         self.assertEqual(len(balances), 1)
         self.assertEqual(balances[0]['unspent'], 0)

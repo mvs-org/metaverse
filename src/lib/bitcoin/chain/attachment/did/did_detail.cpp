@@ -25,7 +25,6 @@
 #include <metaverse/bitcoin/utility/container_source.hpp>
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
-#include <json/minijson_writer.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -103,14 +102,6 @@ std::string did_detail::to_string() const
         << "\t address = " << address << "\n";
 
     return ss.str();
-}
-
-void did_detail::to_json(std::ostream& output)
-{
-    minijson::object_writer json_writer(output);
-    json_writer.write("symbol", symbol);
-    json_writer.write("address", address);
-    json_writer.close();
 }
 
 const std::string& did_detail::get_symbol() const

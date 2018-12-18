@@ -33,6 +33,10 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
+constexpr const char* DEFAULT_INVALID_ASSET_SYMBOL = "#(DEFAULT INVALID ASSET SYMBOL);";
+#define is_default_invalid_asset_symbol(s) ((s) == (DEFAULT_INVALID_ASSET_SYMBOL))
+
+
 struct prikey_amount
 {
     std::string first;
@@ -91,8 +95,21 @@ public:
         if (tokens.size() != 2)
             return false;
 
-        deserialize(height.first_, tokens[0], true);
-        deserialize(height.second_, tokens[1], true);
+        if (!tokens[0].empty()) {
+            deserialize(height.first_, tokens[0], true);
+        } else if (std::is_arithmetic<T1>::value) {
+            height.first_ = std::numeric_limits<T1>::min();
+        } else {
+            height.first_ = T1();
+        }
+
+        if (!tokens[1].empty()) {
+            deserialize(height.second_, tokens[1], true);
+        } else if (std::is_arithmetic<T2>::value) {
+            height.second_ = std::numeric_limits<T2>::max();
+        } else {
+            height.second_ = T2();
+        }
 
         return true;
     };
@@ -104,6 +121,36 @@ public:
         result << height.first_ << BX_TX_POINT_DELIMITER << height.second_;
         return result.str();
     };
+
+    std::string encode_colon_delimited()
+    {
+        return encode_colon_delimited(*this);
+    }
+
+    bool is_default() const
+    {
+        return first_ == T1() && second_ == T2();
+    }
+
+    template<typename T3>
+    bool is_in_range(T3 value, bool default_ok=true) const
+    {
+        if (std::is_arithmetic<T1>::value &&
+            std::is_arithmetic<T2>::value &&
+            std::is_arithmetic<T3>::value) {
+            return (default_ok && is_default()) || (first_ <= value && value < second_);
+        }
+        return false;
+    }
+
+    bool is_valid(bool default_ok=true) const
+    {
+        if (std::is_arithmetic<T1>::value &&
+            std::is_arithmetic<T2>::value) {
+            return (default_ok && is_default()) || (first_ < second_);
+        }
+        return true;
+    }
 
     /**
      * Overload stream in. Throws if colon_delimited2_item is invalid.
@@ -117,7 +164,7 @@ public:
         stream >> tuple;
 
         if (!decode_colon_delimited(argument, tuple)) {
-            throw std::logic_error{"invalid option " + tuple};
+            throw std::logic_error{"invalid colon delimited option " + tuple};
         }
 
         return stream;

@@ -44,16 +44,8 @@ console_result transfercert::invoke (Json::Value& jv_output,
 
     // check asset cert types
     auto& cert_type_name = argument_.cert;
-    auto match = [&cert_type_name](const std::pair<asset_cert_type, std::string> & item) {
-        return item.second == cert_type_name;
-    };
-    const auto& type_name_map = asset_cert::get_type_name_map();
-    auto iter = std::find_if(type_name_map.begin(), type_name_map.end(), match);
-    if (iter == type_name_map.end()) {
-        throw asset_cert_exception("unsupported asset cert type " + cert_type_name);
-    }
+    auto cert_type = check_cert_type_name(cert_type_name, true);
 
-    auto cert_type = iter->first;
     if (cert_type == asset_cert_ns::issue) {
         auto sh_asset = blockchain.get_issued_asset(argument_.symbol);
         if (!sh_asset)
@@ -109,11 +101,12 @@ console_result transfercert::invoke (Json::Value& jv_output,
 
     // json output
     auto && tx = helper.get_transaction();
+    auto json_helper = config::json_helper(get_api_version());
     if (is_multisig_address) {
-        jv_output = config::json_helper(get_api_version()).prop_list_of_rawtx(tx, false, true);
+        jv_output = json_helper.prop_list_of_rawtx(tx, false, true);
     }
     else {
-        jv_output = config::json_helper(get_api_version()).prop_tree(tx, true);
+        jv_output = json_helper.prop_tree(tx, true);
     }
 
     return console_result::okay;

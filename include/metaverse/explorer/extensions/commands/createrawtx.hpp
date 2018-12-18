@@ -20,6 +20,7 @@
 
 
 #pragma once
+#include <metaverse/macros_define.hpp>
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -67,14 +68,19 @@ public:
             "Transaction type. 0 -- transfer etp, 1 -- deposit etp, 3 -- transfer asset"
         )
         (
+            "utxos,u",
+            value<std::vector<std::string>>(&option_.utxos),
+            "Use the specific UTXO as input. format: \"tx-hash:output-index\""
+        )
+        (
             "senders,s",
-            value<std::vector<std::string>>(&option_.senders)->required(),
-            "Send from addresses"
+            value<std::vector<std::string>>(&option_.senders),
+            "Send from dids/addresses"
         )
         (
             "receivers,r",
             value<std::vector<std::string>>(&option_.receivers)->required(),
-            "Send to [address:amount]. amount is asset number if sybol option specified"
+            "Send to [did/address:amount]. amount is asset number if symbol option specified"
         )
         (
             "symbol,n",
@@ -89,13 +95,20 @@ public:
         (
             "mychange,m",
             value<std::string>(&option_.mychange_address),
-            "Mychange to this address, includes etp and asset change"
+            "Mychange to this did/address, includes etp and asset change"
         )
         (
             "message,i",
             value<std::string>(&option_.message),
             "Message/Information attached to this transaction"
         )
+#ifdef ENABLE_LOCKTIME
+        (
+            "locktime,x",
+            value<uint32_t>(&option_.locktime)->default_value(0),
+            "Locktime. defaults to 0"
+        )
+#endif
         (
             "fee,f",
             value<uint64_t>(&option_.fee)->default_value(10000),
@@ -122,6 +135,7 @@ public:
     struct option
     {
         uint16_t type;
+        std::vector<std::string> utxos;
         std::vector<std::string> senders;
         std::vector<std::string> receivers;
         std::string symbol;
@@ -129,6 +143,7 @@ public:
         std::string message;
         uint16_t deposit;
         uint64_t fee;
+        uint32_t locktime;
 
     } option_;
 
