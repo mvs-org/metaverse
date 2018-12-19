@@ -328,6 +328,7 @@ public:
 
     std::shared_ptr<blockchain_asset::list> get_asset_register_output(const std::string& symbol);
     // cert api
+    std::shared_ptr<asset_cert> get_asset_cert(const std::string& symbol, asset_cert_type cert_type) const;
     bool is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_type);
     uint64_t get_asset_cert_height(const std::string& cert_symbol,const asset_cert_type& cert_type);
     std::shared_ptr<asset_cert::list> get_issued_asset_certs(const std::string& address = "");

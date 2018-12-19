@@ -273,6 +273,21 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
     return true;
 }
 
+bool witness::is_vote_result_output(const chain::output& output)
+{
+    if (!output.is_etp() || output.value != 0) {
+        return false;
+    }
+
+    auto& ops = output.script.operations;
+
+    // check operation of script where mixhash is stored.
+    if ((ops.size() != 1) || !chain::operation::is_push_only(ops)) {
+        return false;
+    }
+    return true;
+}
+
 u256 witness::calc_mixhash(const list& witness_list)
 {
     RLPStream s;
@@ -302,10 +317,10 @@ bool witness::verify_vote_result(const chain::block& block, list& witness_list) 
         return false;
     }
 
-    auto& ops = coinbase_tx.outputs.back().script.operations;
+    auto& vote_result_output = coinbase_tx.outputs.back();
 
     // check operation of script where mixhash is stored.
-    if ((ops.size() != 1) || !chain::operation::is_push_only(ops)) {
+    if (!is_vote_result_output(vote_result_output)) {
         return false;
     }
 
@@ -315,6 +330,7 @@ bool witness::verify_vote_result(const chain::block& block, list& witness_list) 
         return false;
     }
 
+    auto& ops = vote_result_output.script.operations;
     auto buff = chain::operation::factory_from_data(ops[0].to_data()).data;
     auto stored_mixhash = (h256::Arith)(h256((const uint8_t*)&buff[0], h256::ConstructFromPointer));
     auto calced_mixhash = (h256)calc_mixhash(witness_list);

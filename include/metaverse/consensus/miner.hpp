@@ -109,11 +109,24 @@ public:
     static uint64_t calculate_block_subsidy_dpos(uint64_t height, bool is_testnet);
     static uint64_t calculate_lockblock_reward(uint64_t lcok_heights, uint64_t num);
 
+    static uint64_t mst_price(const block_chain_impl& chain, const std::string& symbol, uint64_t amount=1);
+    static uint64_t calculate_mst_subsidy(const block_chain_impl& chain,
+        const std::string& symbol, uint64_t height, bool is_testnet, uint32_t version);
+    static uint64_t calculate_mst_subsidy_pow(const block_chain_impl& chain,
+        const std::string& symbol, uint64_t height, bool is_testnet);
+    static uint64_t calculate_mst_subsidy_pos(const block_chain_impl& chain,
+        const std::string& symbol, uint64_t height, bool is_testnet);
+    static uint64_t calculate_mst_subsidy_dpos(const block_chain_impl& chain,
+        const std::string& symbol, uint64_t height, bool is_testnet);
+
     chain::block_version get_accept_block_version() const;
     void set_accept_block_version(chain::block_version v);
 
     bool is_witness() const;
     bool set_pub_and_pri_key(const std::string& pubkey, const std::string& prikey);
+
+    static bool check_mining_asset_symbol(const block_chain_impl& chain, const std::string& symbol);
+    void set_mining_asset_symbol(const std::string& symbol);
 
 private:
     void work(const wallet::payment_address& pay_address);
@@ -139,6 +152,8 @@ private:
 
     std::shared_ptr<chain::output> create_coinbase_mst_output(
         const wallet::payment_address& pay_address, const std::string& symbol, uint64_t value);
+    bool add_coinbase_mst_output(chain::transaction& coinbase_tx,
+        const wallet::payment_address& pay_address, uint64_t block_height, uint32_t version);
 
 private:
     p2p_node& node_;
@@ -147,6 +162,7 @@ private:
     uint16_t new_block_number_;
     uint16_t new_block_limit_;
     chain::block_version accept_block_version_;
+    std::string mining_asset_symbol_;
 
     block_ptr new_block_;
     wallet::payment_address pay_address_;

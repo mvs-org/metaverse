@@ -1759,13 +1759,18 @@ std::shared_ptr<asset_cert::list> block_chain_impl::get_issued_asset_certs(
     return sp_vec;
 }
 
-bool block_chain_impl::is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_type)
+std::shared_ptr<asset_cert> block_chain_impl::get_asset_cert(const std::string& symbol, asset_cert_type cert_type) const
 {
     BITCOIN_ASSERT(!symbol.empty());
 
     auto&& key_str = asset_cert::get_key(symbol, cert_type);
     const auto key = get_hash(key_str);
-    return database_.certs.get(key) != nullptr;
+    return database_.certs.get(key);
+}
+
+bool block_chain_impl::is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_type)
+{
+    return get_asset_cert(symbol, cert_type) != nullptr;
 }
 
 bool block_chain_impl::is_asset_mit_exist(const std::string& symbol)

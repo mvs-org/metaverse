@@ -131,12 +131,28 @@ code validate_block::check_coinbase(const chain::header& prev_header, bool check
             break;
         }
 
-        auto has_vote_result = coinbase_count == 0 && is_begin_of_epoch;
-        if ((!has_vote_result && tx.outputs.size() != 1)
-            || (has_vote_result && tx.outputs.size() != 2)
-            || (tx.outputs.size() < 1)
-            || (tx.outputs[0].is_etp() == false)) {
+        if (tx.outputs.empty() || !tx.outputs[0].is_etp()) {
             return error::first_not_coinbase;
+        }
+
+        auto has_vote_result = is_begin_of_epoch && coinbase_count == 0;
+        if (!has_vote_result) {
+            if (tx.outputs.size() > 2 ||
+                (tx.outputs.size() == 2 && !tx.outputs[1].is_asset_transfer())) {
+                return error::first_not_coinbase;
+            }
+        }
+        else {
+            if (tx.outputs.size() < 2 || tx.outputs.size() > 3) {
+                return error::first_not_coinbase;
+            }
+            if (tx.outputs.size() > 2 && !tx.outputs[1].is_asset_transfer()) {
+                return error::first_not_coinbase;
+            }
+            auto& vote_result_output = tx.outputs.back();
+            if (!consensus::witness::is_vote_result_output(vote_result_output)) {
+                return error::first_not_coinbase;
+            }
         }
 
         if (is_active(script_context::bip34_enabled)) {
@@ -733,7 +749,23 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
     const auto& coinbase = transactions.front();
     const auto reward = coinbase.total_output_value();
     const auto value = consensus::miner::calculate_block_subsidy(height_, testnet_, version) + fees;
-    return reward > value ? error::coinbase_too_large : error::success;
+    if (reward > value) {
+        return error::coinbase_too_large;
+    }
+
+    if (coinbase.outputs.size() > 1) {
+        RETURN_IF_STOPPED();
+
+        const auto& coinbase_mst_output = coinbase.outputs[1];
+        auto mst_reward = coinbase_mst_output.get_asset_amount();
+        auto symbol = coinbase_mst_output.get_asset_symbol();
+        auto mst_value = consensus::miner::calculate_mst_subsidy(chain, symbol, height_, testnet_, version);
+        if (mst_reward > mst_value) {
+            return error::mst_coinbase_too_large;
+        }
+    }
+
+    return error::success;
 }
 
 bool validate_block::check_block_signature(blockchain::block_chain_impl& chain) const

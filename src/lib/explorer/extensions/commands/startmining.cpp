@@ -128,6 +128,13 @@ console_result startmining::invoke(Json::Value& jv_output,
         throw argument_legality_exception{"wrong consensus of block version!"};
     }
 
+    if (!option_.symbol.empty()) {
+        if (!consensus::miner::check_mining_asset_symbol(blockchain, option_.symbol)) {
+            throw argument_legality_exception{"asset " + option_.symbol + " can not be mined."};
+        }
+        miner.set_mining_asset_symbol(option_.symbol);
+    }
+
     // start
     if (miner.start(addr, option_.number)){
         std::string prompt = "solo mining started at "

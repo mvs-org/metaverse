@@ -93,6 +93,7 @@ public:
     chain::output create_witness_vote_result(uint64_t height);
     bool add_witness_vote_result(chain::transaction& coinbase_tx, uint64_t block_height);
     chain::block::ptr fetch_vote_result_block(uint64_t height);
+    static bool is_vote_result_output(const chain::output&);
 
     uint32_t get_slot_num(const witness_id& id) const;
     uint32_t calc_slot_num(uint64_t height) const;

@@ -291,6 +291,8 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "validate coinstake block signature failed";
         case error::check_pos_genesis_error:
             return "check pos genesis block failed";
+        case error::mst_coinbase_too_large:
+            return "asset coinbase value is too large";
 
         // unknown errors
         case error::unknown:
