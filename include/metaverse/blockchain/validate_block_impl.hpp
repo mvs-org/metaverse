@@ -44,12 +44,12 @@ public:
         const config::checkpoint::list& checkpoints,
         stopped_callback stopped);
 
-    virtual bool verify_stake(const chain::block& block) const;
-    virtual bool is_coin_stake(const chain::block& block) const;
+    virtual bool verify_stake(const chain::block& block) const override;
+    virtual bool is_coin_stake(const chain::block& block) const override;
 
-    virtual bool check_work(const chain::block& block) const;
+    virtual bool check_work(const chain::block& block) const override;
     virtual bool check_get_coinage_reward_transaction(
-        const chain::transaction& coinage_reward_coinbase, const chain::output& output) const;
+        const chain::transaction& coinage_reward_coinbase, const chain::output& output) const override;
 
     virtual std::string get_did_from_address_consider_orphan_chain(const std::string& address, const std::string& did_symbol) const override;
     virtual bool is_did_match_address_in_orphan_chain(const std::string& symbol, const std::string& address) const override;
@@ -59,20 +59,20 @@ public:
     virtual bool is_asset_mit_in_orphan_chain(const std::string& symbol) const override;
 
     virtual uint64_t get_fork_index() const override { return fork_index_; }
-    uint64_t median_time_past() const;
+    uint64_t median_time_past() const override;
 
 protected:
-    u256 previous_block_bits() const;
-    uint64_t actual_time_span(uint64_t interval) const;
-    versions preceding_block_versions(uint64_t maximum) const;
-    chain::header fetch_block(uint64_t fetch_height) const;
-    chain::header::ptr get_last_block_header(const chain::header& parent_header, bool is_staking) const;
+    u256 previous_block_bits() const override;
+    uint64_t actual_time_span(uint64_t interval) const override;
+    versions preceding_block_versions(uint64_t maximum) const override;
+    chain::header fetch_block(uint64_t fetch_height) const override;
+    chain::header::ptr get_last_block_header(const chain::header& parent_header, bool is_staking) const override;
     bool fetch_transaction(chain::transaction& tx, uint64_t& tx_height,
-        const hash_digest& tx_hash) const;
-    bool is_output_spent(const chain::output_point& outpoint) const;
+        const hash_digest& tx_hash) const override;
+    bool is_output_spent(const chain::output_point& outpoint) const override;
     bool is_output_spent(const chain::output_point& previous_output,
-        uint64_t index_in_parent, uint64_t input_index) const;
-    bool transaction_exists(const hash_digest& tx_hash) const;
+        uint64_t index_in_parent, uint64_t input_index) const override;
+    bool transaction_exists(const hash_digest& tx_hash) const override;
 
 private:
     bool fetch_orphan_transaction(chain::transaction& tx,

@@ -86,134 +86,134 @@ public:
     // ------------------------------------------------------------------------
 
     /// Start or restart the blockchain.
-    virtual bool start();
+    virtual bool start() override;
 
     /// Signal stop of current work, speeds shutdown with multiple threads.
-    virtual bool stop();
+    virtual bool stop() override;
 
     /// Close the blockchain, threads must first be joined, can be restarted.
-    virtual bool close();
+    virtual bool close() override;
 
     // simple_chain (NOT THREAD SAFE).
     // ------------------------------------------------------------------------
 
     /// Return the first and last gaps in the blockchain, or false if none.
-    bool get_gap_range(uint64_t& out_first, uint64_t& out_last) const;
+    bool get_gap_range(uint64_t& out_first, uint64_t& out_last) const override;
 
     /// Return the next chain gap at or after the specified start height.
-    bool get_next_gap(uint64_t& out_height, uint64_t start_height) const;
+    bool get_next_gap(uint64_t& out_height, uint64_t start_height) const override;
 
     /// Get the dificulty of a block at the given height.
-    bool get_difficulty(u256& out_difficulty, uint64_t height) const;
+    bool get_difficulty(u256& out_difficulty, uint64_t height) const override;
 
     /// Get the header of the block at the given height.
-    bool get_header(chain::header& out_header, uint64_t height) const;
+    bool get_header(chain::header& out_header, uint64_t height) const override;
     uint64_t get_transaction_count(uint64_t block_height) const;
 
     /// Get the height of the block with the given hash.
-    bool get_height(uint64_t& out_height, const hash_digest& block_hash) const;
+    bool get_height(uint64_t& out_height, const hash_digest& block_hash) const override;
 
     /// Get height of latest block.
-    bool get_last_height(uint64_t& out_height) const;
+    bool get_last_height(uint64_t& out_height) const override;
 
     /// Get the hash digest of the transaction of the outpoint.
     bool get_outpoint_transaction(hash_digest& out_transaction,
-        const chain::output_point& outpoint) const;
+        const chain::output_point& outpoint) const override;
 
     /// Get the transaction of the given hash and its block height.
     bool get_transaction(chain::transaction& out_transaction,
-        uint64_t& out_block_height, const hash_digest& transaction_hash) const;
+        uint64_t& out_block_height, const hash_digest& transaction_hash) const override;
 
     /// Import a block to the blockchain.
-    bool import(chain::block::ptr block, uint64_t height);
+    bool import(chain::block::ptr block, uint64_t height) override;
 
     /// Append the block to the top of the chain.
-    bool push(block_detail::ptr block);
+    bool push(block_detail::ptr block) override;
 
     /// Remove blocks at or above the given height, returning them in order.
-    bool pop_from(block_detail::list& out_blocks, uint64_t height);
+    bool pop_from(block_detail::list& out_blocks, uint64_t height) override;
 
     // block_chain queries (thread safe).
     // ------------------------------------------------------------------------
 
     /// Store a block to the blockchain, with indexing and validation.
     void store(message::block_message::ptr block,
-        block_store_handler handler);
+        block_store_handler handler) override;
 
     /// fetch a block by height.
-    void fetch_block(uint64_t height, block_fetch_handler handler);
+    void fetch_block(uint64_t height, block_fetch_handler handler) override;
 
     /// fetch a block by height.
-    void fetch_block(const hash_digest& hash, block_fetch_handler handler);
+    void fetch_block(const hash_digest& hash, block_fetch_handler handler) override;
 
     /// fetch block header by height.
     void fetch_block_header(uint64_t height,
-        block_header_fetch_handler handler);
+        block_header_fetch_handler handler) override;
 
     /// fetch block header by hash.
     void fetch_block_header(const hash_digest& hash,
-        block_header_fetch_handler handler);
+        block_header_fetch_handler handler) override;
 
     /// fetch a merkle block by height.
     void fetch_merkle_block(uint64_t height,
-        merkle_block_fetch_handler handler);
+        merkle_block_fetch_handler handler) override;
 
     /// fetch a merkle block by height.
     void fetch_merkle_block(const hash_digest& hash,
-        merkle_block_fetch_handler handler);
+        merkle_block_fetch_handler handler) override;
 
     /// fetch hashes of transactions for a block, by block height.
     void fetch_block_transaction_hashes(uint64_t height,
-        transaction_hashes_fetch_handler handler);
+        transaction_hashes_fetch_handler handler) override;
 
     /// fetch hashes of transactions for a block, by block hash.
     void fetch_block_transaction_hashes(const hash_digest& hash,
-        transaction_hashes_fetch_handler handler);
+        transaction_hashes_fetch_handler handler) override;
 
     /// fetch hashes of transactions for a block, by block height.
     void fetch_block_signature(uint64_t height,
-                               block_signature_fetch_handler handler);
+                               block_signature_fetch_handler handler) override;
 
     /// fetch hashes of transactions for a block, by block hash.
     void fetch_block_signature(const hash_digest& hash,
-                               block_signature_fetch_handler handler);
+                               block_signature_fetch_handler handler) override;
 
 
     /// fetch a block locator relative to the current top and threshold.
-    void fetch_block_locator(block_locator_fetch_handler handler);
+    void fetch_block_locator(block_locator_fetch_handler handler) override;
 
     /// fetch the set of block hashes indicated by the block locator.
     void fetch_locator_block_hashes(const message::get_blocks& locator,
         const hash_digest& threshold, size_t limit,
-        locator_block_hashes_fetch_handler handler);
+        locator_block_hashes_fetch_handler handler) override;
 
     /// fetch the set of block headers indicated by the block locator.
     void fetch_locator_block_headers(const message::get_headers& locator,
         const hash_digest& threshold, size_t limit,
-        locator_block_headers_fetch_handler handler);
+        locator_block_headers_fetch_handler handler) override;
 
     /// fetch height of block by hash.
     void fetch_block_height(const hash_digest& hash,
-        block_height_fetch_handler handler);
+        block_height_fetch_handler handler) override;
 
     /// fetch height of latest block.
-    void fetch_last_height(last_height_fetch_handler handler);
+    void fetch_last_height(last_height_fetch_handler handler) override;
 
     /// fetch transaction by hash.
     void fetch_transaction(const hash_digest& hash,
-        transaction_fetch_handler handler);
+        transaction_fetch_handler handler) override;
 
     /// fetch height and offset within block of transaction by hash.
     void fetch_transaction_index(const hash_digest& hash,
-        transaction_index_fetch_handler handler);
+        transaction_index_fetch_handler handler) override;
 
     /// fetch spend of an output point.
     void fetch_spend(const chain::output_point& outpoint,
-        spend_fetch_handler handler);
+        spend_fetch_handler handler) override;
 
     /// fetch outputs, values and spends for an address.
     void fetch_history(const wallet::payment_address& address,
-        uint64_t limit, uint64_t from_height, history_fetch_handler handler);
+        uint64_t limit, uint64_t from_height, history_fetch_handler handler) override;
 
     bool fetch_history(const wallet::payment_address& address,
         uint64_t limit, uint64_t from_height, history_compact::list& history);
@@ -224,28 +224,28 @@ public:
 
     /// fetch stealth results.
     void fetch_stealth(const binary& filter, uint64_t from_height,
-        stealth_fetch_handler handler);
+        stealth_fetch_handler handler) override;
 
     /// filter out block hashes that exist in the store.
     virtual void filter_blocks(message::get_data::ptr message,
-        result_handler handler);
+        result_handler handler) override;
 
     /// filter out block hashes that exist in the orphan pool.
     virtual void filter_orphans(message::get_data::ptr message,
-        result_handler handler);
+        result_handler handler) override;
 
     /// filter out transaction hashes that exist in the store.
     virtual void filter_transactions(message::get_data::ptr message,
-        result_handler handler);
+        result_handler handler) override;
 
     /// Subscribe to blockchain reorganizations.
-    virtual void subscribe_reorganize(reorganize_handler handler);
+    virtual void subscribe_reorganize(reorganize_handler handler) override;
 
     /// must be have enough etp locked in the address
     virtual bool check_pos_capability(
         uint64_t best_height,
         const wallet::payment_address& pay_addres,
-        bool need_sync_lock = true);
+        bool need_sync_lock = true) override;
 
     /// select pos utxo. target value
     virtual bool select_utxo_for_staking(
@@ -390,8 +390,8 @@ public:
     static bool is_script_address(const std::string& address);
     static bool is_blackhole_address(const std::string& address);
 
-    void fired();
-    organizer& get_organizer();
+    void fired() override;
+    organizer& get_organizer() override;
     bool get_transaction(const hash_digest& hash,
         chain::transaction& tx, uint64_t& tx_height);
     bool get_transaction_callback(const hash_digest& hash,

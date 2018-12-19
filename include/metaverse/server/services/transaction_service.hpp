@@ -59,7 +59,7 @@ protected:
     virtual bool unbind(socket& xpub, socket& xsub);
 
     // Implement the service.
-    virtual void work();
+    virtual void work() override;
 
 private:
     typedef bc::chain::point::indexes index_list;

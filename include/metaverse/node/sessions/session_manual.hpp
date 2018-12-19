@@ -41,7 +41,7 @@ public:
         blockchain::transaction_pool& pool);
 
 protected:
-    void attach_handshake_protocols(network::channel::ptr channel, result_handler handle_started);
+    void attach_handshake_protocols(network::channel::ptr channel, result_handler handle_started) override;
     /// Overridden to attach blockchain protocols.
     void attach_protocols(network::channel::ptr channel) override;
 

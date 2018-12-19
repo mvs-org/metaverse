@@ -51,7 +51,7 @@ protected:
     virtual bool unbind(socket& publisher);
 
     // Implement the service.
-    virtual void work();
+    virtual void work() override;
 
     // Publish the heartbeat (integrated worker).
     void publish(uint32_t count, socket& socket);

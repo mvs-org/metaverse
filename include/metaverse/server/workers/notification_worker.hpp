@@ -68,7 +68,7 @@ protected:
     virtual bool disconnect(socket& router);
 
     // Implement the service.
-    virtual void work();
+    virtual void work() override;
 
 private:
     typedef chain::point::indexes index_list;

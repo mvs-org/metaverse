@@ -58,7 +58,7 @@ protected:
         socket& notify_dealer);
 
     // Implement the service.
-    virtual void work();
+    virtual void work() override;
 
 private:
     const bool secure_;

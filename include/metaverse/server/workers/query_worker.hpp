@@ -60,7 +60,7 @@ protected:
     virtual void query(socket& router);
 
     // Implement the worker.
-    virtual void work();
+    virtual void work() override;
 
 private:
     const bool secure_;
