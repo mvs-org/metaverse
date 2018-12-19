@@ -45,7 +45,7 @@ protected:
     session_batch(p2p& network, bool persistent);
 
     /// Create a channel from the configured number of concurrent attempts.
-    virtual void connect(connector::ptr connect, channel_handler handler);
+    void connect(connector::ptr connect, channel_handler handler);
 
     void connect_seed(connector::ptr connect, channel_handler handler);
 

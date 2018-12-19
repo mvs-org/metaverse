@@ -63,6 +63,8 @@ public:
 protected:
     virtual void load_command_variables(variables_map& variables,
         std::istream& input, int argc, const char* argv[]);
+private:
+    using bc::config::parser::load_command_variables;
 
 private:
     static std::string system_config_directory();

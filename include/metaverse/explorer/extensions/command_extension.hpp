@@ -213,6 +213,7 @@ private:
 
 class command_extension: public command
 {
+    using command::invoke;
 public:
     virtual console_result invoke(Json::Value& jv_output,
         libbitcoin::server::server_node& node)

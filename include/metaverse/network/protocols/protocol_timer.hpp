@@ -57,7 +57,7 @@ protected:
      * @param[in]  timeout  The timer period (not automatically reset).
      * @param[in]  handler  Invoke automatically on stop and timer events.
      */
-    virtual void start(const asio::duration& timeout, event_handler handler);
+    void start(const asio::duration& timeout, event_handler handler);
 
 protected:
     void reset_timer();

@@ -54,7 +54,7 @@ protected:
      * The event handler may be invoked one or more times.
      * @param[in]  handler  The handler to call at each completion event.
      */
-    virtual void start(event_handler handler);
+    void start(event_handler handler);
 
     /**
      * Invoke the event handler.
