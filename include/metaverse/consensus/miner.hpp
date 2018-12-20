@@ -99,6 +99,7 @@ public:
     bool get_work(std::string& seed_hash, std::string& header_hash, std::string& boundary);
     bool put_result(const std::string& nonce, const std::string& mix_hash,
         const std::string& header_hash, const uint64_t &nounce_mask);
+    const wallet::payment_address& get_miner_payment_address() const;
     bool set_miner_payment_address(const wallet::payment_address& address);
     void get_state(uint64_t &height,  uint64_t &rate, std::string& difficulty, bool& is_mining);
     bool get_block_header(chain::header& block_header, const std::string& para);
@@ -129,6 +130,7 @@ public:
     bool is_witness() const;
     bool set_pub_and_pri_key(const std::string& pubkey, const std::string& prikey);
 
+    std::string get_mining_asset_symbol() const;
     bool set_mining_asset_symbol(const std::string& symbol);
 
 private:

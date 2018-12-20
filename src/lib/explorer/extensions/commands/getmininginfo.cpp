@@ -44,19 +44,28 @@ console_result getmininginfo::invoke(Json::Value& jv_output,
     miner.get_state(height, rate, difficulty, is_mining);
 
     if (get_api_version() <= 2) {
-        auto& aroot = jv_output;
         Json::Value info;
         info["is-mining"] = is_mining;
         info["height"] += height;
         info["rate"] += rate;
         info["difficulty"] = difficulty;
-        aroot["mining-info"] = info;
+        jv_output["mining-info"] = info;
     }
     else {
         jv_output["is_mining"] = is_mining;
         jv_output["height"] += height;
         jv_output["rate"] += rate;
         jv_output["difficulty"] = difficulty;
+
+        auto& waddr = miner.get_miner_payment_address();
+        std::string payment_address = waddr ? waddr.encoded() : "";
+        std::string asset_symbol = miner.get_mining_asset_symbol();
+        std::string block_version = chain::get_block_version(miner.get_accept_block_version());
+        boost::trim(block_version);
+
+        jv_output["payment_address"] = payment_address;
+        jv_output["asset_symbol"] = asset_symbol;
+        jv_output["block_version"] = block_version;
     }
 
     return console_result::okay;

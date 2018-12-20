@@ -39,7 +39,7 @@ public:
     static const char* symbol(){ return "startmining";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "start CPU solo mining. You have to setminingaccount firstly."; }
+    const char* description() override { return "start CPU solo mining."; }
 
     arguments_metadata& load_arguments() override
     {

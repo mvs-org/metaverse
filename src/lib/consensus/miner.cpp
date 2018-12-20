@@ -25,8 +25,6 @@
 #include <system_error>
 #include <chrono>
 #include <ctime>
-//#include <boost/thread.hpp>
-//#include <boost/chrono.hpp>
 #include <metaverse/consensus/miner/MinerAux.h>
 #include <metaverse/consensus/libdevcore/BasicType.h>
 #include <metaverse/consensus/witness.hpp>
@@ -43,7 +41,6 @@
 #include <metaverse/macros_define.hpp>
 
 #define LOG_HEADER "Miner"
-using namespace std;
 
 namespace libbitcoin {
 namespace consensus {
@@ -156,7 +153,7 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
 {
     boost::mutex mutex;
     mutex.lock();
-    auto f = [&transactions, &mutex](const error_code & code, const vector<transaction_ptr>& transactions_) -> void
+    auto f = [&transactions, &mutex](const code&, const std::vector<transaction_ptr>& transactions_) -> void
     {
         transactions = transactions_;
         mutex.unlock();
@@ -166,7 +163,7 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
     boost::unique_lock<boost::mutex> lock(mutex);
 
     if (transactions.empty() == false) {
-        set<hash_digest> sets;
+        std::set<hash_digest> sets;
         for (auto i = transactions.begin(); i != transactions.end(); ) {
             auto& tx = **i;
             auto hash = tx.hash();
@@ -226,7 +223,7 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
     return transactions.empty() == false;
 }
 
-bool miner::script_hash_signature_operations_count(uint64_t &count, const chain::input& input, vector<transaction_ptr>& transactions)
+bool miner::script_hash_signature_operations_count(uint64_t &count, const chain::input& input, std::vector<transaction_ptr>& transactions)
 {
     const auto& previous_output = input.previous_output;
     transaction previous_tx;
@@ -251,7 +248,7 @@ bool miner::script_hash_signature_operations_count(uint64_t &count, const chain:
 }
 
 bool miner::script_hash_signature_operations_count(
-    uint64_t &count, const chain::input::list& inputs, vector<transaction_ptr>& transactions)
+    uint64_t &count, const chain::input::list& inputs, std::vector<transaction_ptr>& transactions)
 {
     count = 0;
     for (const auto& input : inputs)
@@ -266,7 +263,7 @@ bool miner::script_hash_signature_operations_count(
 
 miner::block_ptr miner::create_genesis_block(bool is_mainnet)
 {
-    string text;
+    std::string text;
     if (is_mainnet) {
         //BTC height 452527 witness, sent to Satoshi:12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX
         text = "6e64c2098b84b04a0d9f61a60d5bc8f5f80f37e19f3ad9c39bfe419db422b33c";
@@ -275,7 +272,7 @@ miner::block_ptr miner::create_genesis_block(bool is_mainnet)
         text = "2017.01.18 MVS start running testnet.";
     }
 
-    block_ptr pblock = make_shared<block>();
+    block_ptr pblock = std::make_shared<block>();
 
     // Create coinbase tx
     transaction tx_new;
@@ -317,7 +314,7 @@ miner::transaction_ptr miner::create_coinbase_tx(
     const wallet::payment_address& pay_address, uint64_t value,
     uint64_t block_height, int lock_height)
 {
-    transaction_ptr ptransaction = make_shared<message::transaction_message>();
+    transaction_ptr ptransaction = std::make_shared<message::transaction_message>();
 
     ptransaction->inputs.resize(1);
     ptransaction->version = transaction_version::first;
@@ -355,8 +352,8 @@ int bucket_size = 200;
 int bucket_size = 500000;
 #endif
 
-vector<uint64_t> lock_heights = {25200, 108000, 331200, 655200, 1314000};
-vector<uint64_t> coinage_rewards = {95890, 666666, 3200000, 8000000, 20000000};
+std::vector<uint64_t> lock_heights = {25200, 108000, 331200, 655200, 1314000};
+std::vector<uint64_t> coinage_rewards = {95890, 666666, 3200000, 8000000, 20000000};
 
 int miner::get_lock_heights_index(uint64_t height)
 {
@@ -495,7 +492,7 @@ struct transaction_dependent {
 
     transaction_dependent() : dpendens(0), is_need_process(false) {}
     transaction_dependent(const hash_digest& _hash, unsigned short _dpendens, bool _is_need_process)
-        : dpendens(_dpendens), is_need_process(_is_need_process) { hash = make_shared<hash_digest>(_hash);}
+        : dpendens(_dpendens), is_need_process(_is_need_process) { hash = std::make_shared<hash_digest>(_hash);}
 };
 
 uint32_t miner::get_tx_sign_length(transaction_ptr tx)
@@ -518,9 +515,9 @@ bool miner::get_block_transactions(
         return false;
     }
 
-    vector<transaction_ptr> transactions;
-    vector<transaction_priority> transaction_prioritys;
-    map<hash_digest, transaction_dependent> transaction_dependents;
+    std::vector<transaction_ptr> transactions;
+    std::vector<transaction_priority> transaction_prioritys;
+    std::map<hash_digest, transaction_dependent> transaction_dependents;
     previous_out_map_t previous_out_map;
     tx_fee_map_t tx_fee_map;
 
@@ -531,17 +528,17 @@ bool miner::get_block_transactions(
     // Largest block you're willing to create:
     uint32_t block_max_size = blockchain::max_block_size / 2;
     // Limit to betweeen 1K and max_block_size - 1K for sanity:
-    block_max_size = max((uint32_t)1000, min((uint32_t)(blockchain::max_block_size - 1000), block_max_size));
+    block_max_size = std::max<uint32_t>(1000, std::min<uint32_t>((blockchain::max_block_size - 1000), block_max_size));
 
     // How much of the block should be dedicated to high-priority transactions,
     // included regardless of the fees they pay
     uint32_t block_priority_size = 27000;
-    block_priority_size = min(block_max_size, block_priority_size);
+    block_priority_size = std::min(block_max_size, block_priority_size);
 
     // Minimum block size you want to create; block will be filled with free transactions
     // until there are no more or the block reaches this size:
     uint32_t block_min_size = 0;
-    block_min_size = min(block_max_size, block_min_size);
+    block_min_size = std::min(block_max_size, block_min_size);
 
     uint32_t block_size = 0;
     for (auto tx : transactions)
@@ -559,7 +556,7 @@ bool miner::get_block_transactions(
                 priority += (double)input_value * (last_height - prev_height + 1);
             }
             else {
-                transaction_dependents[input.previous_output.hash].hash = make_shared<hash_digest>(tx_hash);
+                transaction_dependents[input.previous_output.hash].hash = std::make_shared<hash_digest>(tx_hash);
                 transaction_dependents[tx_hash].dpendens++;
             }
         }
@@ -613,7 +610,7 @@ bool miner::get_block_transactions(
 
         // Size limits
         uint64_t serialized_size = ptx->serialized_size(1);
-        vector<transaction_ptr> coinage_reward_coinbases;
+        std::vector<transaction_ptr> coinage_reward_coinbases;
         transaction_ptr coinage_reward_coinbase;
         for (const auto& output : ptx->outputs) {
             if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
@@ -716,7 +713,7 @@ miner::block_ptr miner::create_new_block_pow(const wallet::payment_address& pay_
     uint32_t block_time = get_adjust_time(block_height);
 
     // create block
-    block_ptr pblock = make_shared<block>();
+    block_ptr pblock = std::make_shared<block>();
 
     // Fill in header
     pblock->header.version = chain::block_version_pow;
@@ -733,8 +730,8 @@ miner::block_ptr miner::create_new_block_pow(const wallet::payment_address& pay_
 
     // Get txs
     uint64_t total_fee = 0;
-    vector<transaction_ptr> txs;
-    vector<transaction_ptr> reward_txs;
+    std::vector<transaction_ptr> txs;
+    std::vector<transaction_ptr> reward_txs;
     get_block_transactions(last_height, txs, reward_txs, total_fee, total_tx_sig_length);
 
     // Update coinbase reward
@@ -797,7 +794,7 @@ miner::block_ptr miner::create_new_block_dpos(const wallet::payment_address& pay
     }
 
     // create block
-    block_ptr pblock = make_shared<block>();
+    block_ptr pblock = std::make_shared<block>();
 
     // Fill in header
     pblock->header.version = chain::block_version_dpos;
@@ -814,8 +811,8 @@ miner::block_ptr miner::create_new_block_dpos(const wallet::payment_address& pay
 
     // Get txs
     uint64_t total_fee = 0;
-    vector<transaction_ptr> txs;
-    vector<transaction_ptr> reward_txs;
+    std::vector<transaction_ptr> txs;
+    std::vector<transaction_ptr> reward_txs;
     get_block_transactions(last_height, txs, reward_txs, total_fee, total_tx_sig_length);
 
     // Update coinbase reward
@@ -912,7 +909,7 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
     }
 
     // create block
-    block_ptr pblock = make_shared<block>();
+    block_ptr pblock = std::make_shared<block>();
 
     // Fill in header
     pblock->header.version = chain::block_version_pos;  // pos
@@ -962,8 +959,8 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
 
     // Get txs
     uint64_t total_fee = 0;
-    vector<transaction_ptr> txs;
-    vector<transaction_ptr> reward_txs;
+    std::vector<transaction_ptr> txs;
+    std::vector<transaction_ptr> reward_txs;
     get_block_transactions(last_height, txs, reward_txs, total_fee, total_tx_sig_length);
 
     // Update coinbase reward
@@ -1076,9 +1073,9 @@ bool miner::sign_coinstake_tx(
 miner::transaction_ptr miner::create_pos_genesis_tx(uint64_t block_height, uint32_t block_time)
 {
     auto& fmt = boost::format("MVS start POS at %1%") % timestamp_to_string(block_time);
-    const string text(fmt.str());
+    const std::string text(fmt.str());
 
-    transaction_ptr genesis_tx = make_shared<message::transaction_message>();
+    transaction_ptr genesis_tx = std::make_shared<message::transaction_message>();
 
     genesis_tx->inputs.resize(1);
     genesis_tx->inputs[0].previous_output = output_point(null_hash, max_uint32);
@@ -1098,7 +1095,7 @@ miner::transaction_ptr miner::create_coinstake_tx(
     block_ptr pblock, const chain::output_info::list& stake_outputs)
 {
     block_chain_impl& block_chain = node_.chain_impl();
-    transaction_ptr coinstake = make_shared<message::transaction_message>();
+    transaction_ptr coinstake = std::make_shared<message::transaction_message>();
     coinstake->version = transaction_version::first;
 
     uint64_t nCredit = 0;
@@ -1194,8 +1191,8 @@ uint32_t miner::get_median_time_past(uint64_t height) const
 {
     block_chain_impl& block_chain = node_.chain_impl();
 
-    int num = min<uint64_t>(height, median_time_span);
-    vector<uint64_t> times;
+    int num = std::min<uint64_t>(height, median_time_span);
+    std::vector<uint64_t> times;
 
     for (int i = 0; i < num; i++) {
         header header;
@@ -1213,10 +1210,10 @@ uint64_t miner::store_block(block_ptr block)
     uint64_t height;
     boost::mutex mutex;
     mutex.lock();
-    auto f = [&height, &mutex](const error_code & code, boost::uint64_t new_height) -> void
+    auto f = [&height, &mutex](const code& ec, boost::uint64_t new_height) -> void
     {
-        if (new_height == 0 && code.value() != 0)
-            log::error(LOG_HEADER) << "store_block error: " << code.message();
+        if (new_height == 0 && ec.value() != 0)
+            log::error(LOG_HEADER) << "store_block error: " << ec.message();
 
         height = new_height;
         mutex.unlock();
@@ -1309,7 +1306,7 @@ bool miner::start(const wallet::payment_address& pay_address, uint16_t number)
 
     if (!thread_) {
         new_block_limit_ = number;
-        thread_.reset(new boost::thread(bind(&miner::work, this, pay_address)));
+        thread_.reset(new boost::thread(std::bind(&miner::work, this, pay_address)));
     }
 
     return true;
@@ -1336,16 +1333,14 @@ uint64_t miner::get_height() const
     return height;
 }
 
+const wallet::payment_address& miner::get_miner_payment_address() const
+{
+    return pay_address_;
+}
+
 bool miner::set_miner_payment_address(const wallet::payment_address& address)
 {
-    if (address) {
-        log::debug(LOG_HEADER) << "set_miner_payment_address[" << address.encoded() << "] success";
-    }
-    else {
-        log::error(LOG_HEADER) << "set_miner_payment_address[" << address.encoded() << "] is not availabe!";
-        return false;
-    }
-
+    log::debug(LOG_HEADER) << "set_miner_payment_address[" << address.encoded() << "] success";
     pay_address_ = address;
     return true;
 }
@@ -1428,7 +1423,7 @@ bool miner::put_result(const std::string& nonce, const std::string& mix_hash,
     return ret;
 }
 
-void miner::get_state(uint64_t &height, uint64_t &rate, string& difficulty, bool& is_mining)
+void miner::get_state(uint64_t &height, uint64_t &rate, std::string& difficulty, bool& is_mining)
 {
     rate = MinerAux::getRate();
     block_chain_impl& block_chain = node_.chain_impl();
@@ -1439,7 +1434,7 @@ void miner::get_state(uint64_t &height, uint64_t &rate, string& difficulty, bool
     is_mining = thread_ ? true : false;
 }
 
-bool miner::get_block_header(chain::header& block_header, const string& para)
+bool miner::get_block_header(chain::header& block_header, const std::string& para)
 {
     if (para == "pending") {
         block_ptr block = get_block();
@@ -1508,6 +1503,11 @@ bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& pr
 #endif
 
     return true;
+}
+
+std::string miner::get_mining_asset_symbol() const
+{
+    return mining_cert_ ? mining_cert_->get_symbol() : "";
 }
 
 bool miner::set_mining_asset_symbol(const std::string& symbol)

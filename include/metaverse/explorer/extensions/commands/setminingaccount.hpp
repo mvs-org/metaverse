@@ -45,7 +45,8 @@ public:
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-            .add("PAYMENT_ADDRESS", 1);
+            .add("PAYMENT_ADDRESS", 1)
+            .add("ASSET_SYMBOL", 1);
     }
 
     void load_fallbacks (std::istream& input,
@@ -54,7 +55,8 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(auth_.auth, "PAYMENT_ADDRESS", variables, input, raw);
+        load_input(argument_.payment_address, "PAYMENT_ADDRESS", variables, input, raw);
+        load_input(argument_.asset_symbol, "ASSET_SYMBOL", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -79,8 +81,13 @@ public:
         )
         (
             "PAYMENT_ADDRESS",
-            value<bc::wallet::payment_address>(&argument_.payment_address)->required(),
-            "the payment address of this account."
+            value<std::string>(&argument_.payment_address)->required(),
+            "the payment did/address of this account."
+        )
+        (
+            "ASSET_SYMBOL",
+            value<std::string>(&argument_.asset_symbol),
+            "Mine Asset with specified symbol. Defaults to empty."
         );
 
         return options;
@@ -95,7 +102,8 @@ public:
 
     struct argument
     {
-        bc::wallet::payment_address payment_address;
+        std::string payment_address;
+        std::string asset_symbol;
     } argument_;
 
     struct option
