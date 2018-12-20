@@ -66,7 +66,7 @@ bool asset_cert::is_valid() const
     return !(symbol_.empty()
              || owner_.empty()
              || (cert_type_ == asset_cert_ns::none)
-             || (calc_size() > ASSET_CERT_FIX_SIZE));
+             || (calc_size() > (has_description() ? ASSET_CERT_FULL_FIX_SIZE : ASSET_CERT_FIX_SIZE)));
 }
 
 bool asset_cert::operator< (const asset_cert& other) const
@@ -106,8 +106,12 @@ bool asset_cert::from_data_t(reader& source)
     symbol_ = source.read_string();
     owner_ = source.read_string();
     address_ = source.read_string();
-    cert_type_ = source.read_4_bytes_little_endian();
+    cert_type_.mask = source.read_4_bytes_little_endian();
     status_ = source.read_byte();
+
+    if (has_description()) {
+        description_ = source.read_string();
+    }
 
     auto result = static_cast<bool>(source);
     if (!result)
@@ -122,21 +126,32 @@ void asset_cert::to_data_t(writer& sink) const
     sink.write_string(symbol_);
     sink.write_string(owner_);
     sink.write_string(address_);
-    sink.write_4_bytes_little_endian(cert_type_);
+    sink.write_4_bytes_little_endian(cert_type_.mask);
     sink.write_byte(status_);
+
+    if (has_description()) {
+        sink.write_string(description_);
+    }
 }
 
 uint64_t asset_cert::calc_size() const
 {
-    return (symbol_.size() + 1)
-        + (owner_.size() + 1)
-        + (address_.size() + 1)
-        + ASSET_CERT_TYPE_FIX_SIZE
-        + ASSET_CERT_STATUS_FIX_SIZE;
+    auto size = (symbol_.size() + 1) + (owner_.size() + 1) + (address_.size() + 1)
+        + ASSET_CERT_TYPE_FIX_SIZE + ASSET_CERT_STATUS_FIX_SIZE;
+
+    if (has_description()) {
+        size += (description_.size() + 1);
+    }
+
+    return size;
 }
 
 uint64_t asset_cert::serialized_size() const
 {
+    if (has_description()) {
+        std::min<uint64_t>(calc_size(), ASSET_CERT_FULL_FIX_SIZE);
+    }
+
     return std::min<uint64_t>(calc_size(), ASSET_CERT_FIX_SIZE);
 }
 
@@ -147,6 +162,9 @@ std::string asset_cert::to_string() const
     ss << "\t owner = " << owner_ << "\n";
     ss << "\t address = " << address_ << "\n";
     ss << "\t cert = " << get_type_name() << "\n";
+    if (!description_.empty()) {
+        ss << "\t description = " << description_ << "\n";
+    }
     ss << "\t status = " << std::to_string(status_) << "\n";
     return ss.str();
 }
@@ -200,6 +218,17 @@ void asset_cert::set_address(const std::string& address)
     address_ = address.substr(0, len);
 }
 
+const std::string& asset_cert::get_description() const
+{
+    return description_;
+}
+
+void asset_cert::set_description(const std::string& description)
+{
+    size_t len = std::min((description.size() + 1), ASSET_CERT_DESCRIPTION_FIX_SIZE);
+    description_ = description.substr(0, len);
+}
+
 asset_cert_type asset_cert::get_type() const
 {
     return cert_type_;
@@ -231,6 +260,7 @@ const std::map<asset_cert_type, std::string>& asset_cert::get_type_name_map()
         {asset_cert_ns::issue, "issue"},
         {asset_cert_ns::domain, "domain"},
         {asset_cert_ns::naming, "naming"},
+        {asset_cert_ns::mining, "mining"},
 
         {asset_cert_ns::marriage,   "marriage"},
         {asset_cert_ns::kyc,        "KYC"},
@@ -277,14 +307,14 @@ bool asset_cert::test_certs(const std::vector<asset_cert_type>& total, const std
     return true;
 }
 
-bool asset_cert::is_unmovable(asset_cert_type cert_type)
+bool asset_cert::has_description(asset_cert_type cert_type)
 {
-    return cert_type.cert_type_status.unmovable;
+    return cert_type.has_description();
 }
 
-bool asset_cert::is_unmovable() const
+bool asset_cert::has_description() const
 {
-    return asset_cert::is_unmovable(cert_type_);
+    return cert_type_.has_description();
 }
 
 } // namspace chain

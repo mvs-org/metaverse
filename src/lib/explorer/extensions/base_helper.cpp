@@ -24,6 +24,7 @@
 #include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/consensus/libdevcore/SHA3.h>
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 #include <regex>
 
 namespace libbitcoin {
@@ -184,6 +185,60 @@ void check_message(const std::string& message, bool check_sensitive)
     }
 }
 
+void check_mining_subsidy_param(const std::string& param)
+{
+    if (param.empty()) {
+        return;
+    }
+
+    std::vector<std::string> items = bc::split(param, ",", true);
+    if (items.size() < 3) {
+        throw asset_mining_subsidy_parameter_exception{"invalid size of parameters: " + param};
+    }
+
+    const std::vector<std::string> keys{ "initial", "interval", "base" };
+    std::map<std::string, std::string> params;
+    for (auto& item : items) {
+        auto pair = bc::split(item, ":", true);
+        if (pair.size() != 2) {
+            throw asset_mining_subsidy_parameter_exception{"invalid item " + item};
+        }
+
+        auto key = pair[0];
+        auto value = pair[1];
+        if (std::find(std::begin(keys), std::end(keys), key) != keys.end()) {
+            params[key] = value;
+        }
+    }
+
+    if (params.size() < keys.size()) {
+        throw asset_mining_subsidy_parameter_exception{"lack of parameter: " + param};
+    }
+
+    try {
+        std::string value = params["initial"];
+        int32_t initial = boost::lexical_cast<int>(value);
+        if (initial <= 0) {
+            throw asset_mining_subsidy_parameter_exception{"invalid initial subsidy parameter: " + value};
+        }
+
+        value = params["interval"];
+        int32_t interval = boost::lexical_cast<int>(value);
+        if (interval <= 0) {
+            throw asset_mining_subsidy_parameter_exception{"invalid block interval parameter: " + value};
+        }
+
+        value = params["base"];
+        double base = boost::lexical_cast<double>(value);
+        if (base <= 0) {
+            throw asset_mining_subsidy_parameter_exception{"invalid base parameter: " + value};
+        }
+    }
+    catch (boost::bad_lexical_cast & e) {
+        throw asset_mining_subsidy_parameter_exception{"invalid value type: " + param};
+    }
+}
+
 template <typename ElemT>
 struct HexTo {
     ElemT value;
@@ -273,6 +328,27 @@ asset_cert_type check_issue_cert(bc::blockchain::block_chain_impl& blockchain,
         auto cert = blockchain.get_account_asset_cert(account, domain, asset_cert_ns::domain);
         if (!cert) {
             throw asset_cert_notowned_exception("no domain cert '" + domain + "' owned by " + account);
+        }
+    }
+
+    else if (certs_create == asset_cert_ns::mining) {
+        log::info("base_helper") << " check_issue_cert mining: " << cert_name;
+
+        // check asset exist.
+        if (!blockchain.is_asset_exist(symbol, false)) {
+            throw asset_symbol_existed_exception(
+                "asset symbol '" + symbol + "' does not exist on the blockchain!");
+        }
+
+        // check domain cert belong to this account.
+        bool exist = blockchain.is_asset_cert_exist(symbol, asset_cert_ns::issue);
+        if (!exist) {
+            throw asset_cert_notfound_exception("no issue cert '" + symbol + "' found!");
+        }
+
+        auto cert = blockchain.get_account_asset_cert(account, symbol, asset_cert_ns::issue);
+        if (!cert) {
+            throw asset_cert_notowned_exception("no issue cert '" + symbol + "' owned by " + account);
         }
     }
 
@@ -1285,7 +1361,8 @@ void base_transfer_common::sum_payments()
         payment_etp_ += iter.amount;
         payment_asset_ += iter.asset_amount;
 
-        if (iter.asset_cert != asset_cert_ns::none) {
+        if (iter.asset_cert != asset_cert_ns::none
+            && iter.type != utxo_attach_type::asset_cert_autoissue) {
             payment_asset_cert_.push_back(iter.asset_cert);
         }
 
@@ -2078,28 +2155,15 @@ void issuing_asset::sum_payments()
         payment_etp_ += iter.amount;
         payment_asset_ += iter.asset_amount;
 
-        if (iter.asset_cert == asset_cert_ns::domain) {
+        if (iter.type == utxo_attach_type::asset_cert) {
             auto&& domain = asset_cert::get_domain(symbol_);
             if (!asset_cert::is_valid_domain(domain)) {
-                throw asset_cert_domain_exception{"no valid domain exists for asset : " + symbol_};
-            }
-            if (blockchain_.is_asset_cert_exist(domain, asset_cert_ns::domain)) {
-                payment_asset_cert_.clear();
-                payment_asset_cert_.push_back(asset_cert_ns::domain); // will verify by input
-            }
-        }
-        else if (iter.asset_cert == asset_cert_ns::naming) {
-            auto&& domain = asset_cert::get_domain(symbol_);
-            if (!asset_cert::is_valid_domain(domain)) {
-                throw asset_cert_domain_exception{"no valid domain exists for asset : " + symbol_};
+                throw asset_cert_domain_exception{"invalid domain for asset : " + symbol_};
             }
 
-            if (blockchain_.is_asset_cert_exist(symbol_, asset_cert_ns::naming)) {
-                payment_asset_cert_.clear();
-                payment_asset_cert_.push_back(asset_cert_ns::naming); // will verify by input
-            }
-            else {
-                throw asset_cert_notfound_exception{"no naming cert exists for asset : " + symbol_};
+            if (iter.asset_cert == asset_cert_ns::domain
+                || iter.asset_cert == asset_cert_ns::naming) {
+                payment_asset_cert_.push_back(iter.asset_cert); // will verify by input
             }
         }
     }
@@ -2156,6 +2220,14 @@ attachment issuing_asset::populate_output_attachment(const receiver_record& reco
         }
 
         attach.set_attach(ass);
+    }
+    else if (record.type == utxo_attach_type::asset_cert_autoissue
+        && record.asset_cert == asset_cert_ns::naming) {
+        auto& cert_info = boost::get<asset_cert>(attach.get_attach());
+        cert_info.set_description(mining_sussidy_param_);
+        log::info("base_helper") << "populate_output_attachment: " << cert_info.to_string();
+
+        BITCOIN_ASSERT(cert_info.has_description());
     }
 
     return attach;

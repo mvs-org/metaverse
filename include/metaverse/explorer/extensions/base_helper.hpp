@@ -272,6 +272,7 @@ void check_asset_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_mit_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_did_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_message(const std::string& message, bool check_sensitive=false);
+void check_mining_subsidy_param(const std::string& param);
 asset_cert_type check_issue_cert(bc::blockchain::block_chain_impl& blockchain,
     const std::string& account, const std::string& symbol, const std::string& cert_name);
 asset_cert_type check_cert_type_name(const std::string& cert_type_name, bool all=false);
@@ -396,9 +397,9 @@ public:
     base_transfer_helper(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, receiver_record::list&& receiver_list,
-        uint64_t fee, 
+        uint64_t fee,
         std::string&& symbol = std::string(""),
-        std::string&& change = std::string(""), 
+        std::string&& change = std::string(""),
         uint32_t locktime = 0,
         uint32_t sequence = bc::max_input_sequence,
         exclude_range_t exclude_etp_range = {0, 0})
@@ -427,10 +428,10 @@ public:
     base_multisig_transfer_helper(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, receiver_record::list&& receiver_list,
-        uint64_t fee, std::string&& symbol, 
+        uint64_t fee, std::string&& symbol,
         account_multisig&& multisig_from, uint32_t locktime = 0)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-            std::move(from), std::move(receiver_list), 
+            std::move(from), std::move(receiver_list),
             fee, std::move(symbol), "", locktime)
         , multisig_(std::move(multisig_from))
     {}
@@ -543,7 +544,7 @@ public:
         std::string&& change, uint64_t fee, uint32_t locktime = 0,
         exclude_range_t exclude_etp_range = {0, 0})
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-            std::move(from), std::move(receiver_list), 
+            std::move(from), std::move(receiver_list),
             fee, "", std::move(change), locktime,
             bc::max_input_sequence, exclude_etp_range)
     {}
@@ -592,14 +593,15 @@ public:
     issuing_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol,
-        std::string&& model_param,
-        receiver_record::list&& receiver_list, 
+        std::string&& model_param, std::string&& mining_sussidy_param,
+        receiver_record::list&& receiver_list,
         uint64_t fee, uint32_t fee_percentage_to_miner,
         uint32_t locktime = 0)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-            std::move(from), std::move(receiver_list), 
+            std::move(from), std::move(receiver_list),
             fee, std::move(symbol), "", locktime)
         , attenuation_model_param_{std::move(model_param)}
+        , mining_sussidy_param_{std::move(mining_sussidy_param)}
         , fee_percentage_to_miner_(fee_percentage_to_miner)
     {}
 
@@ -614,6 +616,7 @@ private:
     std::shared_ptr<asset_detail> unissued_asset_;
     std::string domain_cert_address_;
     std::string attenuation_model_param_;
+    std::string mining_sussidy_param_;
     uint32_t fee_percentage_to_miner_;
 };
 
@@ -624,10 +627,10 @@ public:
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol,
         std::string&& model_param,
-        receiver_record::list&& receiver_list, 
+        receiver_record::list&& receiver_list,
         uint64_t fee, uint64_t volume, uint32_t locktime = 0)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-            std::move(from), std::move(receiver_list), 
+            std::move(from), std::move(receiver_list),
             fee, std::move(symbol), "", locktime)
         , volume_(volume)
         , attenuation_model_param_{std::move(model_param)}
@@ -719,11 +722,11 @@ public:
     sending_multisig_did(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& feefrom, std::string&& symbol,
-        receiver_record::list&& receiver_list, uint64_t fee, 
+        receiver_record::list&& receiver_list, uint64_t fee,
         account_multisig&& multisig, account_multisig&& multisigto,
         uint32_t locktime = 0)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-            std::move(from), std::move(receiver_list), 
+            std::move(from), std::move(receiver_list),
             fee, std::move(symbol), "", locktime)
         , fromfee(feefrom)
         , multisig_from_(std::move(multisig))
@@ -759,10 +762,10 @@ public:
     sending_did(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& feefrom, std::string&& symbol,
-        receiver_record::list&& receiver_list, 
+        receiver_record::list&& receiver_list,
         uint64_t fee, uint32_t locktime = 0)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-            std::move(from), std::move(receiver_list), 
+            std::move(from), std::move(receiver_list),
             fee, std::move(symbol), "", locktime)
         ,fromfee(feefrom)
     {}
@@ -811,10 +814,10 @@ public:
     issuing_asset_cert(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol,
-        receiver_record::list&& receiver_list, 
+        receiver_record::list&& receiver_list,
         uint64_t fee, uint32_t locktime = 0)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-            std::move(from), std::move(receiver_list), 
+            std::move(from), std::move(receiver_list),
             fee, std::move(symbol), "", locktime)
     {}
 
@@ -834,10 +837,10 @@ public:
     registering_mit(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol, std::map<std::string, std::string>&& mit_map,
-        receiver_record::list&& receiver_list, 
+        receiver_record::list&& receiver_list,
         uint64_t fee, uint32_t locktime = 0)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-            std::move(from), std::move(receiver_list), 
+            std::move(from), std::move(receiver_list),
             fee, std::move(symbol), "", locktime)
         , mit_map_(mit_map)
     {}
@@ -865,7 +868,7 @@ public:
         receiver_record::list&& receiver_list, uint64_t fee,
         account_multisig&& multisig_from, uint32_t locktime = 0)
         : base_multisig_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-            std::move(from), std::move(receiver_list), 
+            std::move(from), std::move(receiver_list),
             fee, std::move(symbol),
             std::move(multisig_from), locktime)
     {}

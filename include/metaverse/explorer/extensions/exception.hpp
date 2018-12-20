@@ -132,6 +132,7 @@ DEFINE_EXPLORER_EXCEPTION(asset_cert_existed_exception, 5018);
 DEFINE_EXPLORER_EXCEPTION(asset_cert_notfound_exception, 5019);
 DEFINE_EXPLORER_EXCEPTION(asset_cert_notowned_exception, 5020);
 DEFINE_EXPLORER_EXCEPTION(asset_cert_domain_exception, 5021);
+DEFINE_EXPLORER_EXCEPTION(asset_mining_subsidy_parameter_exception, 5022);
 
 DEFINE_EXPLORER_EXCEPTION(etp_lack_exception, 5051);
 

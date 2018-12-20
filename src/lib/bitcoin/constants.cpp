@@ -23,7 +23,7 @@
 
 namespace libbitcoin {
 
-const uint64_t pos_genesis_reward        = 50000000 * 100000000ul;
+const uint64_t pos_genesis_reward        = 6000000 * 100000000ul;
 
 #ifndef PRIVATE_CHAIN
 

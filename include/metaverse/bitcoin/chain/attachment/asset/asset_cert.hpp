@@ -67,11 +67,13 @@ BC_CONSTEXPR size_t ASSET_CERT_OWNER_FIX_SIZE = 64;
 BC_CONSTEXPR size_t ASSET_CERT_ADDRESS_FIX_SIZE = 64;
 BC_CONSTEXPR size_t ASSET_CERT_TYPE_FIX_SIZE = 4;
 BC_CONSTEXPR size_t ASSET_CERT_STATUS_FIX_SIZE = 1;
+BC_CONSTEXPR size_t ASSET_CERT_DESCRIPTION_FIX_SIZE = 64;
 
 BC_CONSTEXPR size_t ASSET_CERT_FIX_SIZE = (ASSET_CERT_SYMBOL_FIX_SIZE
     + ASSET_CERT_OWNER_FIX_SIZE + ASSET_CERT_ADDRESS_FIX_SIZE
     + ASSET_CERT_TYPE_FIX_SIZE + ASSET_CERT_STATUS_FIX_SIZE);
 
+BC_CONSTEXPR size_t ASSET_CERT_FULL_FIX_SIZE = ASSET_CERT_FIX_SIZE + ASSET_CERT_DESCRIPTION_FIX_SIZE;
 
 union asset_cert_type
 {
@@ -79,24 +81,35 @@ union asset_cert_type
         :mask(mask_)
     {
     }
+
     operator uint32_t()const
     {
         return mask;
     }
 
-    struct{
+    bool is_costom() const
+    {
+        return bits.custom == 1;
+    }
+
+    bool has_description() const
+    {
+        return bits.description == 1;
+    }
+
+    struct {
 #ifdef ASSET_CERT_BIG_ENDIAN
         uint32_t custom:1;
-        uint32_t unmovable:1;
-        uint32_t :10;
+        uint32_t description:1;
+        uint32_t reserved:10;
         uint32_t type:20;
 #else
         uint32_t type:20;
-        uint32_t :10;
-        uint32_t unmovable:1;
+        uint32_t reserved:10;
+        uint32_t description:1;
         uint32_t custom:1;
 #endif
-    } cert_type_status;
+    } bits;
 
     uint32_t mask;
 };
@@ -108,6 +121,7 @@ namespace asset_cert_ns {
     const asset_cert_type issue         = 1;
     const asset_cert_type domain        = 2;
     const asset_cert_type naming        = 3;
+    const asset_cert_type mining        = 0x60000000 + 4;
 
     const asset_cert_type custom        = 0x80000000;
     const asset_cert_type custom_max    = 0x800fffff;
@@ -157,6 +171,9 @@ public:
     void set_address(const std::string& owner);
     const std::string& get_address() const;
 
+    void set_description(const std::string& description);
+    const std::string& get_description() const;
+
     asset_cert_type get_certs() const;
     void set_certs(asset_cert_type certs);
 
@@ -176,8 +193,8 @@ public:
     static bool is_valid_domain(const std::string& domain);
     static std::string get_key(const std::string&symbol, const asset_cert_type& bit);
 
-    static bool is_unmovable(asset_cert_type cert_type);
-    bool is_unmovable() const;
+    static bool has_description(asset_cert_type cert_type);
+    bool has_description() const;
 
 private:
     // NOTICE: ref CAssetCert in transaction.h
@@ -187,6 +204,7 @@ private:
     std::string address_; // address that owned asset cert
     asset_cert_type cert_type_; // asset certs
     uint8_t status_;        // asset status
+    std::string description_;
 };
 
 } // namespace chain
