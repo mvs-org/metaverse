@@ -342,7 +342,7 @@ std::shared_ptr<chain::output> miner::create_coinbase_mst_output(const wallet::p
 
     chain::attachment attach(ASSET_TYPE, 1/*version*/, ass);
     auto payment_script = chain::script{ to_script_operation(pay_address) };
-    auto output = std::make_shared<chain::output>(value, payment_script, attach);
+    auto output = std::make_shared<chain::output>(0, payment_script, attach);
     return output;
 }
 
@@ -1517,33 +1517,38 @@ bool miner::set_mining_asset_symbol(const std::string& symbol)
 
     auto& block_chain = const_cast<block_chain_impl&>(node_.chain_impl());
     auto asset = block_chain.get_issued_blockchain_asset(symbol);
-    if (nullptr == mining_asset_) {
+    if (!asset) {
+        log::error(LOG_HEADER) << "asset " << symbol << " does not exist!";
         return false;
     }
 
-    auto detail = std::make_shared<asset_detail>(mining_asset_->get_asset());
-    if (nullptr == detail) {
+    auto detail = std::make_shared<asset_detail>(asset->get_asset());
+    if (!detail) {
+        log::error(LOG_HEADER) << "asset " << symbol << " does not exist!";
         return false;
     }
 
     auto cert = block_chain.get_asset_cert(symbol, asset_cert_ns::mining);
     if (!cert) {
+        log::error(LOG_HEADER) << "asset " << symbol << " does not support mining!";
         return false;
     }
 
-    if (nullptr == cert->get_mining_subsidy_param()) {
+    if (!cert->get_mining_subsidy_param()) {
+        log::error(LOG_HEADER) << "asset " << symbol << " has invalid mining subsidy parameters!";
         return false;
     }
 
     mining_asset_ = asset;
     mining_cert_ = cert;
+    log::info(LOG_HEADER) << "set mining asset " << symbol;
     return true;
 }
 
 bool miner::add_coinbase_mst_output(chain::transaction& coinbase_tx,
     const wallet::payment_address& pay_address, uint64_t block_height, uint32_t version)
 {
-    if (nullptr == mining_cert_ || nullptr == mining_cert_->get_mining_subsidy_param()) {
+    if (!mining_cert_ || !mining_cert_->get_mining_subsidy_param()) {
         return false;
     }
 
@@ -1553,7 +1558,8 @@ bool miner::add_coinbase_mst_output(chain::transaction& coinbase_tx,
         return false;
     }
 
-    auto sp_mst_output = create_coinbase_mst_output(pay_address, mining_cert_->get_symbol(), mst_value);
+    auto symbol = mining_cert_->get_symbol();
+    auto sp_mst_output = create_coinbase_mst_output(pay_address, symbol, mst_value);
     if (!sp_mst_output) {
         return false;
     }

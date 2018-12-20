@@ -750,6 +750,7 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
     const auto reward = coinbase.total_output_value();
     const auto value = consensus::miner::calculate_block_subsidy(height_, testnet_, version) + fees;
     if (reward > value) {
+        log::error(LOG_BLOCKCHAIN) << "ETP coinbase is too large! " << reward << " VS " << value;
         return error::coinbase_too_large;
     }
 
@@ -773,6 +774,7 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
         auto mst_value = consensus::miner::calculate_mst_subsidy(
             *mining_asset, *mining_cert, height_, testnet_, version);
         if (mst_reward > mst_value) {
+            log::error(LOG_BLOCKCHAIN) << "MST coinbase is too large! " << mst_reward << " VS " << mst_value;
             return error::mst_coinbase_too_large;
         }
     }

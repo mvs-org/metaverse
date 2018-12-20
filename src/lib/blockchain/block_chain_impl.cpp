@@ -2305,19 +2305,17 @@ std::shared_ptr<did_detail::list> block_chain_impl::get_registered_dids()
 std::shared_ptr<asset_detail> block_chain_impl::get_issued_asset(const std::string& symbol)
 {
     std::shared_ptr<asset_detail> sp_asset(nullptr);
-    const auto hash = get_hash(symbol);
-    auto sh_block_asset = database_.assets.get(hash);
+    auto sh_block_asset = get_issued_blockchain_asset(symbol);
     if (sh_block_asset) {
         sp_asset = std::make_shared<asset_detail>(sh_block_asset->get_asset());
     }
+
     return sp_asset;
 }
 
 std::shared_ptr<blockchain_asset> block_chain_impl::get_issued_blockchain_asset(const std::string& symbol)
 {
-    const auto hash = get_hash(symbol);
-    auto sh_block_asset = database_.assets.get(hash);
-    return sh_block_asset;
+    return database_.assets.get(get_hash(symbol));
 }
 
 // get all addresses
