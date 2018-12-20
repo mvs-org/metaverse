@@ -101,8 +101,6 @@ public:
     static bool is_secondaryissue_legal(uint8_t threshold);
     static bool is_secondaryissue_owns_enough(uint64_t own, uint64_t total, uint8_t threshold);
 
-    bool support_mining() const;
-
 private:
     // NOTICE: ref CAssetDetail in transaction.h
     // asset_detail and CAssetDetail should have the same size and order.

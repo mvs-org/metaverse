@@ -134,6 +134,12 @@ class BC_API asset_cert
 {
 public:
     typedef std::vector<asset_cert> list;
+    typedef std::map<std::string, double> mining_subsidy_param_t;
+    typedef std::shared_ptr<mining_subsidy_param_t> mining_subsidy_param_ptr;
+
+    static const std::string key_initial;
+    static const std::string key_interval;
+    static const std::string key_base;
 
     enum class asset_cert_status : uint8_t
     {
@@ -195,8 +201,11 @@ public:
 
     static bool has_content(asset_cert_type cert_type);
     bool has_content() const;
-
     bool check_mining_subsidy_param() const;
+    mining_subsidy_param_ptr get_mining_subsidy_param() const;
+
+    static std::vector<std::string> get_mining_subsidy_param_keys();
+    static mining_subsidy_param_ptr parse_mining_subsidy_param(const std::string& param);
 
 private:
     // NOTICE: ref CAssetCert in transaction.h

@@ -37,6 +37,10 @@ std::istream& operator>>(std::istream& in, asset_cert_type& out){
     return in;
 }
 
+const std::string asset_cert::key_initial{"initial"};
+const std::string asset_cert::key_interval{"interval"};
+const std::string asset_cert::key_base{"base"};
+
 asset_cert::asset_cert()
 {
     reset();
@@ -317,30 +321,51 @@ bool asset_cert::has_content() const
     return cert_type_.has_content();
 }
 
+std::vector<std::string> asset_cert::get_mining_subsidy_param_keys()
+{
+    std::vector<std::string> keys{ key_initial, key_interval, key_base };
+    return keys;
+}
+
 bool asset_cert::check_mining_subsidy_param() const
 {
     if (cert_type_ != asset_cert_ns::mining) {
         return true;
     }
 
-    auto& param = content_;
+    return get_mining_subsidy_param() != nullptr;
+}
+
+asset_cert::mining_subsidy_param_ptr asset_cert::get_mining_subsidy_param() const
+{
+    return parse_mining_subsidy_param(content_);
+}
+
+asset_cert::mining_subsidy_param_ptr asset_cert::parse_mining_subsidy_param(const std::string& param)
+{
     if (param.empty()) {
         log::error("cert") << "mining cert: subsidy parameter is empty!";
-        return false;
+        return nullptr;
+    }
+
+    if (param.size() > ASSET_CERT_CONTENT_FIX_SIZE) {
+        log::error("cert") << "mining cert: subsidy parameter is out of range. Max size is 64.";
+        return nullptr;
     }
 
     std::vector<std::string> items = bc::split(param, ",", true);
     if (items.size() < 3) {
         log::error("cert") << "mining cert: invalid size of parameters: " << param;
-        return false;
+        return nullptr;
     }
 
-    const std::vector<std::string> keys{ "initial", "interval", "base" };
+    auto&& keys = get_mining_subsidy_param_keys();
     std::map<std::string, std::string> params;
     for (auto& item : items) {
         auto pair = bc::split(item, ":", true);
         if (pair.size() != 2) {
             log::error("cert") << "mining cert: invalid item " << item;
+            return nullptr;
         }
 
         auto key = pair[0];
@@ -352,32 +377,43 @@ bool asset_cert::check_mining_subsidy_param() const
 
     if (params.size() < keys.size()) {
         log::error("cert") << "mining cert: lack of parameter: " << param;
+        return nullptr;
     }
 
     try {
-        std::string value = params["initial"];
+        std::string value = params[key_initial];
         int32_t initial = boost::lexical_cast<int>(value);
         if (initial <= 0) {
             log::error("cert") << "mining cert: invalid initial subsidy parameter: " << value;
+            return nullptr;
         }
 
-        value = params["interval"];
+        value = params[key_interval];
         int32_t interval = boost::lexical_cast<int>(value);
         if (interval <= 0) {
             log::error("cert") << "mining cert: invalid block interval parameter: " << value;
+            return nullptr;
         }
 
-        value = params["base"];
+        value = params[key_base];
         double base = boost::lexical_cast<double>(value);
         if (base <= 0) {
             log::error("cert") << "mining cert: invalid base parameter: " << value;
+            return nullptr;
         }
+
+        auto subsidy_params = std::make_shared<mining_subsidy_param_t>();
+        (*subsidy_params)[key_initial] = initial;
+        (*subsidy_params)[key_interval] = interval;
+        (*subsidy_params)[key_base] = base;
+        return subsidy_params;
     }
     catch (boost::bad_lexical_cast & e) {
         log::error("cert") << "mining cert: invalid value type: " << param << e.what();
+        return nullptr;
     }
 
-    return true;
+    return nullptr;
 }
 
 } // namspace chain

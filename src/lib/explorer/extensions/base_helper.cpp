@@ -191,51 +191,9 @@ void check_mining_subsidy_param(const std::string& param)
         return;
     }
 
-    std::vector<std::string> items = bc::split(param, ",", true);
-    if (items.size() < 3) {
-        throw asset_mining_subsidy_parameter_exception{"invalid size of parameters: " + param};
-    }
-
-    const std::vector<std::string> keys{ "initial", "interval", "base" };
-    std::map<std::string, std::string> params;
-    for (auto& item : items) {
-        auto pair = bc::split(item, ":", true);
-        if (pair.size() != 2) {
-            throw asset_mining_subsidy_parameter_exception{"invalid item " + item};
-        }
-
-        auto key = pair[0];
-        auto value = pair[1];
-        if (std::find(std::begin(keys), std::end(keys), key) != keys.end()) {
-            params[key] = value;
-        }
-    }
-
-    if (params.size() < keys.size()) {
-        throw asset_mining_subsidy_parameter_exception{"lack of parameter: " + param};
-    }
-
-    try {
-        std::string value = params["initial"];
-        int32_t initial = boost::lexical_cast<int>(value);
-        if (initial <= 0) {
-            throw asset_mining_subsidy_parameter_exception{"invalid initial subsidy parameter: " + value};
-        }
-
-        value = params["interval"];
-        int32_t interval = boost::lexical_cast<int>(value);
-        if (interval <= 0) {
-            throw asset_mining_subsidy_parameter_exception{"invalid block interval parameter: " + value};
-        }
-
-        value = params["base"];
-        double base = boost::lexical_cast<double>(value);
-        if (base <= 0) {
-            throw asset_mining_subsidy_parameter_exception{"invalid base parameter: " + value};
-        }
-    }
-    catch (boost::bad_lexical_cast & e) {
-        throw asset_mining_subsidy_parameter_exception{"invalid value type: " + param};
+    auto parameters = asset_cert::parse_mining_subsidy_param(param);
+    if (parameters == nullptr) {
+        throw asset_mining_subsidy_parameter_exception{"invalid parameters: " + param};
     }
 }
 

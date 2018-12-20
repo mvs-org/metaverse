@@ -424,66 +424,65 @@ uint64_t miner::calculate_lockblock_reward(uint64_t lcok_heights, uint64_t num)
     return 0;
 }
 
-uint64_t miner::calculate_mst_subsidy(const block_chain_impl& chain, const std::string& symbol, uint64_t block_height, bool is_testnet, uint32_t version)
+uint64_t miner::calculate_mst_subsidy(
+    const blockchain_asset& asset, const asset_cert& cert,
+    uint64_t block_height, bool is_testnet, uint32_t version)
 {
-    if (!check_mining_asset_symbol(chain, symbol)) {
-        return 0;
-    }
     switch (version) {
     case chain::block_version_pow:
-        return calculate_mst_subsidy_pow(chain, symbol, block_height, is_testnet);
+        return calculate_mst_subsidy_pow(asset, cert, block_height, is_testnet);
 
     case chain::block_version_pos:
-        return calculate_mst_subsidy_pos(chain, symbol, block_height, is_testnet);
+        return calculate_mst_subsidy_pos(asset, cert, block_height, is_testnet);
 
     case chain::block_version_dpos:
-        return calculate_mst_subsidy_dpos(chain, symbol, block_height, is_testnet);
+        return calculate_mst_subsidy_dpos(asset, cert, block_height, is_testnet);
 
     default:
         throw std::logic_error{"calculate_mst_subsidy: unknown block version! " + std::to_string(version)};
     }
+
     return 0;
 }
 
-uint64_t miner::mst_price(const block_chain_impl& chain, const std::string& symbol, uint64_t amount)
+uint64_t miner::calculate_mst_subsidy_pow(
+    const blockchain_asset& asset, const asset_cert& cert,
+    uint64_t block_height, bool is_testnet)
 {
-    auto& block_chain = const_cast<block_chain_impl&>(chain);
-    auto sp_asset = block_chain.get_issued_asset(symbol);
-    if (!sp_asset) {
+    auto params = cert.get_mining_subsidy_param();
+    if (nullptr == params) {
         return 0;
     }
-    auto decimal_bits = sp_asset->get_decimal_number();
-    return amount * pow(10, decimal_bits);
-}
 
-uint64_t miner::calculate_mst_subsidy_pow(const block_chain_impl& chain, const std::string& symbol, uint64_t block_height, bool is_testnet)
-{
-    double initial_mst_subsidy = 3.0;
-    double mst_power_base = 0.95;
-    uint64_t mst_bucket_size = bucket_size;
-    auto rate = block_height / mst_bucket_size;
-    if (block_height > pos_enabled_height) {
-        rate = pos_enabled_height / mst_bucket_size;
-        auto period_left = pos_enabled_height % mst_bucket_size;
-        auto period_right = (mst_bucket_size - period_left) * 2;
-        auto period_end = pos_enabled_height + period_right;
-
-        if (block_height >= period_end) {
-            rate = rate + 1 + (block_height - period_end) / (2 * mst_bucket_size);
-        }
+    if (asset.get_height() >= block_height || asset.get_height() == 0) {
+        return 0;
     }
 
-    return uint64_t(initial_mst_subsidy * mst_price(chain, symbol, 1) * pow(mst_power_base, rate));
+    double initial_subsidy = (*params)[asset_cert::key_initial];
+    double base = (*params)[asset_cert::key_base];
+    uint64_t mst_bucket_size = (*params)[asset_cert::key_interval];
+    auto rate = (block_height - asset.get_height()) / mst_bucket_size;
+    return uint64_t(initial_subsidy * pow(base, rate));
 }
 
-uint64_t miner::calculate_mst_subsidy_pos(const block_chain_impl& chain, const std::string& symbol, uint64_t block_height, bool is_testnet)
+uint64_t miner::calculate_mst_subsidy_pos(
+    const blockchain_asset& asset, const asset_cert& cert,
+    uint64_t block_height, bool is_testnet)
 {
-    return mst_price(chain, symbol, 1);
+    // auto asset_detail = std::make_shared<asset_detail>(asset.get_asset());
+    // if (!asset_detail) {
+    //     return 0;
+    // }
+
+    // return 1 * pow(10, asset_detail->get_decimal_number());
+    return calculate_mst_subsidy_pow(asset, cert, block_height, is_testnet);
 }
 
-uint64_t miner::calculate_mst_subsidy_dpos(const block_chain_impl& chain, const std::string& symbol, uint64_t block_height, bool is_testnet)
+uint64_t miner::calculate_mst_subsidy_dpos(
+    const blockchain_asset& asset, const asset_cert& cert,
+    uint64_t block_height, bool is_testnet)
 {
-    auto result = calculate_mst_subsidy_pow(chain, symbol, block_height, is_testnet);
+    auto result = calculate_mst_subsidy_pow(asset, cert, block_height, is_testnet);
     result /= witness::get().get_witness_number();
     return result;
 }
@@ -742,7 +741,7 @@ miner::block_ptr miner::create_new_block_pow(const wallet::payment_address& pay_
     coinbase->outputs[0].value =
         total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, pblock->header.version);
 
-    if (!mining_asset_symbol_.empty()) {
+    if (mining_asset_ != nullptr && mining_cert_ != nullptr) {
         add_coinbase_mst_output(*coinbase, pay_address, block_height, pblock->header.version);
     }
 
@@ -823,7 +822,7 @@ miner::block_ptr miner::create_new_block_dpos(const wallet::payment_address& pay
     coinbase->outputs[0].value =
         total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, pblock->header.version);
 
-    if (!mining_asset_symbol_.empty()) {
+    if (mining_asset_ != nullptr && mining_cert_ != nullptr) {
         add_coinbase_mst_output(*coinbase, pay_address, block_height, pblock->header.version);
     }
 
@@ -971,7 +970,7 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
     coinbase->outputs[0].value =
         total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, pblock->header.version);
 
-    if (!mining_asset_symbol_.empty()) {
+    if (mining_asset_ != nullptr && mining_cert_ != nullptr) {
         add_coinbase_mst_output(*coinbase, pay_address, block_height, pblock->header.version);
     }
 
@@ -1511,34 +1510,54 @@ bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& pr
     return true;
 }
 
-void miner::set_mining_asset_symbol(const std::string& symbol)
+bool miner::set_mining_asset_symbol(const std::string& symbol)
 {
-    mining_asset_symbol_ = symbol;
-}
+    mining_asset_ = nullptr;
+    mining_cert_ = nullptr;
 
-bool miner::check_mining_asset_symbol(const block_chain_impl& chain, const std::string& symbol)
-{
-    if (symbol.empty()) {
+    auto& block_chain = const_cast<block_chain_impl&>(node_.chain_impl());
+    auto asset = block_chain.get_issued_blockchain_asset(symbol);
+    if (nullptr == mining_asset_) {
         return false;
     }
-    auto& block_chain = const_cast<block_chain_impl&>(chain);
-    auto sp_asset = block_chain.get_issued_asset(symbol);
-    return sp_asset && sp_asset->support_mining();
+
+    auto detail = std::make_shared<asset_detail>(mining_asset_->get_asset());
+    if (nullptr == detail) {
+        return false;
+    }
+
+    auto cert = block_chain.get_asset_cert(symbol, asset_cert_ns::mining);
+    if (!cert) {
+        return false;
+    }
+
+    if (nullptr == cert->get_mining_subsidy_param()) {
+        return false;
+    }
+
+    mining_asset_ = asset;
+    mining_cert_ = cert;
+    return true;
 }
 
 bool miner::add_coinbase_mst_output(chain::transaction& coinbase_tx,
     const wallet::payment_address& pay_address, uint64_t block_height, uint32_t version)
 {
-    auto mst_value = calculate_mst_subsidy(
-        node_.chain_impl(), mining_asset_symbol_,
+    if (nullptr == mining_cert_ || nullptr == mining_cert_->get_mining_subsidy_param()) {
+        return false;
+    }
+
+    auto mst_value = calculate_mst_subsidy(*mining_asset_, *mining_cert_,
         block_height, setting_.use_testnet_rules, version);
     if (mst_value == 0) {
         return false;
     }
-    auto sp_mst_output = create_coinbase_mst_output(pay_address, mining_asset_symbol_, mst_value);
+
+    auto sp_mst_output = create_coinbase_mst_output(pay_address, mining_cert_->get_symbol(), mst_value);
     if (!sp_mst_output) {
         return false;
     }
+
     coinbase_tx.outputs.emplace_back(*sp_mst_output);
     return true;
 }

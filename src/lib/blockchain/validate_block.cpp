@@ -759,7 +759,19 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
         const auto& coinbase_mst_output = coinbase.outputs[1];
         auto mst_reward = coinbase_mst_output.get_asset_amount();
         auto symbol = coinbase_mst_output.get_asset_symbol();
-        auto mst_value = consensus::miner::calculate_mst_subsidy(chain, symbol, height_, testnet_, version);
+
+        auto mining_asset = chain.get_issued_blockchain_asset(symbol);
+        if (nullptr == mining_asset) {
+            return error::mst_coinbase_invalid;
+        }
+
+        auto mining_cert = chain.get_asset_cert(symbol, asset_cert_ns::mining);
+        if (!mining_cert) {
+            return error::mst_coinbase_invalid;
+        }
+
+        auto mst_value = consensus::miner::calculate_mst_subsidy(
+            *mining_asset, *mining_cert, height_, testnet_, version);
         if (mst_reward > mst_value) {
             return error::mst_coinbase_too_large;
         }

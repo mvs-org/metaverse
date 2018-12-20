@@ -321,6 +321,7 @@ public:
     std::shared_ptr<asset_detail::list> get_issued_assets(
         const std::string& symbol="", const std::string& address="");
     std::shared_ptr<asset_detail> get_issued_asset(const std::string& symbol);
+    std::shared_ptr<blockchain_asset> get_issued_blockchain_asset(const std::string& symbol);
     std::shared_ptr<business_address_asset::list> get_account_assets();
     std::shared_ptr<business_address_asset::list> get_account_unissued_assets(const std::string& name);
     std::shared_ptr<asset_detail> get_account_unissued_asset(

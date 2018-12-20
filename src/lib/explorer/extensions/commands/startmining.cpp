@@ -35,7 +35,7 @@ namespace commands {
 console_result startmining::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
-    auto& blockchain = node.chain_impl();
+    auto& blockchain = const_cast<blockchain::block_chain_impl&>(node.chain_impl());
     auto& miner = node.miner();
 
     uint64_t height;
@@ -129,9 +129,11 @@ console_result startmining::invoke(Json::Value& jv_output,
     }
 
     if (!option_.symbol.empty()) {
-        if (!consensus::miner::check_mining_asset_symbol(blockchain, option_.symbol)) {
+        auto cert = blockchain.get_asset_cert(option_.symbol, asset_cert_ns::mining);
+        if (!cert) {
             throw argument_legality_exception{"asset " + option_.symbol + " can not be mined."};
         }
+
         miner.set_mining_asset_symbol(option_.symbol);
     }
 

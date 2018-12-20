@@ -266,10 +266,5 @@ bool asset_detail::is_secondaryissue_owns_enough(uint64_t own, uint64_t total, u
     return (value_needed == 0) || (own >= value_needed -1); // allow 1 inaccurate
 }
 
-bool asset_detail::support_mining() const
-{
-    return false;
-}
-
 } // namspace chain
 } // namspace libbitcoin

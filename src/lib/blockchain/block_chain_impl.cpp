@@ -2313,6 +2313,13 @@ std::shared_ptr<asset_detail> block_chain_impl::get_issued_asset(const std::stri
     return sp_asset;
 }
 
+std::shared_ptr<blockchain_asset> block_chain_impl::get_issued_blockchain_asset(const std::string& symbol)
+{
+    const auto hash = get_hash(symbol);
+    auto sh_block_asset = database_.assets.get(hash);
+    return sh_block_asset;
+}
+
 // get all addresses
 std::shared_ptr<account_address::list> block_chain_impl::get_addresses()
 {

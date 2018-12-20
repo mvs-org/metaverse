@@ -193,6 +193,7 @@ enum error_code_t
     cointstake_signature_invalid,
     check_pos_genesis_error,
     mst_coinbase_too_large,         // 105
+    mst_coinbase_invalid,
 };
 
 enum error_condition_t

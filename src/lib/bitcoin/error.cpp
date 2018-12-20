@@ -293,6 +293,8 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "check pos genesis block failed";
         case error::mst_coinbase_too_large:
             return "asset coinbase value is too large";
+        case error::mst_coinbase_invalid:
+            return "asset coinbase value is invalid";
 
         // unknown errors
         case error::unknown:
