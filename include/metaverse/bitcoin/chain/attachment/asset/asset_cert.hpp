@@ -67,13 +67,13 @@ BC_CONSTEXPR size_t ASSET_CERT_OWNER_FIX_SIZE = 64;
 BC_CONSTEXPR size_t ASSET_CERT_ADDRESS_FIX_SIZE = 64;
 BC_CONSTEXPR size_t ASSET_CERT_TYPE_FIX_SIZE = 4;
 BC_CONSTEXPR size_t ASSET_CERT_STATUS_FIX_SIZE = 1;
-BC_CONSTEXPR size_t ASSET_CERT_DESCRIPTION_FIX_SIZE = 64;
+BC_CONSTEXPR size_t ASSET_CERT_CONTENT_FIX_SIZE = 64;
 
 BC_CONSTEXPR size_t ASSET_CERT_FIX_SIZE = (ASSET_CERT_SYMBOL_FIX_SIZE
     + ASSET_CERT_OWNER_FIX_SIZE + ASSET_CERT_ADDRESS_FIX_SIZE
     + ASSET_CERT_TYPE_FIX_SIZE + ASSET_CERT_STATUS_FIX_SIZE);
 
-BC_CONSTEXPR size_t ASSET_CERT_FULL_FIX_SIZE = ASSET_CERT_FIX_SIZE + ASSET_CERT_DESCRIPTION_FIX_SIZE;
+BC_CONSTEXPR size_t ASSET_CERT_FULL_FIX_SIZE = ASSET_CERT_FIX_SIZE + ASSET_CERT_CONTENT_FIX_SIZE;
 
 union asset_cert_type
 {
@@ -92,21 +92,21 @@ union asset_cert_type
         return bits.custom == 1;
     }
 
-    bool has_description() const
+    bool has_content() const
     {
-        return bits.description == 1;
+        return bits.content == 1;
     }
 
     struct {
 #ifdef ASSET_CERT_BIG_ENDIAN
         uint32_t custom:1;
-        uint32_t description:1;
+        uint32_t content:1;
         uint32_t reserved:10;
         uint32_t type:20;
 #else
         uint32_t type:20;
         uint32_t reserved:10;
-        uint32_t description:1;
+        uint32_t content:1;
         uint32_t custom:1;
 #endif
     } bits;
@@ -171,8 +171,8 @@ public:
     void set_address(const std::string& owner);
     const std::string& get_address() const;
 
-    void set_description(const std::string& description);
-    const std::string& get_description() const;
+    void set_content(const std::string& content);
+    const std::string& get_content() const;
 
     asset_cert_type get_certs() const;
     void set_certs(asset_cert_type certs);
@@ -193,8 +193,10 @@ public:
     static bool is_valid_domain(const std::string& domain);
     static std::string get_key(const std::string&symbol, const asset_cert_type& bit);
 
-    static bool has_description(asset_cert_type cert_type);
-    bool has_description() const;
+    static bool has_content(asset_cert_type cert_type);
+    bool has_content() const;
+
+    bool check_mining_subsidy_param() const;
 
 private:
     // NOTICE: ref CAssetCert in transaction.h
@@ -204,7 +206,7 @@ private:
     std::string address_; // address that owned asset cert
     asset_cert_type cert_type_; // asset certs
     uint8_t status_;        // asset status
-    std::string description_;
+    std::string content_;
 };
 
 } // namespace chain

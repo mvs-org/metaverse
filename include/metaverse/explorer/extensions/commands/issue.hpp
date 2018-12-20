@@ -92,7 +92,7 @@ public:
             "The block subsidy parameters for mining."
             " The format is \"initial:unit32,interval:unit32,base:float\"."
             " The subsidy of block is calcuted by: initial * pow(base, (block_height/interval))"
-            " Default is empty which means mining is not allowd."
+            " Default is empty which means mining is not allowed."
         )
         (
             "fee,f",

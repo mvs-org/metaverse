@@ -529,6 +529,10 @@ Json::Value json_helper::prop_list(const bc::chain::asset_cert& cert_info)
     tree["owner"] = cert_info.get_owner();
     tree["address"] = cert_info.get_address();
     tree["cert"] = cert_info.get_type_name();
+    if (cert_info.has_content()) {
+        tree["content"] = cert_info.get_content();
+    }
+
     return tree;
 }
 

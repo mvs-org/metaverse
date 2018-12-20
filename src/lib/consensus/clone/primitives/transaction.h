@@ -199,7 +199,7 @@ public:
     std::string address;
     uint32_t type;
     uint8_t status;
-    std::string description;
+    std::string content;
 
     ADD_SERIALIZE_METHODS;
 
@@ -212,8 +212,8 @@ public:
         READWRITE(status);
 
         asset_cert_type type_enum(type);
-        if (type_enum.has_description()) {
-            READWRITE(description);
+        if (type_enum.has_content()) {
+            READWRITE(content);
         }
     }
 };

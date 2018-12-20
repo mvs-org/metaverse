@@ -66,7 +66,7 @@ bool asset_cert::is_valid() const
     return !(symbol_.empty()
              || owner_.empty()
              || (cert_type_ == asset_cert_ns::none)
-             || (calc_size() > (has_description() ? ASSET_CERT_FULL_FIX_SIZE : ASSET_CERT_FIX_SIZE)));
+             || (calc_size() > (has_content() ? ASSET_CERT_FULL_FIX_SIZE : ASSET_CERT_FIX_SIZE)));
 }
 
 bool asset_cert::operator< (const asset_cert& other) const
@@ -109,8 +109,8 @@ bool asset_cert::from_data_t(reader& source)
     cert_type_.mask = source.read_4_bytes_little_endian();
     status_ = source.read_byte();
 
-    if (has_description()) {
-        description_ = source.read_string();
+    if (has_content()) {
+        content_ = source.read_string();
     }
 
     auto result = static_cast<bool>(source);
@@ -129,8 +129,8 @@ void asset_cert::to_data_t(writer& sink) const
     sink.write_4_bytes_little_endian(cert_type_.mask);
     sink.write_byte(status_);
 
-    if (has_description()) {
-        sink.write_string(description_);
+    if (has_content()) {
+        sink.write_string(content_);
     }
 }
 
@@ -139,8 +139,8 @@ uint64_t asset_cert::calc_size() const
     auto size = (symbol_.size() + 1) + (owner_.size() + 1) + (address_.size() + 1)
         + ASSET_CERT_TYPE_FIX_SIZE + ASSET_CERT_STATUS_FIX_SIZE;
 
-    if (has_description()) {
-        size += (description_.size() + 1);
+    if (has_content()) {
+        size += (content_.size() + 1);
     }
 
     return size;
@@ -148,7 +148,7 @@ uint64_t asset_cert::calc_size() const
 
 uint64_t asset_cert::serialized_size() const
 {
-    if (has_description()) {
+    if (has_content()) {
         std::min<uint64_t>(calc_size(), ASSET_CERT_FULL_FIX_SIZE);
     }
 
@@ -162,8 +162,8 @@ std::string asset_cert::to_string() const
     ss << "\t owner = " << owner_ << "\n";
     ss << "\t address = " << address_ << "\n";
     ss << "\t cert = " << get_type_name() << "\n";
-    if (!description_.empty()) {
-        ss << "\t description = " << description_ << "\n";
+    if (!content_.empty()) {
+        ss << "\t description = " << content_ << "\n";
     }
     ss << "\t status = " << std::to_string(status_) << "\n";
     return ss.str();
@@ -218,15 +218,15 @@ void asset_cert::set_address(const std::string& address)
     address_ = address.substr(0, len);
 }
 
-const std::string& asset_cert::get_description() const
+const std::string& asset_cert::get_content() const
 {
-    return description_;
+    return content_;
 }
 
-void asset_cert::set_description(const std::string& description)
+void asset_cert::set_content(const std::string& content)
 {
-    size_t len = std::min((description.size() + 1), ASSET_CERT_DESCRIPTION_FIX_SIZE);
-    description_ = description.substr(0, len);
+    size_t len = std::min((content.size() + 1), ASSET_CERT_CONTENT_FIX_SIZE);
+    content_ = content.substr(0, len);
 }
 
 asset_cert_type asset_cert::get_type() const
@@ -307,14 +307,77 @@ bool asset_cert::test_certs(const std::vector<asset_cert_type>& total, const std
     return true;
 }
 
-bool asset_cert::has_description(asset_cert_type cert_type)
+bool asset_cert::has_content(asset_cert_type cert_type)
 {
-    return cert_type.has_description();
+    return cert_type.has_content();
 }
 
-bool asset_cert::has_description() const
+bool asset_cert::has_content() const
 {
-    return cert_type_.has_description();
+    return cert_type_.has_content();
+}
+
+bool asset_cert::check_mining_subsidy_param() const
+{
+    if (cert_type_ != asset_cert_ns::mining) {
+        return true;
+    }
+
+    auto& param = content_;
+    if (param.empty()) {
+        log::error("cert") << "mining cert: subsidy parameter is empty!";
+        return false;
+    }
+
+    std::vector<std::string> items = bc::split(param, ",", true);
+    if (items.size() < 3) {
+        log::error("cert") << "mining cert: invalid size of parameters: " << param;
+        return false;
+    }
+
+    const std::vector<std::string> keys{ "initial", "interval", "base" };
+    std::map<std::string, std::string> params;
+    for (auto& item : items) {
+        auto pair = bc::split(item, ":", true);
+        if (pair.size() != 2) {
+            log::error("cert") << "mining cert: invalid item " << item;
+        }
+
+        auto key = pair[0];
+        auto value = pair[1];
+        if (std::find(std::begin(keys), std::end(keys), key) != keys.end()) {
+            params[key] = value;
+        }
+    }
+
+    if (params.size() < keys.size()) {
+        log::error("cert") << "mining cert: lack of parameter: " << param;
+    }
+
+    try {
+        std::string value = params["initial"];
+        int32_t initial = boost::lexical_cast<int>(value);
+        if (initial <= 0) {
+            log::error("cert") << "mining cert: invalid initial subsidy parameter: " << value;
+        }
+
+        value = params["interval"];
+        int32_t interval = boost::lexical_cast<int>(value);
+        if (interval <= 0) {
+            log::error("cert") << "mining cert: invalid block interval parameter: " << value;
+        }
+
+        value = params["base"];
+        double base = boost::lexical_cast<double>(value);
+        if (base <= 0) {
+            log::error("cert") << "mining cert: invalid base parameter: " << value;
+        }
+    }
+    catch (boost::bad_lexical_cast & e) {
+        log::error("cert") << "mining cert: invalid value type: " << param << e.what();
+    }
+
+    return true;
 }
 
 } // namspace chain

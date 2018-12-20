@@ -570,6 +570,7 @@ code validate_transaction::check_asset_issue_transaction() const
     is_asset_issue = false;
     int num_cert_issue{0};
     int num_cert_domain_or_naming{0};
+    int num_cert_mining{0};
     std::vector<asset_cert_type> cert_mask;
     std::vector<asset_cert_type> cert_type;
     std::string asset_symbol;
@@ -655,6 +656,26 @@ code validate_transaction::check_asset_issue_transaction() const
                 }
 
                 if (!check_same(cert_owner, cert_info.get_owner())) {
+                    return error::asset_issue_error;
+                }
+            }
+            else if (cur_cert_type == asset_cert_ns::mining) {
+                ++num_cert_mining;
+                if (num_cert_mining > 1) {
+                    return error::asset_issue_error;
+                }
+
+                if (!check_same(asset_symbol, cert_info.get_symbol())) {
+                    return error::asset_issue_error;
+                }
+
+                if (!check_same(asset_address, output.get_script_address())) {
+                    return error::asset_issue_error;
+                }
+
+                if (!cert_info.check_mining_subsidy_param()) {
+                    log::error(LOG_BLOCKCHAIN) << "issue: invalid mining subsidy param of cert "
+                        << cert_info.to_string();
                     return error::asset_issue_error;
                 }
             }

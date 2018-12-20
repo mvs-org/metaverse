@@ -2222,12 +2222,10 @@ attachment issuing_asset::populate_output_attachment(const receiver_record& reco
         attach.set_attach(ass);
     }
     else if (record.type == utxo_attach_type::asset_cert_autoissue
-        && record.asset_cert == asset_cert_ns::naming) {
+        && record.asset_cert == asset_cert_ns::mining) {
         auto& cert_info = boost::get<asset_cert>(attach.get_attach());
-        cert_info.set_description(mining_sussidy_param_);
-        log::info("base_helper") << "populate_output_attachment: " << cert_info.to_string();
-
-        BITCOIN_ASSERT(cert_info.has_description());
+        cert_info.set_content(mining_sussidy_param_);
+        BITCOIN_ASSERT(cert_info.has_content());
     }
 
     return attach;
