@@ -33,6 +33,7 @@ using payment_address = wallet::payment_address;
 
 std::string parse_private_key(const std::string& raw_str)
 {
+    // decode wif
     bc::wallet::ec_private prv_key(raw_str);
     if (true == (bool)prv_key) {
         const ec_secret& secret = prv_key;
@@ -42,17 +43,39 @@ std::string parse_private_key(const std::string& raw_str)
     return raw_str;
 }
 
+std::string signrawtx::get_private_key(const std::vector<std::string>& keys, const std::string& address)
+{
+    for (auto& key : keys) {
+        bc::explorer::config::ec_private cfg_prv(key);
+        const ec_secret& secret = cfg_prv;
+
+        bc::wallet::ec_private wlt_prv(secret);
+        auto payment_address = wlt_prv.to_payment_address();
+        if (payment_address.encoded() == address) {
+            return key;
+        }
+    }
+
+    throw argument_legality_exception{"No private key matches address " + address};
+}
+
 console_result signrawtx::invoke(Json::Value& jv_output,
                                  bc::server::server_node& node)
 {
-    if (option_.private_key.empty() && (auth_.name.empty() || auth_.auth.empty())) {
+    if (option_.private_keys.empty() && (auth_.name.empty() || auth_.auth.empty())) {
         throw argument_legality_exception{"Missing account/password or private key!"};
     }
 
     auto &blockchain = node.chain_impl();
     std::shared_ptr<account> acc(nullptr);
-    if (option_.private_key.empty()) {
+    std::vector<std::string> private_keys;
+    if (option_.private_keys.empty()) {
         acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    }
+    else {
+        for (auto& key : option_.private_keys) {
+            private_keys.push_back(parse_private_key(key));
+        }
     }
 
     tx_type tx_ = argument_.transaction;
@@ -136,7 +159,7 @@ console_result signrawtx::invoke(Json::Value& jv_output,
                     prv_key_str = get_private_key(blockchain, address.encoded());
                 }
                 else {
-                    prv_key_str = parse_private_key(option_.private_key);
+                    prv_key_str = get_private_key(private_keys, address.encoded());
                 }
 
                 bc::explorer::config::script config_contract(output.script); // previous output script

@@ -84,8 +84,8 @@ public:
         )
         (
             "wif,w",
-            value<std::string>(&option_.private_key)->default_value(""),
-            "The wif or private key to sign."
+            value<std::vector<std::string>>(&option_.private_keys),
+            "The wif(s) or private key(s) to sign."
         );
 
         return options;
@@ -105,11 +105,12 @@ public:
 
     struct option
     {
-        std::string private_key;
+        std::vector<std::string> private_keys;
     } option_;
 
 private:
     std::string get_private_key(blockchain::block_chain_impl& blockchain, const std::string& address);
+    std::string get_private_key(const std::vector<std::string>& keys, const std::string& address);
 
     bc::endorsement sign(
         const std::string& private_key,
