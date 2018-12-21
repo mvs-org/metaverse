@@ -405,7 +405,7 @@ void sync_fetch_asset_cert_balance(const std::string& address, const string& sym
     {
         // spend unconfirmed (or no spend attempted)
         if ((row.spend.hash == null_hash)
-                && blockchain.get_transaction(row.output.hash, tx_temp, tx_height))
+                && blockchain.get_transaction(tx_temp, tx_height, row.output.hash))
         {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             const auto& output = tx_temp.outputs.at(row.output.index);
@@ -443,7 +443,7 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
     {
         // spend unconfirmed (or no spend attempted)
         if ((row.spend.hash == null_hash)
-                && blockchain.get_transaction(row.output.hash, tx_temp, tx_height))
+                && blockchain.get_transaction(tx_temp, tx_height, row.output.hash))
         {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             const auto& output = tx_temp.outputs.at(row.output.index);
@@ -521,7 +521,7 @@ void sync_fetch_locked_balance(const std::string& address,
     {
         // spend unconfirmed (or no spend attempted)
         if ((row.spend.hash == null_hash)
-            && blockchain.get_transaction(row.output.hash, tx_temp, tx_height))
+            && blockchain.get_transaction(tx_temp, tx_height, row.output.hash))
         {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             const auto& output = tx_temp.outputs.at(row.output.index);
@@ -574,7 +574,7 @@ void sync_fetch_asset_deposited_balance(const std::string& address,
     {
         // spend unconfirmed (or no spend attempted)
         if ((row.spend.hash == null_hash)
-                && blockchain.get_transaction(row.output.hash, tx_temp, tx_height))
+            && blockchain.get_transaction(tx_temp, tx_height, row.output.hash))
         {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             const auto& output = tx_temp.outputs.at(row.output.index);
@@ -634,7 +634,7 @@ void sync_unspend_output(bc::blockchain::block_chain_impl& blockchain, const inp
     std::shared_ptr<chain::transaction> tx = blockchain.get_spends_output(input);
     uint64_t tx_height;
     chain::transaction tx_temp;
-    if (tx == nullptr && blockchain.get_transaction(input.hash, tx_temp, tx_height))
+    if (tx == nullptr && blockchain.get_transaction(tx_temp, tx_height, input.hash))
     {
         const auto& output = tx_temp.outputs.at(input.index);
 
@@ -691,7 +691,7 @@ auto sync_fetch_asset_deposited_view(const std::string& symbol,
     for (auto &out : *output_list)
     {
         // spend unconfirmed (or no spend attempted)
-        if (blockchain.get_transaction(out.hash, tx_temp, tx_height))
+        if (blockchain.get_transaction(tx_temp, tx_height, out.hash))
         {
             BITCOIN_ASSERT(out.index < tx_temp.outputs.size());
             const auto &output = tx_temp.outputs.at(out.index);
@@ -755,7 +755,7 @@ auto sync_fetch_asset_view(const std::string& symbol,
     for (auto &out : *output_list)
     {
         // spend unconfirmed (or no spend attempted)
-        if (blockchain.get_transaction(out.hash, tx_temp, tx_height))
+        if (blockchain.get_transaction(tx_temp, tx_height, out.hash))
         {
             BITCOIN_ASSERT(out.index < tx_temp.outputs.size());
             const auto &output = tx_temp.outputs.at(out.index);
@@ -829,13 +829,9 @@ void sync_fetch_deposited_balance(wallet::payment_address& address,
     auto&& address_str = address.encoded();
     auto&& rows = blockchain.get_address_history(address, false);
     for (auto& row: rows) {
-        if (row.output_height == 0) {
-            continue;
-        }
-
         // spend unconfirmed (or no spend attempted)
         if ((row.spend.hash == null_hash)
-                && blockchain.get_transaction(row.output.hash, tx_temp, tx_height)) {
+            && blockchain.get_transaction(tx_temp, tx_height, row.output.hash)) {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             auto output = tx_temp.outputs.at(row.output.index);
             if (output.get_script_address() != address.encoded()) {
@@ -899,15 +895,9 @@ void sync_fetchbalance(wallet::payment_address& address,
     blockchain.get_last_height(height);
 
     for (auto& row: rows) {
-        bool tx_ready = (row.spend.hash == null_hash)
-            && blockchain.get_transaction(row.output.hash, tx_temp, tx_height);
-        // include genesis block whose height is zero.
-        if (row.output_height == 0 && tx_height != 0) {
-            continue;
-        }
-
         // spend unconfirmed (or no spend attempted)
-        if (tx_ready) {
+        if ((row.spend.hash == null_hash)
+            && blockchain.get_transaction(tx_temp, tx_height, row.output.hash)) {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             auto output = tx_temp.outputs.at(row.output.index);
             if (output.get_script_address() != address.encoded()) {
@@ -976,11 +966,7 @@ void sync_fetchbalance(wallet::payment_address& address,
         }
 
         bool tx_ready = (row.spend.hash == null_hash)
-            && blockchain.get_transaction(row.output.hash, tx_temp, tx_height);
-        // include genesis block whose height is zero.
-        if (row.output_height == 0 && tx_height != 0) {
-            continue;
-        }
+            && blockchain.get_transaction(tx_temp, tx_height, row.output.hash);
 
         // spend unconfirmed (or no spend attempted)
         if (!tx_ready) {
@@ -1042,9 +1028,11 @@ bool base_transfer_common::get_spendable_output(
 
     chain::transaction tx_temp;
     uint64_t tx_height;
-    if (!blockchain_.get_transaction(row.output.hash, tx_temp, tx_height)) {
+    if (!blockchain_.get_transaction_consider_pool(tx_temp, tx_height, row.output.hash)) {
         return false;
     }
+
+    const auto is_in_pool = tx_height == max_uint64;
 
     BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
     output = tx_temp.outputs.at(row.output.index);
@@ -1056,7 +1044,7 @@ bool base_transfer_common::get_spendable_output(
     }
 
     if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
-        if (row.output_height == 0) {
+        if (is_in_pool) {
             // deposit utxo in transaction pool
             return false;
         } else {
@@ -1070,7 +1058,7 @@ bool base_transfer_common::get_spendable_output(
         }
     }
     else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-        if (row.output_height == 0) {
+        if (is_in_pool) {
             // lock sequence utxo in transaction pool
             return false;
         }
@@ -1087,8 +1075,7 @@ bool base_transfer_common::get_spendable_output(
     else if (tx_temp.is_coinbase()) { // incase readd deposit
         // coin base etp maturity etp check
         // coinbase_maturity etp check
-        if ((row.output_height == 0) ||
-            (coinbase_maturity > blockchain_.calc_number_of_blocks(row.output_height, height))) {
+        if (coinbase_maturity > blockchain_.calc_number_of_blocks(row.output_height, height)) {
             return false;
         }
     }

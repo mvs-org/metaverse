@@ -124,17 +124,13 @@ void validate_transaction::start(validate_handler handler)
 
 code validate_transaction::basic_checks() const
 {
+    if (tx_->is_coinbase())
+        return error::coinbase_transaction;
+
     const auto ec = check_transaction();
 
     if (ec)
         return ec;
-
-    // This should probably preceed check_transaction.
-    if (tx_->is_coinbase())
-        return error::coinbase_transaction;
-
-    // Ummm...
-    //if ((int64)nLockTime > INT_MAX)
 
     if (!is_standard())
         return error::is_not_standard;

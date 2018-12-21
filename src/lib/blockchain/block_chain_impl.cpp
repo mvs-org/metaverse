@@ -220,13 +220,13 @@ bool block_chain_impl::select_utxo_for_staking(
     size_t collect_utxos = 0;
 
     for (auto & row : rows) {
-        if (row.output_height == 0 || row.value == 0) {
+        if (row.value == 0) {
             continue;
         }
 
         // spend unconfirmed (or no spend attempted)
         if ((row.spend.hash == null_hash)
-                && get_transaction(row.output.hash, tx_temp, tx_height)) {
+                && get_transaction(tx_temp, tx_height, row.output.hash)) {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             auto output = tx_temp.outputs.at(row.output.index);
             if (!output.is_etp() || output.get_script_address() != pay_address.encoded()) {
@@ -1623,12 +1623,8 @@ bool block_chain_impl::check_pos_capability(
     uint64_t tx_height;
 
     for (auto & row : rows) {
-        if (row.output_height == 0) {
-            continue;
-        }
-
         if ((row.spend.hash == null_hash)
-            && get_transaction(row.output.hash, tx_temp, tx_height)) {
+            && get_transaction(tx_temp, tx_height, row.output.hash)) {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             auto output = tx_temp.outputs.at(row.output.index);
             if (output.get_script_address() != pay_address.encoded()) {
@@ -1697,7 +1693,7 @@ std::shared_ptr<asset_cert> block_chain_impl::get_account_asset_cert(
         for (auto& row: rows) {
             // spend unconfirmed (or no spend attempted)
             if ((row.spend.hash == null_hash)
-                    && get_transaction(row.output.hash, tx_temp, tx_height))
+                    && get_transaction(tx_temp, tx_height, row.output.hash))
             {
                 BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
                 const auto& output = tx_temp.outputs.at(row.output.index);
@@ -1818,7 +1814,7 @@ std::shared_ptr<asset_mit::list> block_chain_impl::get_account_mits(
         for (auto& row: rows) {
             // spend unconfirmed (or no spend attempted)
             if ((row.spend.hash == null_hash)
-                    && get_transaction(row.output.hash, tx_temp, tx_height))
+                    && get_transaction(tx_temp, tx_height, row.output.hash))
             {
                 BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
                 const auto& output = tx_temp.outputs.at(row.output.index);
@@ -2479,14 +2475,12 @@ organizer& block_chain_impl::get_organizer()
     return organizer_;
 }
 
-bool block_chain_impl::get_transaction(const hash_digest& hash,
-    chain::transaction& tx, uint64_t& tx_height)
+bool block_chain_impl::get_transaction_consider_pool(
+    chain::transaction& tx, uint64_t& tx_height, const hash_digest& hash)
 {
 
     bool ret = false;
-    if (stopped())
-    {
-        //handler(error::service_stopped, {});
+    if (stopped()) {
         return ret;
     }
 
@@ -2510,137 +2504,14 @@ bool block_chain_impl::get_transaction(const hash_digest& hash,
         pool().fetch(hash, f);
         boost::unique_lock<boost::mutex> lock(mutex);
         if(tx_ptr) {
-            tx = *(static_cast<std::shared_ptr<chain::transaction>>(tx_ptr));
-            tx_height = 0;
+            tx = *tx_ptr;
+            tx_height = max_uint64;
             ret = true;
         }
     }
-    #ifdef MVS_DEBUG
+#ifdef MVS_DEBUG
     log::debug("get_transaction=")<<tx.to_string(1);
-    #endif
-
-    return ret;
-}
-
-bool block_chain_impl::get_transaction_callback(const hash_digest& hash,
-    std::function<void(const code&, const chain::transaction&)> handler)
-{
-
-    bool ret = false;
-    if (stopped())
-    {
-        //handler(error::service_stopped, {});
-        return ret;
-    }
-
-    const auto result = database_.transactions.get(hash);
-    if(result) {
-        handler(error::success, result.transaction());
-        ret = true;
-    } else {
-        transaction_message::ptr tx_ptr = nullptr;
-
-        auto f = [&tx_ptr, handler](const code& ec, transaction_message::ptr tx_) -> void
-        {
-            if (error::success == ec.value()){
-                tx_ptr = tx_;
-                if(tx_ptr)
-                    handler(ec, *(static_cast<std::shared_ptr<chain::transaction>>(tx_ptr)));
-            }
-        };
-
-        pool().fetch(hash, f);
-        if(tx_ptr) {
-            ret = true;
-        }
-    }
-
-    return ret;
-}
-
-bool block_chain_impl::get_history_callback(const wallet::payment_address& address,
-    size_t limit, size_t from_height,
-    std::function<void(const code&, chain::history::list&)> handler)
-{
-
-    bool ret = false;
-    if (stopped())
-    {
-        //handler(error::service_stopped, {});
-        return ret;
-    }
-
-    auto f = [&ret, handler](const code& ec, chain::history_compact::list compact) -> void
-    {
-        if (error::success == ec.value()){
-            history::list result;
-
-            // Process and remove all outputs.
-            for (auto output = compact.begin(); output != compact.end();)
-            {
-                if (output->kind == point_kind::output)
-                {
-                    history row;
-                    row.output = output->point;
-                    row.output_height = output->height;
-                    row.value = output->value;
-                    row.spend = { null_hash, max_uint32 };
-                    row.temporary_checksum = output->point.checksum();
-                    result.emplace_back(row);
-                    output = compact.erase(output);
-                    continue;
-                }
-
-                ++output;
-            }
-
-            // All outputs have been removed, process the spends.
-            for (const auto& spend: compact)
-            {
-                auto found = false;
-
-                // Update outputs with the corresponding spends.
-                for (auto& row: result)
-                {
-                    if (row.temporary_checksum == spend.previous_checksum &&
-                        row.spend.hash == null_hash)
-                    {
-                        row.spend = spend.point;
-                        row.spend_height = spend.height;
-                        found = true;
-                        break;
-                    }
-                }
-
-                // This will only happen if the history height cutoff comes between
-                // an output and its spend. In this case we return just the spend.
-                if (!found)
-                {
-                    history row;
-                    row.output = output_point( null_hash, max_uint32 );
-                    row.output_height = max_uint64;
-                    row.value = max_uint64;
-                    row.spend = spend.point;
-                    row.spend_height = spend.height;
-                    result.emplace_back(row);
-                }
-            }
-
-            compact.clear();
-
-            // Clear all remaining checksums from unspent rows.
-            for (auto& row: result)
-                if (row.spend.hash == null_hash)
-                    row.spend_height = max_uint64;
-
-            // TODO: sort by height and index of output, spend or both in order.
-            handler(ec, result);
-            ret = true;
-        }
-    };
-
-    // Obtain payment address history from the transaction pool and blockchain.
-    pool().fetch_history(address, limit, from_height, f);
+#endif
 
     return ret;
 }
@@ -2755,7 +2626,7 @@ bool block_chain_impl::get_tx_inputs_etp_value (chain::transaction& tx, uint64_t
 
     for (auto& each : tx.inputs) {
 
-        if (get_transaction(each.previous_output.hash, tx_temp, tx_height)) {
+        if (get_transaction_consider_pool(tx_temp, tx_height, each.previous_output.hash)) {
             auto output = tx_temp.outputs.at(each.previous_output.index);
             etp_val += output.value;
         } else {
@@ -2867,7 +2738,7 @@ std::pair<uint64_t, uint64_t> block_chain_impl::get_locked_balance(
     {
         // spend unconfirmed (or no spend attempted)
         if ((row.spend.hash == null_hash)
-            && rThis.get_transaction(row.output.hash, tx_temp, tx_height))
+            && rThis.get_transaction(tx_temp, tx_height, row.output.hash))
         {
             // tx not maturity
             if (tx_height + consensus::witness::vote_maturity > height) {

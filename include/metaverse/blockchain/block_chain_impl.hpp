@@ -393,13 +393,8 @@ public:
 
     void fired() override;
     organizer& get_organizer() override;
-    bool get_transaction(const hash_digest& hash,
-        chain::transaction& tx, uint64_t& tx_height);
-    bool get_transaction_callback(const hash_digest& hash,
-    std::function<void(const code&, const chain::transaction&)> handler);
-    bool get_history_callback(const wallet::payment_address& address,
-        size_t limit, size_t from_height,
-        std::function<void(const code&, chain::history::list&)> handler);
+    bool get_transaction_consider_pool(
+        chain::transaction& tx, uint64_t& tx_height, const hash_digest& hash);
     bool get_history(const wallet::payment_address& address,
         uint64_t limit, uint64_t from_height, history_compact::list& history);
     code validate_transaction(const chain::transaction& tx);

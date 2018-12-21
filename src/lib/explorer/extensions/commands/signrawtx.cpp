@@ -66,7 +66,8 @@ console_result signrawtx::invoke(Json::Value& jv_output,
         uint64_t tx_height;
 
         for (auto& fromeach : tx_.inputs) {
-            if (!(blockchain.get_transaction(fromeach.previous_output.hash, tx_temp, tx_height))) {
+            if (!blockchain.get_transaction_consider_pool(
+                    tx_temp, tx_height, fromeach.previous_output.hash)) {
                 throw argument_legality_exception{
                     "invalid transaction hash " + encode_hash(fromeach.previous_output.hash)};
             }

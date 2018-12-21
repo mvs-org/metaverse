@@ -170,7 +170,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
 
         uint64_t tx_height = 0;
         bc::chain::transaction tx;
-        auto exist = blockchain.get_transaction(hash, tx, tx_height);
+        auto exist = blockchain.get_transaction_consider_pool(tx, tx_height, hash);
         if (!exist) {
             throw tx_notfound_exception{"transaction[" + utxo_stru[0] + "] does not exist!"};
         }
