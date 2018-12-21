@@ -91,7 +91,7 @@ public:
             value<std::string>(&option_.symbol),
             "Mine Asset with specified symbol. Defaults to empty."
         )
-#ifdef PRIVATE_CHAIN
+#ifdef ENABLE_PILLAR
         (
             "consensus,c",
             value<std::string>(&option_.consensus)->default_value("pow"),

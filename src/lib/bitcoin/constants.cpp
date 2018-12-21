@@ -30,7 +30,7 @@ namespace libbitcoin {
 #ifdef PRIVATE_CHAIN
 
 uint32_t coinbase_maturity                  = 10;
-uint64_t pos_enabled_height                 = 1000;
+uint64_t pos_enabled_height                 = 5000;
 
 const uint64_t future_blocktime_fork_height = 0;
 

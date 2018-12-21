@@ -205,11 +205,12 @@ u256 HeaderAux::calculate_difficulty_v1(
         }
     }
 
+    bigint result = std::max<bigint>(minimumDifficulty, target);
+
 #ifdef PRIVATE_CHAIN
-    target = bigint(10);
+    result = bigint(10);
 #endif
 
-    bigint result = std::max<bigint>(minimumDifficulty, target);
     return u256(std::min<bigint>(result, std::numeric_limits<u256>::max()));
 }
 
