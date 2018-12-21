@@ -113,10 +113,6 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
         // Create the private key from hd_key and the public version.
         const auto derive_private_key = bc::wallet::hd_private(hk, prefixes);
 
-#ifdef PRIVATE_CHAIN
-        // test_vrf(derive_private_key);
-#endif
-
         auto pk = encode_base16(derive_private_key.secret());
         addr->set_prv_key(pk.c_str(), auth_.auth);
 

@@ -170,14 +170,14 @@ u256 HeaderAux::calculate_difficulty(
     const chain::header::ptr pprev,
     bool is_staking)
 {
-#ifndef PRIVATE_CHAIN
-    return calculate_difficulty_v1(current, prev, pprev);
-#else
+#ifdef ENABLE_PILLAR
     if (current.number < pos_enabled_height) {
         return calculate_difficulty_v1(current, prev, pprev);
     }
 
     return calculate_difficulty_v2(current, prev, pprev);
+#else
+    return calculate_difficulty_v1(current, prev, pprev);
 #endif
 }
 
@@ -191,12 +191,7 @@ u256 HeaderAux::calculate_difficulty_v1(
         throw GenesisBlockCannotBeCalculated();
     }
 
-#ifndef PRIVATE_CHAIN
     auto minimumDifficulty = is_testnet ? bigint(300000) : bigint(914572800);
-#else
-    auto minimumDifficulty = bigint(1024 * 1024);
-#endif
-
     bigint target(minimumDifficulty);
 
     // DO NOT MODIFY time_config in release
@@ -209,6 +204,10 @@ u256 HeaderAux::calculate_difficulty_v1(
             target = prev->bits + (prev->bits/1024);
         }
     }
+
+#ifdef PRIVATE_CHAIN
+    target = bigint(10);
+#endif
 
     bigint result = std::max<bigint>(minimumDifficulty, target);
     return u256(std::min<bigint>(result, std::numeric_limits<u256>::max()));
@@ -236,10 +235,10 @@ u256 HeaderAux::calculate_difficulty_v2(
     const chain::header::ptr prev,
     const chain::header::ptr pprev)
 {
-#ifndef PRIVATE_CHAIN
-    auto minimumDifficulty = is_testnet ? bigint(300000) : bigint(914572800);
-#else
+#ifdef PRIVATE_CHAIN
     auto minimumDifficulty = bigint(1024 * 1024);
+#else
+    auto minimumDifficulty = is_testnet ? bigint(300000) : bigint(914572800);
 #endif
 
     if (nullptr == prev || nullptr == pprev) {
@@ -255,7 +254,7 @@ u256 HeaderAux::calculate_difficulty_v2(
     auto result = std::max<bigint>(prev_bits, minimumDifficulty);
     result = std::min<bigint>(result, std::numeric_limits<u256>::max());
 
-#ifdef PRIVATE_CHAIN
+#ifdef ENABLE_PILLAR
     if (current.transaction_count > 0) {
         log::info("difficulty")
             << "last " << chain::get_block_version(*prev)

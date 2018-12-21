@@ -281,18 +281,16 @@ miner::block_ptr miner::create_genesis_block(bool is_mainnet)
     tx_new.inputs[0].script.operations = {{chain::opcode::raw_data, {text.begin(), text.end()}}};
     tx_new.outputs.resize(1);
 
-    // init for testnet/mainnet
+    wallet::payment_address genesis_address(get_genesis_address(!is_mainnet));
+    tx_new.outputs[0].script.operations = to_script_operation(genesis_address);
+    tx_new.outputs[0].value = 50000000 * coin_price();
+
     if (!is_mainnet) {
-        wallet::payment_address testnet_genesis_address("tPd41bKLJGf1C5RRvaiV2mytqZB6WfM1vR");
-        tx_new.outputs[0].script.operations = to_script_operation(testnet_genesis_address);
         pblock->header.timestamp = 1479881397;
     }
     else {
-        wallet::payment_address genesis_address("MGqHvbaH9wzdr6oUDFz4S1HptjoKQcjRve");
-        tx_new.outputs[0].script.operations = to_script_operation(genesis_address);
         pblock->header.timestamp = 1486796400;
     }
-    tx_new.outputs[0].value = 50000000 * coin_price();
 
     // Add our coinbase tx as first transaction
     pblock->transactions.push_back(tx_new);
@@ -862,7 +860,7 @@ miner::block_ptr miner::create_new_block_dpos(const wallet::payment_address& pay
     coinbase_input_ops.push_back({ chain::opcode::special, endorse });
     coinbase_input_ops.push_back({ chain::opcode::special, public_key_data_ });
 
-#ifdef PRIVATE_CHAIN
+#ifdef ENABLE_PILLAR
     log::info(LOG_HEADER)
         << "create a DPoS block with signatures at height " << block_height
         << ", coinbase input script is "
@@ -1007,7 +1005,7 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
         return nullptr;
     }
 
-#ifdef PRIVATE_CHAIN
+#ifdef ENABLE_PILLAR
     log::info(LOG_HEADER)
         << "create a PoS block at height " << block_height
         << ", header hash is " << encode_hash(pblock->header.hash());
@@ -1497,7 +1495,7 @@ bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& pr
         return false;
     }
 
-#ifdef PRIVATE_CHAIN
+#ifdef ENABLE_PILLAR
     log::info(LOG_HEADER)
         << "miner set mining public key " << encode_base16(public_key_data_);
 #endif

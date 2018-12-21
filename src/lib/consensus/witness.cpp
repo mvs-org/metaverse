@@ -216,9 +216,7 @@ bool witness::calc_witness_list(uint64_t height)
 bool witness::calc_witness_list(list& witness_list, uint64_t height) const
 {
     if (!is_begin_of_epoch(height)) {
-#ifdef PRIVATE_CHAIN
         log::error(LOG_HEADER) << "calc witness list must at the begin of epoch, not " << height;
-#endif
         return false;
     }
 
@@ -264,11 +262,7 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
         }
     }
 
-#ifdef PRIVATE_CHAIN
     log::info(LOG_HEADER)
-#else
-    log::debug(LOG_HEADER)
-#endif
         << "calc_witness_list at height " << height << ", " << show_list(witness_list);
     return true;
 }
@@ -382,10 +376,8 @@ bool witness::update_witness_list(uint64_t height)
 
     auto sp_block = fetch_vote_result_block(height);
     if (!sp_block) {
-#ifdef PRIVATE_CHAIN
         log::info(LOG_HEADER)
             << "fetch vote result block failed at height " << height;
-#endif
         return false;
     }
     return update_witness_list(*sp_block);
@@ -395,10 +387,8 @@ bool witness::update_witness_list(const chain::block& block)
 {
     list witness_list;
     if (!verify_vote_result(block, witness_list)) {
-#ifdef PRIVATE_CHAIN
         log::info(LOG_HEADER)
             << "verify vote result failed at height " << block.header.number;
-#endif
         return false;
     }
 
@@ -530,17 +520,13 @@ bool witness::sign(endorsement& out, const ec_secret& secret, const chain::heade
 bool witness::verify_sign(const endorsement& out, const public_key_t& public_key, const chain::header& h)
 {
     if (public_key.empty() || !is_public_key(public_key)) {
-#ifdef PRIVATE_CHAIN
         log::error(LOG_HEADER) << "verify witness sign failed, public key is wrong: "
                                << to_string(public_key);
-#endif
         return false;
     }
 
     if (out.back() != (h.number & 0xff)) {
-#ifdef PRIVATE_CHAIN
         log::error(LOG_HEADER) << "verify witness sign failed, suffix wrong";
-#endif
         return false;
     }
 
@@ -550,22 +536,18 @@ bool witness::verify_sign(const endorsement& out, const public_key_t& public_key
     ec_signature signature;
 
     if (!parse_signature(signature, distinguished, true)) {
-#ifdef PRIVATE_CHAIN
         log::error(LOG_HEADER) << "verify witness sign failed, parse_signature failed";
-#endif
         return false;
     }
 
     const auto sighash = h.hash();
 
     if (!bc::verify_signature(public_key, sighash, signature)) {
-#ifdef PRIVATE_CHAIN
         log::error(LOG_HEADER)
             << "verify witness signature failed at height " << (h.number + 1)
             << ", public_key is " << to_string(public_key)
             << ", signature is " << endorse_to_string(out)
             << ", hash is " << encode_hash(sighash);
-#endif
         return false;
     }
 

@@ -23,70 +23,85 @@
 
 namespace libbitcoin {
 
-const uint64_t pos_genesis_reward        = 6000000 * 100000000ul;
+//==============================================================================
+//
+//==============================================================================
 
-#ifndef PRIVATE_CHAIN
+#ifdef PRIVATE_CHAIN
 
-uint32_t coinbase_maturity = 1000;
-const uint64_t future_blocktime_fork_height = 1030000;
+uint32_t coinbase_maturity                  = 10;
+uint64_t pos_enabled_height                 = 1000;
 
-const size_t relative_locktime_min_version = 5;
-
-// PoS
-const uint64_t pos_enabled_height        = max_uint64;
-const uint32_t pos_coinstake_max_utxos   = 10;
-const uint64_t pos_lock_min_value        = 10000 * 100000000ul;
-const uint64_t pos_lock_min_height       = 100000;
-const uint64_t pos_lock_gap_height       = 10000;
-const uint64_t pos_stake_min_value       = 10000 * 100000000ul;
-const uint64_t pos_stake_min_height      = 1000;
-const double   pos_stake_factor          = 1;
-const uint32_t block_timespan_window     = 28;
+const uint64_t future_blocktime_fork_height = 0;
 
 #else //PRIVATE_CHAIN
 
-uint32_t coinbase_maturity = 10;
-const uint64_t future_blocktime_fork_height = 10;
+uint32_t coinbase_maturity                  = 1000;
+uint64_t pos_enabled_height                 = 1000000;   // TODO
 
-const size_t relative_locktime_min_version = 2;
-
-// PoS
-const uint64_t pos_enabled_height        = 350;
-const uint32_t pos_coinstake_max_utxos   = 10;
-const uint64_t pos_lock_min_value        = 10 * 100000000ul;
-const uint64_t pos_lock_min_height       = 100000;
-const uint64_t pos_lock_gap_height       = 10000;
-const uint64_t pos_stake_min_value       = 100 * 100000000ul;
-const uint64_t pos_stake_min_height      = 100;
-const double   pos_stake_factor          = 10;
-const uint32_t block_timespan_window     = 28;
+const uint64_t future_blocktime_fork_height = 1030000;
 
 #endif //PRIVATE_CHAIN
 
-hash_number max_target()
-{
-    hash_number max_target;
-    max_target.set_compact(max_work_bits);
-    return max_target;
-}
 
-std::string get_developer_community_address(bool is_testnet)
+//==============================================================================
+// constants
+//==============================================================================
+
+const size_t relative_locktime_min_version  = 2;
+
+// POS
+const uint64_t pos_genesis_reward        = 6000000 * 100000000ul;
+const uint32_t pos_coinstake_max_utxos   = 10;
+const uint64_t pos_lock_min_value        = 10000 * 100000000ul; // 10000 ETPs
+const uint64_t pos_lock_min_height       = 100000;
+const uint64_t pos_lock_gap_height       = 10000;
+const uint64_t pos_stake_min_value       = 10000 * 100000000ul; // 10000 ETPs
+const uint64_t pos_stake_min_height      = 1000;
+const double   pos_stake_factor          = 1;
+const uint32_t block_timespan_window     = 20;
+
+
+//==============================================================================
+// functions
+//==============================================================================
+
+// mnemonic for testnet & private net.
+// "steel lady blame arm sugar dolphin explain gas scare festival bronze spawn burst submit paper code carry slam december way there then north effort"
+
+std::string get_genesis_address(bool is_testnet)
 {
-    std::string address("MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh");  // developer-community address for mainnet
     if (is_testnet) {
-        address = "tJNo92g6DavpaCZbYjrH45iQ8eAKnLqmms";         // developer-community address for testnet
+        return "tBELxsiiaMVGQcY2Apf7hmzAaipD4YWTTj";            // for testnet
     }
-    return address;
+
+#ifdef PRIVATE_CHAIN
+    return "MCCu9WmXuTooSEoMHX1aN82b7syaJD65XM";                // for private net
+#else
+    return "MGqHvbaH9wzdr6oUDFz4S1HptjoKQcjRve";                // for mainnet
+#endif
 }
 
 std::string get_foundation_address(bool is_testnet)
 {
-    std::string address("MSCHL3unfVqzsZbRVCJ3yVp7RgAmXiuGN3");  // foundation address for mainnet
     if (is_testnet) {
-        address = "tF9pfqY8p6cfjuhDVZu9aXBY1CBprgrpKm";         // foundation address for testnet
+        return "tBELxsiiaMVGQcY2Apf7hmzAaipD4YWTTj";            // for testnet
     }
-    return address;
+
+#ifdef PRIVATE_CHAIN
+    return "MCCu9WmXuTooSEoMHX1aN82b7syaJD65XM";                // for private net
+#else
+    return "MSCHL3unfVqzsZbRVCJ3yVp7RgAmXiuGN3";                // for mainnet
+#endif
 }
 
+std::string get_developer_community_address(bool is_testnet)
+{
+    if (is_testnet) {
+        return "tBELxsiiaMVGQcY2Apf7hmzAaipD4YWTTj";            // for testnet
+    }
+
+    return "MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh";                // for mainnet
+}
 
 } // namespace libbitcoin

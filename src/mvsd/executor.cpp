@@ -234,7 +234,7 @@ bool executor::run()
     node_ = std::make_shared<server_node>(metadata_.configured);
 
 #ifdef PRIVATE_CHAIN
-    log::info(LOG_SERVER) << "running prinet";
+    log::info(LOG_SERVER) << "running private net";
 #else
     log::info(LOG_SERVER)
         << (!node_->is_use_testnet_rules() ? "running mainnet" : "running testnet");
@@ -337,11 +337,11 @@ void executor::stop(const code& ec)
 // Set up logging.
 void executor::initialize_output()
 {
-    log::debug(LOG_SERVER) << BS_LOG_HEADER;
+    // log::debug(LOG_SERVER) << BS_LOG_HEADER;
     log::info(LOG_SERVER) << BS_LOG_HEADER;
-    log::warning(LOG_SERVER) << BS_LOG_HEADER;
-    log::error(LOG_SERVER) << BS_LOG_HEADER;
-    log::fatal(LOG_SERVER) << BS_LOG_HEADER;
+    // log::warning(LOG_SERVER) << BS_LOG_HEADER;
+    // log::error(LOG_SERVER) << BS_LOG_HEADER;
+    // log::fatal(LOG_SERVER) << BS_LOG_HEADER;
 
     auto file = default_data_path() / metadata_.configured.file;
 

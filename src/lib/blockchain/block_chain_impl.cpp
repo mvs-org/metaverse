@@ -254,7 +254,7 @@ bool block_chain_impl::select_utxo_for_staking(
         }
     }
 
-#ifdef PRIVATE_CHAIN
+#ifdef ENABLE_PILLAR
     if (stake_utxos > 0) {
         log::info("blockchain") << "found " << stake_utxos << " stake utxos.";
     }

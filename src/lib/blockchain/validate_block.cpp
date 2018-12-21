@@ -234,7 +234,7 @@ code validate_block::check_coinbase(const chain::header& prev_header, bool check
         }
 
         if (coinbase_input_ops.size() != 3) {
-#ifdef PRIVATE_CHAIN
+#ifdef ENABLE_PILLAR
             log::error(LOG_BLOCKCHAIN)
                 << "verify witness sign script failed, coinbase script is "
                 << coinbase_script.to_string(chain::get_script_context());
@@ -291,9 +291,9 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     RETURN_IF_STOPPED();
 
-#ifndef PRIVATE_CHAIN
     //TO.FIX.CHENHAO.Reject
-    if (current_block_.header.number == future_blocktime_fork_height) {
+    if (!testnet_ && future_blocktime_fork_height > 0
+        && current_block_.header.number == future_blocktime_fork_height) {
         // 校验未来区块时间攻击分叉点
         bc::config::checkpoint::list blocktime_checkpoints;
         blocktime_checkpoints.push_back({
@@ -306,7 +306,6 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
             return error::checkpoints_failed;
         }
     }
-#endif
 
     chain::header prev_header = fetch_block(height_ - 1);
     if (current_block_.header.number >= future_blocktime_fork_height) {

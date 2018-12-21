@@ -4,7 +4,8 @@
 #ifndef MVS_MACROS_DEFINE_HPP
 #define MVS_MACROS_DEFINE_HPP
 
-// #define PRIVATE_CHAIN
-// #define ENABLE_LOCKTIME
+#define PRIVATE_CHAIN
+#define ENABLE_PILLAR
+#define ENABLE_LOCKTIME
 
 #endif
