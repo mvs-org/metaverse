@@ -136,9 +136,9 @@ public:
 private:
     void work(const wallet::payment_address& pay_address);
     block_ptr create_new_block(const wallet::payment_address& pay_address);
-    block_ptr create_new_block_pow(const wallet::payment_address& pay_address);
-    block_ptr create_new_block_pos(const wallet::payment_address& pay_address);
-    block_ptr create_new_block_dpos(const wallet::payment_address& pay_address);
+    block_ptr create_new_block_pow(const wallet::payment_address& pay_address, const header& prev_header);
+    block_ptr create_new_block_pos(const wallet::payment_address& pay_address, const header& prev_header);
+    block_ptr create_new_block_dpos(const wallet::payment_address& pay_address, const header& prev_header);
 
     uint32_t get_adjust_time(uint64_t height) const;
     uint32_t get_median_time_past(uint64_t height) const;

@@ -679,23 +679,6 @@ bool miner::get_block_transactions(
 
 miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_address)
 {
-    if (get_accept_block_version() == chain::block_version_pow) {
-        return create_new_block_pow(pay_address);
-    }
-
-    if (get_accept_block_version() == chain::block_version_pos) {
-        return create_new_block_pos(pay_address);
-    }
-
-    if (get_accept_block_version() == chain::block_version_dpos) {
-        return create_new_block_dpos(pay_address);
-    }
-
-    throw std::logic_error{"create_new_block: unknown accept block version! " + std::to_string(get_accept_block_version())};
-}
-
-miner::block_ptr miner::create_new_block_pow(const wallet::payment_address& pay_address)
-{
     block_chain_impl& block_chain = node_.chain_impl();
 
     // Get last block
@@ -707,6 +690,25 @@ miner::block_ptr miner::create_new_block_pow(const wallet::payment_address& pay_
         return nullptr;
     }
 
+    if (get_accept_block_version() == chain::block_version_pow) {
+        return create_new_block_pow(pay_address, prev_header);
+    }
+
+    if (get_accept_block_version() == chain::block_version_pos) {
+        return create_new_block_pos(pay_address, prev_header);
+    }
+
+    if (get_accept_block_version() == chain::block_version_dpos) {
+        return create_new_block_dpos(pay_address, prev_header);
+    }
+
+    throw std::logic_error{"create_new_block: unknown accept block version! " + std::to_string(get_accept_block_version())};
+}
+
+miner::block_ptr miner::create_new_block_pow(
+    const wallet::payment_address& pay_address, const header& prev_header)
+{
+    uint64_t last_height = prev_header.number;
     uint64_t block_height = last_height + 1;
     uint32_t block_time = get_adjust_time(block_height);
 
@@ -765,19 +767,10 @@ miner::block_ptr miner::create_new_block_pow(const wallet::payment_address& pay_
     return pblock;
 }
 
-miner::block_ptr miner::create_new_block_dpos(const wallet::payment_address& pay_address)
+miner::block_ptr miner::create_new_block_dpos(
+    const wallet::payment_address& pay_address, const header& prev_header)
 {
-    block_chain_impl& block_chain = node_.chain_impl();
-
-    // Get last block
-    uint64_t last_height = 0;
-    header prev_header;
-    if (!block_chain.get_last_height(last_height)
-            || !block_chain.get_header(prev_header, last_height)) {
-        log::warning(LOG_HEADER) << "get_last_height or get_header fail. last_height:" << last_height;
-        return nullptr;
-    }
-
+    uint64_t last_height = prev_header.number;
     uint64_t block_height = last_height + 1;
     uint32_t block_time = get_adjust_time(block_height);
 
@@ -870,19 +863,12 @@ miner::block_ptr miner::create_new_block_dpos(const wallet::payment_address& pay
     return pblock;
 }
 
-miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_address)
+miner::block_ptr miner::create_new_block_pos(
+    const wallet::payment_address& pay_address, const header& prev_header)
 {
     block_chain_impl& block_chain = node_.chain_impl();
 
-    // Get last block
-    uint64_t last_height = 0;
-    header prev_header;
-    if (!block_chain.get_last_height(last_height)
-            || !block_chain.get_header(prev_header, last_height)) {
-        log::warning(LOG_HEADER) << "get_last_height or get_header fail. last_height:" << last_height;
-        return nullptr;
-    }
-
+    uint64_t last_height = prev_header.number;
     uint64_t block_height = last_height + 1;
 
     // Check if PoS is eanbled at last_height
