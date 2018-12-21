@@ -30,31 +30,51 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-using namespace bc::explorer::config;
 
 console_result getpublickey::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    const auto& arg_address = argument_.address;
 
     std::string pub_key;
     std::string address;
 
     data_chunk public_key_data;
-    if (decode_base16(public_key_data, argument_.address) &&
-        is_public_key(public_key_data)) {
-        pub_key = argument_.address;
+    if (!option_.check_did) {
+        wallet::ec_private wif_key(arg_address);
+        if (wif_key) {
+            auto&& ec_public_key = wif_key.to_public();
+            ec_public_key.to_data(public_key_data);
+        }
+        else {
+            ec_secret private_key;
+            if (decode_base16(private_key, arg_address)
+                && bc::verify(private_key)
+                && !private_key.empty()) {
+                wallet::ec_private ec_private_key(private_key, 0, true);
+                auto&& ec_public_key = ec_private_key.to_public();
+                ec_public_key.to_data(public_key_data);
+            }
+            else {
+                decode_base16(public_key_data, arg_address);
+            }
+        }
+    }
+
+    if (!option_.check_did && is_public_key(public_key_data)) {
+        pub_key = encode_base16(public_key_data);
         auto pay_address = wallet::ec_public(public_key_data).to_payment_address();
         address = pay_address.encoded();
     }
     else {
+        blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
         auto pvaddr = blockchain.get_account_addresses(auth_.name);
         if(!pvaddr)
             throw address_list_nullptr_exception{"nullptr for address list"};
 
-        if (!argument_.address.empty()) {
-            address = get_address(argument_.address, blockchain);
+        if (!arg_address.empty()) {
+            address = get_address(arg_address, blockchain);
         }
         else {
             // set random address
@@ -79,7 +99,7 @@ console_result getpublickey::invoke(Json::Value& jv_output,
         }
 
         if (!found) {
-            throw address_dismatch_account_exception{"target did/address does not match account. " + argument_.address};
+            throw address_dismatch_account_exception{"target did/address does not match account. " + arg_address};
         }
     }
 
