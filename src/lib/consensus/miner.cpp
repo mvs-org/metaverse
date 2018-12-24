@@ -1089,6 +1089,10 @@ miner::transaction_ptr miner::create_coinstake_tx(
             continue;
         }
 
+        if (is_stop_miner(pblock->header.number, pblock)) {
+            break;
+        }
+
         if (MinerAux::verify_stake(pblock->header, stake)) {
             coinstake->inputs.clear();
             coinstake->outputs.clear();

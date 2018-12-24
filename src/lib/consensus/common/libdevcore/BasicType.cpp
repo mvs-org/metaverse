@@ -175,7 +175,7 @@ u256 HeaderAux::calculate_difficulty(
         return calculate_difficulty_v1(current, prev, pprev);
     }
 
-    return calculate_difficulty_v2(current, prev, pprev);
+    return calculate_difficulty_v2(current, prev, pprev, is_staking);
 #else
     return calculate_difficulty_v1(current, prev, pprev);
 #endif
@@ -228,23 +228,23 @@ uint32_t HeaderAux::limit_timespan(uint32_t timespan)
     return timespan;
 }
 
-bigint HeaderAux::adjust_difficulty(uint32_t curr_timespan, uint32_t prev_timespan, bigint & result)
+bigint HeaderAux::adjust_difficulty(uint32_t timespan, bigint & result)
 {
     // Limit adjustment step
-    curr_timespan = limit_timespan(curr_timespan);
-    prev_timespan = limit_timespan(prev_timespan);
+    timespan = limit_timespan(timespan);
 
     // Retarget
     const uint32_t interval = 12;
     result *= ((interval + 1) * block_timespan_window);
-    result /= ((interval - 1) * block_timespan_window + prev_timespan * 2);
+    result /= ((interval - 1) * block_timespan_window + timespan * 2);
     return result;
 }
 
 u256 HeaderAux::calculate_difficulty_v2(
     const chain::header& current,
     const chain::header::ptr prev,
-    const chain::header::ptr pprev)
+    const chain::header::ptr pprev,
+    bool is_staking)
 {
 #ifdef PRIVATE_CHAIN
     auto minimumDifficulty = bigint(1024 * 1024);
@@ -261,7 +261,7 @@ u256 HeaderAux::calculate_difficulty_v2(
     uint32_t curr_timespan = current.timestamp - prev->timestamp;
 
     // Retarget
-    prev_bits = adjust_difficulty(curr_timespan, prev_timespan, prev_bits);
+    prev_bits = adjust_difficulty(is_staking ? prev_timespan : curr_timespan, prev_bits);
 
     auto result = std::max<bigint>(prev_bits, minimumDifficulty);
     result = std::min<bigint>(result, std::numeric_limits<u256>::max());
