@@ -214,20 +214,30 @@ u256 HeaderAux::calculate_difficulty_v1(
     return u256(std::min<bigint>(result, std::numeric_limits<u256>::max()));
 }
 
-bigint HeaderAux::adjust_difficulty(uint32_t actual_timespan, bigint & result)
+uint32_t HeaderAux::limit_timespan(uint32_t timespan)
 {
     // Limit adjustment step
-    if (actual_timespan < block_timespan_window / 10) {
-        actual_timespan = block_timespan_window / 10;
+    if (timespan < block_timespan_window / 10) {
+        return block_timespan_window / 10;
     }
-    if (actual_timespan > block_timespan_window * 10) {
-        actual_timespan = block_timespan_window * 10;
+
+    if (timespan > block_timespan_window * 2) {
+        return block_timespan_window * 2;
     }
+
+    return timespan;
+}
+
+bigint HeaderAux::adjust_difficulty(uint32_t curr_timespan, uint32_t prev_timespan, bigint & result)
+{
+    // Limit adjustment step
+    curr_timespan = limit_timespan(curr_timespan);
+    prev_timespan = limit_timespan(prev_timespan);
 
     // Retarget
     const uint32_t interval = 12;
     result *= ((interval + 1) * block_timespan_window);
-    result /= ((interval - 1) * block_timespan_window + actual_timespan + actual_timespan);
+    result /= ((interval - 1) * block_timespan_window + prev_timespan * 2);
     return result;
 }
 
@@ -247,10 +257,11 @@ u256 HeaderAux::calculate_difficulty_v2(
     }
 
     bigint prev_bits = prev->bits;
-    uint32_t actual_timespan = prev->timestamp - pprev->timestamp;
+    uint32_t prev_timespan = prev->timestamp - pprev->timestamp;
+    uint32_t curr_timespan = current.timestamp - prev->timestamp;
 
     // Retarget
-    prev_bits = adjust_difficulty(actual_timespan, prev_bits);
+    prev_bits = adjust_difficulty(curr_timespan, prev_timespan, prev_bits);
 
     auto result = std::max<bigint>(prev_bits, minimumDifficulty);
     result = std::min<bigint>(result, std::numeric_limits<u256>::max());
@@ -259,7 +270,7 @@ u256 HeaderAux::calculate_difficulty_v2(
     if (current.transaction_count > 0) {
         log::info("difficulty")
             << "last " << chain::get_block_version(*prev)
-            << " timespan: " << actual_timespan << " s, current height: "
+            << " timespan: " << prev_timespan << " s, current height: "
             << current.number << ", bits: " << result;
     }
 #endif
