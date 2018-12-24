@@ -271,13 +271,19 @@ bool transaction::is_pos_genesis_tx(bool is_testnet) const
         return false;
     }
 
+    const auto & out = outputs[0];
+    if (!out.is_etp() || out.value != pos_genesis_reward) {
+        return false;
+    }
+
+    const auto actual = out.script.to_data(false);
+
     chain::script script;
     wallet::payment_address pay_address(get_foundation_address(is_testnet));
-    script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(pay_address));
+    script.operations = chain::operation::to_pay_key_hash_pattern(pay_address.hash());
+    const auto expected = script.to_data(false);
 
-    const auto & out = outputs[0];
-    return out.is_etp() && out.value == pos_genesis_reward &&
-        out.script.operations == script.operations;
+    return std::equal(expected.begin(), expected.end(), actual.begin());
 }
 
 bool transaction::is_coinstake() const
