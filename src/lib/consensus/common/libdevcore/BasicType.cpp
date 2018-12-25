@@ -246,11 +246,7 @@ u256 HeaderAux::calculate_difficulty_v2(
     const chain::header::ptr pprev,
     bool is_staking)
 {
-#ifdef PRIVATE_CHAIN
     auto minimumDifficulty = bigint(1024 * 1024);
-#else
-    auto minimumDifficulty = is_testnet ? bigint(300000) : bigint(914572800);
-#endif
 
     if (nullptr == prev || nullptr == pprev) {
         return u256(minimumDifficulty);

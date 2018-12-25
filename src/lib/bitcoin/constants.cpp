@@ -37,7 +37,7 @@ const uint64_t future_blocktime_fork_height = 0;
 #else //PRIVATE_CHAIN
 
 uint32_t coinbase_maturity                  = 1000;
-uint64_t pos_enabled_height                 = 1000000;   // TODO
+uint64_t pos_enabled_height                 = max_uint64;
 
 const uint64_t future_blocktime_fork_height = 1030000;
 

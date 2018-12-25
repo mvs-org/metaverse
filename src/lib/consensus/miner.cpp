@@ -344,12 +344,7 @@ std::shared_ptr<chain::output> miner::create_coinbase_mst_output(const wallet::p
     return output;
 }
 
-#ifdef PRIVATE_CHAIN
-int bucket_size = 200;
-#else
 int bucket_size = 500000;
-#endif
-
 std::vector<uint64_t> lock_heights = {25200, 108000, 331200, 655200, 1314000};
 std::vector<uint64_t> coinage_rewards = {95890, 666666, 3200000, 8000000, 20000000};
 
