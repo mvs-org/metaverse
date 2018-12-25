@@ -770,6 +770,12 @@ miner::block_ptr miner::create_new_block_pow(
 miner::block_ptr miner::create_new_block_dpos(
     const wallet::payment_address& pay_address, const header& prev_header)
 {
+    if (!prev_header.is_proof_of_work()) {
+        sleep_for_mseconds(1000, true);
+        return nullptr;
+    }
+
+    block_chain_impl& block_chain = node_.chain_impl();
     uint64_t last_height = prev_header.number;
     uint64_t block_height = last_height + 1;
     uint32_t block_time = get_adjust_time(block_height);
@@ -792,7 +798,7 @@ miner::block_ptr miner::create_new_block_dpos(
     pblock->header.number = block_height;
     pblock->header.nonce = 0;
     pblock->header.mixhash = 0;
-    pblock->header.timestamp = std::max(block_time, prev_header.timestamp);
+    pblock->header.timestamp = std::max(block_time, prev_header.timestamp + 1);
     pblock->header.previous_block_hash = prev_header.hash();
     pblock->header.bits = prev_header.bits;
 
@@ -832,7 +838,7 @@ miner::block_ptr miner::create_new_block_dpos(
         pblock->transactions.push_back(*i);
     }
 
-    if (!pblock->can_use_dpos_consensus()) {
+    if (!block_chain.can_use_dpos(block_height)) {
         return nullptr;
     }
 

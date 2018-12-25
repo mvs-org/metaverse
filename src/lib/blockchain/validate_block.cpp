@@ -281,7 +281,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
         if (!check_work(current_block_)) {
             return error::proof_of_work;
         }
-        if (!current_block_.can_use_dpos_consensus()) {
+        if (!chain.can_use_dpos(header.number)) {
             return error::block_version_not_match;
         }
     }
@@ -328,6 +328,11 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
         if (!check_time_stamp(header.timestamp, time_stamp_window)) {
             return error::futuristic_timestamp;
         }
+    }
+
+    if (current_block_.is_proof_of_dpos() && !prev_header.is_proof_of_work()) {
+        log::error(LOG_BLOCKCHAIN) << "DPos block must follow a PoW block!";
+        return error::proof_of_stake;
     }
 
     RETURN_IF_STOPPED();

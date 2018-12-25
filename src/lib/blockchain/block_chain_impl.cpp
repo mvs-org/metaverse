@@ -2919,5 +2919,65 @@ std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_reg
     return stakeholders;
 }
 
+uint64_t block_chain_impl::get_pow_height_before_dpos(uint64_t height) const
+{
+    chain::header header;
+    uint64_t pos = height;
+    while (--pos && pos >= pos_enabled_height) {
+        if (!get_header(header, pos)) {
+            return 0;
+        }
+
+        if (header.is_proof_of_dpos()) {
+            return 0;
+        }
+        else if (header.is_proof_of_work()) {
+            return pos;
+        }
+    }
+
+    return 0;
+}
+
+bool block_chain_impl::can_use_dpos(uint64_t height) const
+{
+    using namespace consensus;
+
+    if (!witness::is_witness_enabled(height)) {
+        return false;
+    }
+
+    // ensure the vote is maturity
+    {
+        uint64_t height_in_epoch = witness::get_height_in_epoch(height);
+        // [0 .. vote_maturity)
+        if (height_in_epoch > witness::vote_maturity) {
+            return true;
+        }
+
+        // [epoch_cycle_height - vote_maturity .. epoch_cycle_height)
+        if (height_in_epoch < witness::epoch_cycle_height - witness::vote_maturity) {
+            return true;
+        }
+    }
+
+    // first vote_maturity blocks of each epoch must use pow
+    if (height % witness::pow_check_point_height == 0) {
+        return false;
+    }
+
+    // a dpos must followed by a pow.
+    uint64_t pow_height = get_pow_height_before_dpos(height);
+    if (pow_height == 0) {
+        return false;
+    }
+
+    // // only use DPOS to pack real txs, forbid block with only coinbase tx
+    // if (block.transactions.size() == 1) {
+    //     return false;
+    // }
+    return true;
+}
+
 } // namespace blockchain
 } // namespace libbitcoin

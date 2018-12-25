@@ -420,6 +420,9 @@ public:
         const std::string& addr, const std::string& symbol,
         size_t start_height, size_t end_height=0, uint64_t limit=0, uint64_t page_number=0) const;
 
+    bool can_use_dpos(uint64_t height) const;
+    uint64_t get_pow_height_before_dpos(uint64_t height) const;
+
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
 

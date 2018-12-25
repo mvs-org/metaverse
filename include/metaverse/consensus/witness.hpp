@@ -108,11 +108,10 @@ public:
     static bool is_witness_enabled(uint64_t height);
     static bool is_dpos_enabled();
     static uint64_t get_height_in_epoch(uint64_t height);
-    static uint64_t get_vote_result_height(uint64_t height);
+    static uint64_t get_epoch_begin_height(uint64_t height);
     static uint64_t get_round_begin_height(uint64_t height);
 
     static bool is_begin_of_epoch(uint64_t height);
-    static bool is_between_vote_maturity_interval(uint64_t height);
     static bool is_in_same_epoch(uint64_t height1, uint64_t height2);
 
     // signature
@@ -126,13 +125,17 @@ public:
 
     void set_validate_block(const validate_block*);
     bool get_header(chain::header& out_header, uint64_t height) const;
+    uint64_t get_last_height();
 
 private:
     witness(p2p_node& node);
+
     static void init(p2p_node& node);
     static bool exists(const list&, const witness_id&);
     static const_iterator finds(const list&, const witness_id&);
     static iterator finds(list&, const witness_id&);
+
+    chain::block::ptr fetch_block(uint64_t height);
 
 private:
     static witness* instance_;

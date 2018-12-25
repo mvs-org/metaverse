@@ -76,9 +76,6 @@ public:
     chain::header header;
     transaction::list transactions;
 
-    bool can_use_dpos_consensus() const;
-    bool must_use_pow_consensus() const;
-
     ec_signature blocksig; // pos block only
 };
 

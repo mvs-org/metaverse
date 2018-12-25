@@ -35,7 +35,7 @@ uint64_t witness::witness_enable_height = 2000000;
 uint32_t witness::witness_number = 23;
 uint32_t witness::epoch_cycle_height = 20000;
 uint32_t witness::register_witness_lock_height = 10000;
-uint64_t witness::witness_lock_threshold = 1000*(1e8); // ETP bits
+uint64_t witness::witness_lock_threshold = coin_price(1000); // ETP bits
 uint32_t witness::vote_maturity = 24;
 
 const uint32_t witness::max_candidate_count = 10000;
@@ -77,18 +77,18 @@ void witness::init(p2p_node& node)
         witness::witness_number = 5;
         witness::epoch_cycle_height = 1000;
         witness::register_witness_lock_height = 500;
-        witness::witness_lock_threshold = 10*(1e8); // ETP bits
-        witness::vote_maturity = 6;
+        witness::witness_lock_threshold = coin_price(10); // ETP bits
+        witness::vote_maturity = 24;
     }
 
 #ifdef PRIVATE_CHAIN
     witness::pow_check_point_height = 100;
-    witness::witness_enable_height = 100;
+    witness::witness_enable_height = 5000;
     witness::witness_number = 23;
-    witness::epoch_cycle_height = 100;
+    witness::epoch_cycle_height = 1000;
     witness::register_witness_lock_height = 50;
-    witness::witness_lock_threshold = 1*(1e8); // ETP bits
-    witness::vote_maturity = 6;
+    witness::witness_lock_threshold = coin_price(1000); // ETP bits
+    witness::vote_maturity = 24;
 #endif
 
     BITCOIN_ASSERT(max_candidate_count >= witness_number);
@@ -241,7 +241,7 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
     }
     else {
         chain::header header;
-        if (!get_header(header, height-1)) {
+        if (!get_header(header, height - 1)) {
             return false;
         }
 
@@ -307,7 +307,8 @@ bool witness::verify_vote_result(const chain::block& block, list& witness_list) 
     // check size of outputs
     if (coinbase_tx.outputs.size() != 2) {
         log::debug(LOG_HEADER)
-            << "in verify_vote_result -> no extra output to store witness mixhash, height " << block.header.number;
+            << "in verify_vote_result -> no extra output to store witness mixhash, height "
+            << block.header.number;
         return false;
     }
 
@@ -320,7 +321,8 @@ bool witness::verify_vote_result(const chain::block& block, list& witness_list) 
 
     if (!calc_witness_list(witness_list, block.header.number)) {
         log::debug(LOG_HEADER)
-            << "in verify_vote_result -> calc_witness_list failed, height " << block.header.number;
+            << "in verify_vote_result -> calc_witness_list failed, height "
+            << block.header.number;
         return false;
     }
 
@@ -330,7 +332,8 @@ bool witness::verify_vote_result(const chain::block& block, list& witness_list) 
     auto calced_mixhash = (h256)calc_mixhash(witness_list);
     if (calced_mixhash != stored_mixhash) {
         log::debug(LOG_HEADER)
-            << "in verify_vote_result -> verify mixhash failed, height " << block.header.number
+            << "in verify_vote_result -> verify mixhash failed, height "
+            << block.header.number
             << ", stored_mixhash = " << stored_mixhash
             << ", calced_mixhash = " << calced_mixhash;
         return false;
@@ -339,17 +342,12 @@ bool witness::verify_vote_result(const chain::block& block, list& witness_list) 
     return true;
 }
 
-chain::block::ptr witness::fetch_vote_result_block(uint64_t height)
+chain::block::ptr witness::fetch_block(uint64_t height)
 {
-    auto vote_height = get_vote_result_height(height);
-    if (vote_height == 0) {
-        return nullptr;
-    }
-
     std::promise<code> p;
     chain::block::ptr sp_block;
 
-    node_.chain_impl().fetch_block(vote_height,
+    node_.chain_impl().fetch_block(height,
         [&p, &sp_block](const code & ec, chain::block::ptr block){
             if (ec) {
                 p.set_value(ec);
@@ -364,6 +362,16 @@ chain::block::ptr witness::fetch_vote_result_block(uint64_t height)
         return nullptr;
     }
     return sp_block;
+}
+
+chain::block::ptr witness::fetch_vote_result_block(uint64_t height)
+{
+    auto vote_height = get_epoch_begin_height(height);
+    if (vote_height == 0) {
+        return nullptr;
+    }
+
+    return fetch_block(vote_height);
 }
 
 bool witness::update_witness_list(uint64_t height)
@@ -448,7 +456,7 @@ uint32_t witness::calc_slot_num(uint64_t block_height) const
         return max_uint32;
     }
 
-    auto calced_slot_num = ((block_height - witness_enable_height) % size);
+    auto calced_slot_num = get_height_in_epoch(block_height) % size;
     auto round_begin_height = get_round_begin_height(block_height);
     if (is_begin_of_epoch(round_begin_height)) {
         return calced_slot_num;
@@ -591,7 +599,7 @@ uint64_t witness::get_height_in_epoch(uint64_t height)
 }
 
 // vote result is stored in the beginning of each epoch
-uint64_t witness::get_vote_result_height(uint64_t height)
+uint64_t witness::get_epoch_begin_height(uint64_t height)
 {
     return is_witness_enabled(height) ? (height - get_height_in_epoch(height)) : 0;
 }
@@ -601,29 +609,11 @@ bool witness::is_begin_of_epoch(uint64_t height)
     return is_witness_enabled(height) && get_height_in_epoch(height) == 0;
 }
 
-bool witness::is_between_vote_maturity_interval(uint64_t height)
-{
-    if (!is_witness_enabled(height)) {
-        return false;
-    }
-
-    // [0 .. vote_maturity)
-    if (get_height_in_epoch(height) < vote_maturity) {
-        return true;
-    }
-
-    // [epoch_cycle_height-vote_maturity .. epoch_cycle_height)
-    if (epoch_cycle_height - get_height_in_epoch(height) <= vote_maturity) {
-        return true;
-    }
-    return false;
-}
-
 bool witness::is_in_same_epoch(uint64_t height1, uint64_t height2)
 {
     auto r = std::minmax(height1, height2);
-    auto vote1 = get_vote_result_height(r.first);
-    auto vote2 = get_vote_result_height(r.second);
+    auto vote1 = get_epoch_begin_height(r.first);
+    auto vote2 = get_epoch_begin_height(r.second);
 
     if (vote1 == vote2) {
         return true;
@@ -638,10 +628,16 @@ bool witness::is_in_same_epoch(uint64_t height1, uint64_t height2)
 
 uint64_t witness::get_round_begin_height(uint64_t height)
 {
+    if (!is_witness_enabled(height)) {
+        return 0;
+    }
+
     auto size = witness::get().get_witness_number();
-    return is_witness_enabled(height) && size > 0
-        ? height - ((height - witness_enable_height) % size)
-        : 0;
+    if (size == 0) {
+        return 0;
+    }
+
+    return (height - get_epoch_begin_height(height)) % size;
 }
 
 bool witness::get_header(chain::header& out_header, uint64_t height) const
@@ -650,6 +646,17 @@ bool witness::get_header(chain::header& out_header, uint64_t height) const
         return validate_block_->get_header(out_header, height);
     }
     return node_.chain_impl().get_header(out_header, height);
+}
+
+uint64_t witness::get_last_height()
+{
+    if (validate_block_) {
+        return validate_block_->get_height();
+    }
+
+    uint64_t height = 0;
+    node_.chain_impl().get_last_height(height);
+    return height;
 }
 
 void witness::set_validate_block(const validate_block* validate_block)
