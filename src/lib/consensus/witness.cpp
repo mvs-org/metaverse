@@ -30,7 +30,6 @@
 namespace libbitcoin {
 namespace consensus {
 
-uint32_t witness::pow_check_point_height = 100;
 uint64_t witness::witness_enable_height = 2000000;
 uint32_t witness::witness_number = 23;
 uint32_t witness::epoch_cycle_height = 20000;
@@ -72,7 +71,6 @@ void witness::init(p2p_node& node)
     instance_ = &s_instance;
 
     if (instance_->setting_.use_testnet_rules) {
-        witness::pow_check_point_height = 100;
         witness::witness_enable_height = 1000000;
         witness::witness_number = 5;
         witness::epoch_cycle_height = 1000;
@@ -82,13 +80,12 @@ void witness::init(p2p_node& node)
     }
 
 #ifdef PRIVATE_CHAIN
-    witness::pow_check_point_height = 100;
     witness::witness_enable_height = 5000;
     witness::witness_number = 23;
-    witness::epoch_cycle_height = 1000;
+    witness::epoch_cycle_height = 100;
     witness::register_witness_lock_height = 50;
     witness::witness_lock_threshold = coin_price(1000); // ETP bits
-    witness::vote_maturity = 24;
+    witness::vote_maturity = 6;
 #endif
 
     BITCOIN_ASSERT(max_candidate_count >= witness_number);
@@ -585,7 +582,16 @@ bool witness::verify_signer(uint32_t witness_slot_num, uint64_t height) const
 
 bool witness::is_dpos_enabled()
 {
-    return false;
+#ifdef PRIVATE_CHAIN
+    return true;
+#endif
+
+    if (instance_->setting_.use_testnet_rules) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 bool witness::is_witness_enabled(uint64_t height)

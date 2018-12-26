@@ -83,7 +83,7 @@ protected:
     virtual uint64_t actual_time_span(uint64_t interval) const = 0;
     virtual versions preceding_block_versions(uint64_t count) const = 0;
     virtual chain::header fetch_block(uint64_t fetch_height) const = 0;
-    virtual chain::header::ptr get_last_block_header(const chain::header& parent_header, bool is_staking) const = 0;
+    virtual chain::header::ptr get_last_block_header(const chain::header& parent_header, uint32_t version) const = 0;
     virtual bool transaction_exists(const hash_digest& tx_hash) const = 0;
     virtual bool fetch_transaction(chain::transaction& tx, uint64_t& tx_height,
         const hash_digest& tx_hash) const = 0;

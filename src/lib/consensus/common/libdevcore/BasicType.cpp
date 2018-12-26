@@ -167,15 +167,14 @@ uint64_t HeaderAux::dataSize(uint64_t _blockNumber)
 u256 HeaderAux::calculate_difficulty(
     const chain::header& current,
     const chain::header::ptr prev,
-    const chain::header::ptr pprev,
-    bool is_staking)
+    const chain::header::ptr pprev)
 {
 #ifdef ENABLE_PILLAR
     if (current.number < pos_enabled_height) {
         return calculate_difficulty_v1(current, prev, pprev);
     }
 
-    return calculate_difficulty_v2(current, prev, pprev, is_staking);
+    return calculate_difficulty_v2(current, prev, pprev);
 #else
     return calculate_difficulty_v1(current, prev, pprev);
 #endif
@@ -243,21 +242,31 @@ bigint HeaderAux::adjust_difficulty(uint32_t timespan, bigint & result)
 u256 HeaderAux::calculate_difficulty_v2(
     const chain::header& current,
     const chain::header::ptr prev,
-    const chain::header::ptr pprev,
-    bool is_staking)
+    const chain::header::ptr pprev)
 {
-    auto minimumDifficulty = bigint(1024 * 1024);
+    auto minimumDifficulty = is_testnet ? bigint(300000) : bigint(1024 * 1024);
+    bool isPoW = (current.version == chain::block_version_pow);
+
+#ifdef PRIVATE_CHAIN
+    if (isPoW) {
+        minimumDifficulty = bigint(300000);
+    }
+#endif
 
     if (nullptr == prev || nullptr == pprev) {
         return u256(minimumDifficulty);
     }
 
+    BITCOIN_ASSERT(current.version == prev->version);
+    BITCOIN_ASSERT(current.version == pprev->version);
+
     bigint prev_bits = prev->bits;
     uint32_t prev_timespan = prev->timestamp - pprev->timestamp;
     uint32_t curr_timespan = current.timestamp - prev->timestamp;
+    uint32_t timespan = isPoW ? curr_timespan : prev_timespan;
 
     // Retarget
-    prev_bits = adjust_difficulty(is_staking ? prev_timespan : curr_timespan, prev_bits);
+    prev_bits = adjust_difficulty(timespan, prev_bits);
 
     auto result = std::max<bigint>(prev_bits, minimumDifficulty);
     result = std::min<bigint>(result, std::numeric_limits<u256>::max());
@@ -265,8 +274,8 @@ u256 HeaderAux::calculate_difficulty_v2(
 #ifdef ENABLE_PILLAR
     if (current.transaction_count > 0) {
         log::info("difficulty")
-            << "last " << chain::get_block_version(*prev)
-            << " timespan: " << prev_timespan << " s, current height: "
+            << "last " << chain::get_block_version(current)
+            << " timespan: " << timespan << " s, current height: "
             << current.number << ", bits: " << result;
     }
 #endif

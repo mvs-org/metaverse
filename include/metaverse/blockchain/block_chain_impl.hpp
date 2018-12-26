@@ -273,7 +273,7 @@ public:
 
     bool pos_exist_before(const uint64_t& height);
 
-    virtual chain::header::ptr get_last_block_header(const chain::header& parent_header, bool is_staking) const;
+    virtual chain::header::ptr get_last_block_header(const chain::header& parent_header, uint32_t version) const;
 
     inline hash_digest get_hash(const std::string& str) const;
     inline short_hash get_short_hash(const std::string& str) const;

@@ -263,16 +263,17 @@ bool block_chain_impl::select_utxo_for_staking(
     return (stake_utxos > 0);
 }
 
-chain::header::ptr block_chain_impl::get_last_block_header(const chain::header& parent_header, bool is_staking) const
+chain::header::ptr block_chain_impl::get_last_block_header(const chain::header& parent_header, uint32_t version) const
 {
     uint64_t height = parent_header.number;
-    if (parent_header.is_proof_of_stake() == is_staking) {
+    if (parent_header.version == version) {
         // log::info("BLOCKCHAIN") << "get_last_block_header: prev: "
         //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
         return std::make_shared<chain::header>(parent_header);
     }
 
-    while ((is_staking && height > pos_enabled_height) || (!is_staking && height > 2)) {
+    bool isPoW = (version == chain::block_version_pow);
+    while ((!isPoW && height > pos_enabled_height) || (isPoW && height > 2)) {
         --height;
 
         chain::header prev_header;
@@ -281,7 +282,7 @@ chain::header::ptr block_chain_impl::get_last_block_header(const chain::header& 
             return nullptr;
         }
 
-        if (prev_header.is_proof_of_stake() == is_staking) {
+        if (prev_header.version == version) {
             // log::info("BLOCKCHAIN") << "get_last_block_header: prev: "
             //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
             return std::make_shared<chain::header>(prev_header);
@@ -2931,7 +2932,7 @@ uint64_t block_chain_impl::get_pow_height_before_dpos(uint64_t height) const
         if (header.is_proof_of_dpos()) {
             return 0;
         }
-        else if (header.is_proof_of_work()) {
+        else if (header.is_proof_of_work() || header.is_proof_of_stake()) {
             return pos;
         }
     }
@@ -2951,19 +2952,14 @@ bool block_chain_impl::can_use_dpos(uint64_t height) const
     {
         uint64_t height_in_epoch = witness::get_height_in_epoch(height);
         // [0 .. vote_maturity)
-        if (height_in_epoch > witness::vote_maturity) {
-            return true;
+        if (height_in_epoch < witness::vote_maturity) {
+            return false;
         }
 
         // [epoch_cycle_height - vote_maturity .. epoch_cycle_height)
-        if (height_in_epoch < witness::epoch_cycle_height - witness::vote_maturity) {
-            return true;
+        if (height_in_epoch > witness::epoch_cycle_height - witness::vote_maturity) {
+            return false;
         }
-    }
-
-    // first vote_maturity blocks of each epoch must use pow
-    if (height % witness::pow_check_point_height == 0) {
-        return false;
     }
 
     // a dpos must followed by a pow.
@@ -2972,10 +2968,6 @@ bool block_chain_impl::can_use_dpos(uint64_t height) const
         return false;
     }
 
-    // // only use DPOS to pack real txs, forbid block with only coinbase tx
-    // if (block.transactions.size() == 1) {
-    //     return false;
-    // }
     return true;
 }
 

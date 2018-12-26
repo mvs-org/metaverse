@@ -153,7 +153,7 @@ private:
     uint32_t get_tx_sign_length(transaction_ptr tx);
     void sleep_for_mseconds(uint32_t interval, bool force = false);
 
-    u256 get_next_target_required(const chain::header& header, const chain::header& prev_header, bool is_staking);
+    u256 get_next_target_required(const chain::header& header, const chain::header& prev_header);
 
     std::shared_ptr<chain::output> create_coinbase_mst_output(
         const wallet::payment_address& pay_address, const std::string& symbol, uint64_t value);

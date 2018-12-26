@@ -54,7 +54,6 @@ public:
     using iterator = list::iterator;
     using const_iterator = list::const_iterator;
 
-    static uint32_t pow_check_point_height;
     static uint64_t witness_enable_height;
     static uint32_t witness_number;
     static uint32_t epoch_cycle_height;

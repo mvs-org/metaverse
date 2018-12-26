@@ -597,18 +597,18 @@ code validate_block::accept_block() const
 
 u256 validate_block::work_required(bool is_testnet) const
 {
-    bool is_pos = current_block_.is_proof_of_stake();
+    uint32_t version = current_block_.header.version;
     chain::header prev_header = fetch_block(height_ - 1);
-    header::ptr last_header = get_last_block_header(prev_header, is_pos);
+    header::ptr last_header = get_last_block_header(prev_header, version);
     header::ptr llast_header;
     if (last_header && last_header->number > 2) {
         auto height = last_header->number - 1;
         chain::header prev_last_header = fetch_block(height);
-        llast_header = get_last_block_header(prev_last_header, is_pos);
+        llast_header = get_last_block_header(prev_last_header, version);
     }
 
     return HeaderAux::calculate_difficulty(
-        current_block_.header, last_header, llast_header, is_pos);
+        current_block_.header, last_header, llast_header);
 }
 
 bool validate_block::is_valid_coinbase_height(uint64_t height, const block& block, uint64_t index)
@@ -761,25 +761,29 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
     if (coinbase.outputs.size() > 1) {
         RETURN_IF_STOPPED();
 
-        const auto& coinbase_mst_output = coinbase.outputs[1];
-        auto mst_reward = coinbase_mst_output.get_asset_amount();
-        auto symbol = coinbase_mst_output.get_asset_symbol();
+        if (!consensus::witness::is_begin_of_epoch(height_)) {
+            const auto& coinbase_mst_output = coinbase.outputs[1];
+            auto mst_reward = coinbase_mst_output.get_asset_amount();
+            auto symbol = coinbase_mst_output.get_asset_symbol();
 
-        auto mining_asset = chain.get_issued_blockchain_asset(symbol);
-        if (nullptr == mining_asset) {
-            return error::mst_coinbase_invalid;
-        }
+            auto mining_asset = chain.get_issued_blockchain_asset(symbol);
+            if (nullptr == mining_asset) {
+                log::error(LOG_BLOCKCHAIN) << "MST " << symbol << " for mining does not exist.";
+                return error::mst_coinbase_invalid;
+            }
 
-        auto mining_cert = chain.get_asset_cert(symbol, asset_cert_ns::mining);
-        if (!mining_cert) {
-            return error::mst_coinbase_invalid;
-        }
+            auto mining_cert = chain.get_asset_cert(symbol, asset_cert_ns::mining);
+            if (!mining_cert) {
+                log::error(LOG_BLOCKCHAIN) << "Mining MST " << symbol << " is not allowed.";
+                return error::mst_coinbase_invalid;
+            }
 
-        auto mst_value = consensus::miner::calculate_mst_subsidy(
-            *mining_asset, *mining_cert, height_, testnet_, version);
-        if (mst_reward > mst_value) {
-            log::error(LOG_BLOCKCHAIN) << "MST coinbase is too large! " << mst_reward << " VS " << mst_value;
-            return error::mst_coinbase_too_large;
+            auto mst_value = consensus::miner::calculate_mst_subsidy(
+                *mining_asset, *mining_cert, height_, testnet_, version);
+            if (mst_reward > mst_value) {
+                log::error(LOG_BLOCKCHAIN) << "MST coinbase is too large! " << mst_reward << " VS " << mst_value;
+                return error::mst_coinbase_too_large;
+            }
         }
     }
 

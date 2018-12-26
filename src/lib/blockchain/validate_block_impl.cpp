@@ -55,7 +55,7 @@ bool validate_block_impl::check_work(const chain::block& block) const
         return block.header.bits == parent_header.bits;
     }
 
-    chain::header::ptr last_header = get_last_block_header(parent_header, block.is_proof_of_stake());
+    chain::header::ptr last_header = get_last_block_header(parent_header, block.header.version);
     BITCOIN_ASSERT(nullptr != last_header);
 
     return MinerAux::verify_work(block.header, last_header);
@@ -189,18 +189,19 @@ chain::header validate_block_impl::fetch_block(uint64_t fetch_height) const
     return out;
 }
 
-chain::header::ptr validate_block_impl::get_last_block_header(const chain::header& parent_header, bool is_staking) const
+chain::header::ptr validate_block_impl::get_last_block_header(const chain::header& parent_header, uint32_t version) const
 {
     uint64_t height = parent_header.number;
-    if (parent_header.is_proof_of_stake() == is_staking) {
+    if (parent_header.version == version) {
         // log::info(LOG_BLOCKCHAIN) << "validate_block_impl::get_last_block_header: prev: "
         //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
         return std::make_shared<chain::header>(parent_header);
     }
 
-    while ((is_staking && height > pos_enabled_height) || (!is_staking && height > 2)) {
+    bool isPoW = (version == chain::block_version_pow);
+    while ((!isPoW && height > pos_enabled_height) || (isPoW && height > 2)) {
         chain::header prev_header = fetch_block(--height);
-        if (prev_header.is_proof_of_stake() == is_staking) {
+        if (prev_header.version == version) {
             // log::info(LOG_BLOCKCHAIN) << "validate_block_impl::get_last_block_header: prev: "
             //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
             return std::make_shared<chain::header>(prev_header);

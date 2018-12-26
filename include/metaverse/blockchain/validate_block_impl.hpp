@@ -66,7 +66,7 @@ protected:
     uint64_t actual_time_span(uint64_t interval) const override;
     versions preceding_block_versions(uint64_t maximum) const override;
     chain::header fetch_block(uint64_t fetch_height) const override;
-    chain::header::ptr get_last_block_header(const chain::header& parent_header, bool is_staking) const override;
+    chain::header::ptr get_last_block_header(const chain::header& parent_header, uint32_t version) const override;
     bool fetch_transaction(chain::transaction& tx, uint64_t& tx_height,
         const hash_digest& tx_hash) const override;
     bool is_output_spent(const chain::output_point& outpoint) const override;

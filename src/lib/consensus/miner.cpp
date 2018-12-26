@@ -717,7 +717,7 @@ miner::block_ptr miner::create_new_block_pow(
     pblock->header.mixhash = 0;
     pblock->header.timestamp = std::max(block_time, prev_header.timestamp);
     pblock->header.previous_block_hash = prev_header.hash();
-    pblock->header.bits = get_next_target_required(pblock->header, prev_header, false);
+    pblock->header.bits = get_next_target_required(pblock->header, prev_header);
 
     // Create coinbase tx
     transaction_ptr coinbase = create_coinbase_tx(pay_address, 0, block_height, 0);
@@ -765,17 +765,21 @@ miner::block_ptr miner::create_new_block_pow(
 miner::block_ptr miner::create_new_block_dpos(
     const wallet::payment_address& pay_address, const header& prev_header)
 {
-    if (!prev_header.is_proof_of_work()) {
-        sleep_for_mseconds(1000, true);
-        return nullptr;
-    }
-
     block_chain_impl& block_chain = node_.chain_impl();
     uint64_t last_height = prev_header.number;
     uint64_t block_height = last_height + 1;
     uint32_t block_time = get_adjust_time(block_height);
 
+    if (!prev_header.is_proof_of_work() || (block_time - prev_header.timestamp < 3)) {
+        sleep_for_mseconds(1000, true);
+        return nullptr;
+    }
+
     if (is_stop_miner(block_height, nullptr)) {
+        return nullptr;
+    }
+
+    if (!block_chain.can_use_dpos(block_height)) {
         return nullptr;
     }
 
@@ -833,10 +837,6 @@ miner::block_ptr miner::create_new_block_dpos(
         pblock->transactions.push_back(*i);
     }
 
-    if (!block_chain.can_use_dpos(block_height)) {
-        return nullptr;
-    }
-
     // Fill in header
     pblock->header.transaction_count = pblock->transactions.size();
     pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
@@ -854,7 +854,7 @@ miner::block_ptr miner::create_new_block_dpos(
     coinbase_input_ops.push_back({ chain::opcode::special, endorse });
     coinbase_input_ops.push_back({ chain::opcode::special, public_key_data_ });
 
-#ifdef ENABLE_PILLAR
+#if 0
     log::info(LOG_HEADER)
         << "create a DPoS block with signatures at height " << block_height
         << ", coinbase input script is "
@@ -902,7 +902,7 @@ miner::block_ptr miner::create_new_block_pos(
     pblock->header.previous_block_hash = prev_header.hash();
     pblock->header.nonce = 0;
     pblock->header.mixhash = 0;
-    pblock->header.bits = get_next_target_required(pblock->header, prev_header, true);
+    pblock->header.bits = get_next_target_required(pblock->header, prev_header);
 
     // create coinbase tx
     transaction_ptr coinbase = create_coinbase_tx(pay_address, 0, block_height, 0);
@@ -1000,21 +1000,21 @@ miner::block_ptr miner::create_new_block_pos(
     return pblock;
 }
 
-u256 miner::get_next_target_required(const chain::header& header, const chain::header& prev_header, bool is_staking)
+u256 miner::get_next_target_required(const chain::header& header, const chain::header& prev_header)
 {
     block_chain_impl& block_chain = node_.chain_impl();
-    header::ptr last_header = block_chain.get_last_block_header(prev_header, is_staking);
+    header::ptr last_header = block_chain.get_last_block_header(prev_header, header.version);
     header::ptr llast_header;
 
     if (last_header && last_header->number > 2) {
         auto height = last_header->number - 1;
         chain::header prev_last_header;
         if (block_chain.get_header(prev_last_header, height)) {
-            llast_header = block_chain.get_last_block_header(prev_last_header, is_staking);
+            llast_header = block_chain.get_last_block_header(prev_last_header, header.version);
         }
     }
 
-    return HeaderAux::calculate_difficulty(header, last_header, llast_header, is_staking);
+    return HeaderAux::calculate_difficulty(header, last_header, llast_header);
 }
 
 bool miner::sign_coinstake_tx(
@@ -1537,6 +1537,10 @@ bool miner::set_mining_asset_symbol(const std::string& symbol)
 bool miner::add_coinbase_mst_output(chain::transaction& coinbase_tx,
     const wallet::payment_address& pay_address, uint64_t block_height, uint32_t version)
 {
+    if (witness::is_begin_of_epoch(block_height)) {
+        return false;
+    }
+
     if (!mining_cert_ || !mining_cert_->get_mining_subsidy_param()) {
         return false;
     }
@@ -1553,6 +1557,7 @@ bool miner::add_coinbase_mst_output(chain::transaction& coinbase_tx,
         return false;
     }
 
+    log::info(LOG_HEADER) << "add_coinbase_mst_output: " << symbol;
     coinbase_tx.outputs.emplace_back(*sp_mst_output);
     return true;
 }

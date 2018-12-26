@@ -35,8 +35,7 @@ public:
     static u256 calculate_difficulty(
         const chain::header& current,
         const chain::header::ptr prev,
-        const chain::header::ptr pprev,
-        bool is_staking=false);
+        const chain::header::ptr pprev);
 
     static bigint adjust_difficulty(uint32_t timespan, bigint & result);
     static uint32_t limit_timespan(uint32_t timespan);
@@ -52,8 +51,7 @@ private:
     static u256 calculate_difficulty_v2(
         const chain::header& current,
         const chain::header::ptr prev,
-        const chain::header::ptr pprev,
-        bool is_staking);
+        const chain::header::ptr pprev);
 
 private:
     Mutex x_epochs;
