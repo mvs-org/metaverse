@@ -307,6 +307,11 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height)
         // get previous height of epoch
         uint64_t prev_epoch_height = get_epoch_begin_height(height - 1);
         inactive_addresses = get_inactive_witnesses(prev_epoch_height);
+
+        log::info(LOG_HEADER) << "inactive witnesses at epoch " << prev_epoch_height;
+        for (auto& address : *inactive_addresses) {
+            log::info(LOG_HEADER) << " > inactive address: " << address;
+        }
     }
 
     auto stakeholders = chain.get_witnesses_with_stake(height, inactive_addresses);
@@ -453,11 +458,6 @@ std::shared_ptr<std::vector<std::string>> witness::get_inactive_witnesses(uint64
         if (percent * 5 < average) {
             inactives->push_back(address);
         }
-    }
-
-    log::info(LOG_HEADER) << "inactive witnesses at epoch " << height;
-    for (auto& address : *inactives) {
-        log::info(LOG_HEADER) << " > inactive address: " << address;
     }
 
     return inactives;

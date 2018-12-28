@@ -273,7 +273,7 @@ u256 HeaderAux::calculate_difficulty_v2(
 
 #ifdef PRIVATE_CHAIN
     if (isPoW) {
-        if (current.number < 5000) {
+        if (current.number < 6000) {
             result = bigint(10);
         }
     }
