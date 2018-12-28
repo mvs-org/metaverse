@@ -54,11 +54,15 @@ public:
     block();
     block(const block& other);
     block(const chain::header& header,
-        const chain::transaction::list& transactions, const ec_signature& blocksig={});
+        const chain::transaction::list& transactions,
+        const ec_signature& blocksig={},
+        const ec_compressed& pubkey={});
 
     block(block&& other);
     block(chain::header&& header,
-        chain::transaction::list&& transactions, ec_signature&& blocksig={});
+        chain::transaction::list&& transactions,
+        ec_signature&& blocksig={},
+        ec_compressed&& pubkey={});
 
     /// This class is move assignable but not copy assignable.
     block& operator=(block&& other);
@@ -76,7 +80,8 @@ public:
     chain::header header;
     transaction::list transactions;
 
-    ec_signature blocksig; // pos block only
+    ec_signature blocksig; // pos/dpos block only
+    ec_compressed public_key; // dpos block only
 };
 
 } // namespace chain

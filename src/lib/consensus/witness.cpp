@@ -655,11 +655,6 @@ std::string witness::witness_to_string(const witness_id& id)
     return std::string(std::begin(id), std::end(id));
 }
 
-std::string witness::endorse_to_string(const endorsement& endorse)
-{
-    return encode_base16(endorse);
-}
-
 witness::witness_id witness::to_witness_id(const public_key_t& public_key)
 {
     return to_chunk(encode_base16(public_key));
@@ -668,56 +663,6 @@ witness::witness_id witness::to_witness_id(const public_key_t& public_key)
 std::string witness::to_string(const public_key_t& public_key)
 {
     return encode_base16(public_key);
-}
-
-bool witness::sign(endorsement& out, const ec_secret& secret, const chain::header& h)
-{
-    const auto sighash = h.hash();
-
-    ec_signature signature;
-    if (!bc::sign(signature, secret, sighash) || !bc::encode_signature(out, signature)) {
-        return false;
-    }
-
-    out.push_back(h.number & 0xff);
-    return true;
-}
-
-bool witness::verify_sign(const endorsement& out, const public_key_t& public_key, const chain::header& h)
-{
-    if (public_key.empty() || !is_public_key(public_key)) {
-        log::error(LOG_HEADER) << "verify witness sign failed, public key is wrong: "
-                               << to_string(public_key);
-        return false;
-    }
-
-    if (out.back() != (h.number & 0xff)) {
-        log::error(LOG_HEADER) << "verify witness sign failed, suffix wrong";
-        return false;
-    }
-
-    auto distinguished = out;
-    distinguished.pop_back();
-
-    ec_signature signature;
-
-    if (!parse_signature(signature, distinguished, true)) {
-        log::error(LOG_HEADER) << "verify witness sign failed, parse_signature failed";
-        return false;
-    }
-
-    const auto sighash = h.hash();
-
-    if (!bc::verify_signature(public_key, sighash, signature)) {
-        log::error(LOG_HEADER)
-            << "verify witness signature failed at height " << (h.number + 1)
-            << ", public_key is " << to_string(public_key)
-            << ", signature is " << endorse_to_string(out)
-            << ", hash is " << encode_hash(sighash);
-        return false;
-    }
-
-    return true;
 }
 
 bool witness::verify_signer(const public_key_t& public_key, uint64_t height) const

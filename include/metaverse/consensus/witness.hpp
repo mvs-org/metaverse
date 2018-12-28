@@ -105,7 +105,6 @@ public:
     static public_key_t witness_to_public_key(const witness_id& id);
     static std::string witness_to_address(const witness_id& witness);
     static std::string witness_to_string(const witness_id& id);
-    static std::string endorse_to_string(const endorsement& endorse);
     static witness_id to_witness_id(const public_key_t& public_key);
     static std::string to_string(const public_key_t& public_key);
 
@@ -121,8 +120,6 @@ public:
     chain::block::ptr get_epoch_begin_block(uint64_t height) const;
 
     // signature
-    static bool sign(endorsement& out, const ec_secret& secret, const chain::header& h);
-    static bool verify_sign(const endorsement& out, const public_key_t& public_key, const chain::header& h);
     bool verify_signer(const public_key_t& public_key, uint64_t height) const;
     bool verify_signer(uint32_t witness_slot_num, uint64_t height) const;
 

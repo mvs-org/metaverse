@@ -106,6 +106,7 @@ block_message& block_message::operator=(block_message&& other)
     header = std::move(other.header);
     transactions = std::move(other.transactions);
     blocksig = std::move(other.blocksig);
+    public_key = std::move(other.public_key);
     originator_ = other.originator_;
     return *this;
 }

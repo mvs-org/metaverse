@@ -42,28 +42,32 @@ block::block()
 }
 
 block::block(const block& other)
-  : block(other.header, other.transactions, other.blocksig)
+  : block(other.header, other.transactions, other.blocksig, other.public_key)
 {
 }
 
 block::block(const chain::header& header,
     const chain::transaction::list& transactions,
-    const ec_signature& blocksig)
-  : header(header), transactions(transactions), blocksig(blocksig)
+    const ec_signature& blocksig,
+    const ec_compressed& pubkey)
+  : header(header), transactions(transactions), blocksig(blocksig), public_key(pubkey)
 {
 }
 
 block::block(block&& other)
   : block(std::forward<chain::header>(other.header),
         std::forward<chain::transaction::list>(other.transactions),
-        std::forward<ec_signature>(other.blocksig))
+        std::forward<ec_signature>(other.blocksig),
+        std::forward<ec_compressed>(other.public_key))
 {
 }
 
-block::block(chain::header&& header, chain::transaction::list&& transactions, ec_signature&& blocksig)
+block::block(chain::header&& header, chain::transaction::list&& transactions,
+    ec_signature&& blocksig, ec_compressed&& pubkey)
   : header(std::forward<chain::header>(header)),
     transactions(std::forward<chain::transaction::list>(transactions)),
-    blocksig(std::forward<ec_signature>(blocksig))
+    blocksig(std::forward<ec_signature>(blocksig)),
+    public_key(std::forward<ec_compressed>(pubkey))
 {
 }
 
@@ -72,6 +76,7 @@ block& block::operator=(block&& other)
     header = std::move(other.header);
     transactions = std::move(other.transactions);
     blocksig = std::move(other.blocksig);
+    public_key = std::move(other.public_key);
     return *this;
 }
 
@@ -86,6 +91,7 @@ void block::reset()
     transactions.clear();
     transactions.shrink_to_fit();
     blocksig.fill(0);
+    public_key.fill(0);
 }
 
 bool block::is_proof_of_stake() const
@@ -128,6 +134,10 @@ bool block::from_data_t(reader& source, bool with_transaction_count)
     if (header.is_proof_of_stake()) {
         source.read_data(blocksig.data(), blocksig.size());
     }
+    else if (header.is_proof_of_dpos()) {
+        source.read_data(blocksig.data(), blocksig.size());
+        source.read_data(public_key.data(), public_key.size());
+    }
     return result;
 }
 
@@ -142,6 +152,10 @@ void block::to_data_t(writer& sink, bool with_transaction_count) const
     if (header.is_proof_of_stake()){
         sink.write_data(blocksig.data(), blocksig.size());
     }
+    else if (header.is_proof_of_dpos()) {
+        sink.write_data(blocksig.data(), blocksig.size());
+        sink.write_data(public_key.data(), public_key.size());
+    }
 }
 
 uint64_t block::serialized_size(bool with_transaction_count) const
@@ -151,8 +165,13 @@ uint64_t block::serialized_size(bool with_transaction_count) const
     for (const auto& tx: transactions)
         block_size += tx.serialized_size();
 
-    if (header.is_proof_of_stake())
+    if (header.is_proof_of_stake()) {
         block_size += blocksig.size();
+    }
+    else if (header.is_proof_of_dpos()) {
+        block_size += blocksig.size();
+        block_size += public_key.size();
+    }
 
     return block_size;
 }

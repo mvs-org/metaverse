@@ -170,12 +170,9 @@ code validate_block::check_coinbase(const chain::header& prev_header, bool check
         else {
             const auto& coinbase_script = tx.inputs[0].script;
             const auto coinbase_size = coinbase_script.serialized_size(false);
-            const auto is_dpos_coinbase = is_block_version_dpos && index == 0;
             constexpr uint32_t max_coinbase_size = 100;
-            constexpr uint32_t max_dpos_coinbase_size = 200;
             if ((coinbase_size < 2) ||
-                (!is_dpos_coinbase && coinbase_size > max_coinbase_size) ||
-                (is_dpos_coinbase && coinbase_size > max_dpos_coinbase_size)) {
+                (coinbase_size > max_coinbase_size)) {
                 return error::invalid_coinbase_script_size;
             }
         }
@@ -220,31 +217,7 @@ code validate_block::check_coinbase(const chain::header& prev_header, bool check
 
     if (is_block_version_dpos) {
         RETURN_IF_STOPPED();
-        const auto& coinbase_script = transactions.front().inputs.front().script;
-        auto coinbase_input_ops = coinbase_script.operations;
-
-        if (coinbase_input_ops.size() == 1) {
-            const auto& op_data = coinbase_input_ops.back().data;
-            chain::script eval_script;
-            if (eval_script.from_data(op_data, false, script::parse_mode::strict)) {
-                coinbase_input_ops = eval_script.operations;
-            }
-        }
-
-        if (coinbase_input_ops.size() != 3) {
-#ifdef ENABLE_PILLAR
-            log::error(LOG_BLOCKCHAIN)
-                << "verify witness sign script failed, coinbase script is "
-                << coinbase_script.to_string(chain::get_script_context());
-#endif
-            return error::witness_sign_invalid;
-        }
-
-        auto endorse = operation::factory_from_data(coinbase_input_ops[1].to_data()).data;
-        auto pubkey = operation::factory_from_data(coinbase_input_ops[2].to_data()).data;
-        if (!consensus::witness::verify_sign(endorse, pubkey, header)) {
-            return error::witness_sign_invalid;
-        }
+        auto pubkey = to_chunk(current_block_.public_key);
         if (!consensus::witness::get().verify_signer(pubkey, header.number)) {
             return error::witness_mismatch;
         }
@@ -331,6 +304,12 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
     if (current_block_.is_proof_of_dpos() && !prev_header.is_proof_of_work()) {
         log::error(LOG_BLOCKCHAIN) << "DPos block must follow a PoW block!";
         return error::proof_of_stake;
+    }
+
+    RETURN_IF_STOPPED();
+
+    if (!check_block_signature(chain)) {
+        return error::cointstake_signature_invalid;
     }
 
     RETURN_IF_STOPPED();
@@ -621,23 +600,16 @@ bool validate_block::is_valid_coinbase_height(uint64_t height, const block& bloc
     const script_number number(height);
     const auto height_data = number.data();
 
-    const auto is_dpos_coinbase = block.header.is_proof_of_dpos() && index == 0;
-    if (!is_dpos_coinbase) {
-        // Get the serialized coinbase input script as a byte vector.
-        const auto actual = actual_script.to_data(false);
+    // Get the serialized coinbase input script as a byte vector.
+    const auto actual = actual_script.to_data(false);
 
-        // Create the expected script as a byte vector.
-        script expected_script;
-        expected_script.operations.push_back({ opcode::special, height_data });
-        const auto expected = expected_script.to_data(false);
+    // Create the expected script as a byte vector.
+    script expected_script;
+    expected_script.operations.push_back({ opcode::special, height_data });
+    const auto expected = expected_script.to_data(false);
 
-        // Require that the coinbase script match the expected coinbase script.
-        return std::equal(expected.begin(), expected.end(), actual.begin());
-    }
-
-    // Require that the height data is same
-    const auto actual_data = operation::factory_from_data(actual_script.operations.front().to_data()).data;
-    return std::equal(height_data.begin(), height_data.end(), actual_data.begin());
+    // Require that the coinbase script match the expected coinbase script.
+    return std::equal(expected.begin(), expected.end(), actual.begin());
 }
 
 code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_impl& chain) const
@@ -668,10 +640,6 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
     bool is_pos = current_block_.header.is_proof_of_stake();
     uint64_t coinage_reward_coinbase_index = !is_pos ? 1 : 2;
     uint64_t get_coinage_reward_tx_count = 0;
-
-    if (!check_block_signature(chain)) {
-        return error::cointstake_signature_invalid;
-    }
 
     ////////////// TODO: parallelize. //////////////
     for (uint64_t tx_index = 0; tx_index < count; ++tx_index)
@@ -790,21 +758,39 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
 
 bool validate_block::check_block_signature(blockchain::block_chain_impl& chain) const
 {
-    if (!current_block_.header.is_proof_of_stake()) {
+    const auto& header = current_block_.header;
+    const auto is_proof_of_stake = header.is_proof_of_stake();
+    const auto is_proof_of_dpos = header.is_proof_of_dpos();
+
+    if (!(is_proof_of_stake || is_proof_of_dpos)) {
         return true;
     }
 
-    const auto& blocksig = current_block_.blocksig;
-    if (blocksig.empty() || !is_coin_stake(current_block_)){
+    if (is_proof_of_stake && !is_coin_stake(current_block_)){
         return false;
     }
 
-    BITCOIN_ASSERT(current_block_.transactions.size() > 1);
-    const auto & coinstake_tx = current_block_.transactions[1];
-    const auto & head_hash = current_block_.header.hash();
-    const data_chunk& data = coinstake_tx.inputs[0].script.operations.back().data;
+    const auto& blocksig = current_block_.blocksig;
+    if (blocksig.empty()) {
+        return false;
+    }
 
-    return verify_signature(data, head_hash, blocksig);
+    data_chunk pubkey_data;
+
+    if (is_proof_of_stake) {
+        BITCOIN_ASSERT(current_block_.transactions.size() > 1);
+        const auto & coinstake_tx = current_block_.transactions[1];
+        pubkey_data = coinstake_tx.inputs[0].script.operations.back().data;
+    }
+    else if (is_proof_of_dpos) {
+        const auto& ec_pubkey = current_block_.public_key;
+        if (ec_pubkey.empty()) {
+            return false;
+        }
+        pubkey_data = to_chunk(ec_pubkey);
+    }
+
+    return verify_signature(pubkey_data, header.hash(), blocksig);
 }
 
 bool validate_block::is_spent_duplicate(const transaction& tx) const

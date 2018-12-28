@@ -843,23 +843,12 @@ miner::block_ptr miner::create_new_block_dpos(
 
     // add witness's signature to the current block header
     bc::endorsement endorse;
-    if (!witness::sign(endorse, private_key_, pblock->header)) {
+    if (!sign(pblock->blocksig, private_key_, pblock->header.hash())) {
         log::error(LOG_HEADER) << "witness sign failed in create_new_block";
         return nullptr;
     }
 
-    auto& coinbase_tx = pblock->transactions.front();
-    auto& coinbase_script = coinbase_tx.inputs.front().script;
-    auto& coinbase_input_ops = coinbase_script.operations;
-    coinbase_input_ops.push_back({ chain::opcode::special, endorse });
-    coinbase_input_ops.push_back({ chain::opcode::special, public_key_data_ });
-
-#if 0
-    log::info(LOG_HEADER)
-        << "create a DPoS block with signatures at height " << block_height
-        << ", coinbase input script is "
-        << coinbase_script.to_string(chain::get_script_context());
-#endif
+    pblock->public_key = to_array<ec_compressed_size>(public_key_data_);
 
     return pblock;
 }

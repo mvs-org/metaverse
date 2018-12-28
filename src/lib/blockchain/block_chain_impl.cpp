@@ -3001,5 +3001,31 @@ bool block_chain_impl::can_use_dpos(uint64_t height) const
     return true;
 }
 
+bool block_chain_impl::get_signature(ec_signature& blocksig, uint64_t height) const
+{
+    ec_compressed dump;
+    return get_signature_and_publick_key(blocksig, dump, height);
+}
+
+bool block_chain_impl::get_publick_key(ec_compressed& public_key, uint64_t height) const
+{
+    ec_signature dump;
+    return get_signature_and_publick_key(dump, public_key, height);
+}
+
+bool block_chain_impl::get_signature_and_publick_key(ec_signature& blocksig, ec_compressed& public_key, uint64_t height) const
+{
+    if (stopped())
+        return false;
+
+    auto result = database_.blocks.get(height);
+    if (!result)
+        return false;
+
+    blocksig = result.blocksig();
+    public_key = result.public_key();
+    return true;
+}
+
 } // namespace blockchain
 } // namespace libbitcoin
