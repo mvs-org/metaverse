@@ -272,8 +272,10 @@ u256 HeaderAux::calculate_difficulty_v2(
     result = std::min<bigint>(result, std::numeric_limits<u256>::max());
 
 #ifdef PRIVATE_CHAIN
-    if (isPoW && current.number < 6000) {
-        result = bigint(10);
+    if (isPoW) {
+        if (current.number < 5000) {
+            result = bigint(10);
+        }
     }
 #endif
 

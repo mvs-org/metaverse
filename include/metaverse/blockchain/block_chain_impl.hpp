@@ -417,7 +417,7 @@ public:
 
     std::shared_ptr<consensus::fts_stake_holder::ptr_list> get_witnesses_with_stake(
         uint64_t epoch_height,
-        std::shared_ptr<std::vector<std::string>> excluded_witnesses,
+        std::shared_ptr<std::vector<std::string>> excluded_addresses,
         uint64_t limit=0, uint64_t page_number=0) const;
 
     bool can_use_dpos(uint64_t height) const;

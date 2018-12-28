@@ -71,7 +71,7 @@ void witness::init(p2p_node& node)
     static witness s_instance(node);
     instance_ = &s_instance;
 
-    if (instance_->setting_.use_testnet_rules) {
+    if (instance_->is_testnet()) {
         witness::witness_enable_height = 1000000;
         witness::witness_register_enable_height = witness::witness_enable_height;
         witness::witness_number = 5;
@@ -153,8 +153,8 @@ std::string witness::show_list(const list& witness_list)
 {
     std::string res;
     res += "witness : [\n";
-    for (const auto& witness : witness_list) {
-        res += "\t" + witness_to_string(witness) + "\n";
+    for (auto& witness : witness_list) {
+        res += "\t" + witness_to_address(witness) + "\n";
     }
     res += "] ";
     return res;
@@ -287,7 +287,7 @@ bool witness::calc_witness_list(uint64_t height)
     return true;
 }
 
-bool witness::calc_witness_list(list& witness_list, uint64_t height) const
+bool witness::calc_witness_list(list& witness_list, uint64_t height)
 {
     if (!is_begin_of_epoch(height)) {
         log::error(LOG_HEADER) << "calc witness list must at the begin of epoch, not " << height;
@@ -300,16 +300,16 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
     witness_list.clear();
 
     auto& chain = const_cast<blockchain::block_chain_impl&>(node_.chain_impl());
-    std::shared_ptr<std::vector<std::string>> inactive_witnesses;
+    std::shared_ptr<std::vector<std::string>> inactive_addresses;
 
     // if it's not the first epoch, get inactive witnesses of previous epoch.
     if (height >= witness_enable_height + epoch_cycle_height) {
         // get previous height of epoch
         uint64_t prev_epoch_height = get_epoch_begin_height(height - 1);
-        inactive_witnesses = get_inactive_witnesses(prev_epoch_height);
+        inactive_addresses = get_inactive_witnesses(prev_epoch_height);
     }
 
-    auto stakeholders = chain.get_witnesses_with_stake(height, inactive_witnesses);
+    auto stakeholders = chain.get_witnesses_with_stake(height, inactive_addresses);
     if (stakeholders == nullptr || stakeholders->empty()) {
         return true;
     }
@@ -358,7 +358,14 @@ u256 witness::calc_mixhash(const list& witness_list)
     return mix_hash;
 }
 
-std::shared_ptr<std::vector<std::string>> witness::get_inactive_witnesses(uint64_t height) const
+std::string witness::get_miner_address(const chain::block& block)
+{
+    const auto& output = block.transactions[0].outputs[0];
+    BITCOIN_ASSERT(chain::operation::is_pay_key_hash_pattern(output.script.operations));
+    return output.get_script_address();
+}
+
+std::shared_ptr<std::vector<std::string>> witness::get_inactive_witnesses(uint64_t height)
 {
     using namespace consensus;
 
@@ -369,6 +376,7 @@ std::shared_ptr<std::vector<std::string>> witness::get_inactive_witnesses(uint64
         return nullptr;
     }
 
+    // get witnesses at this epoch
     auto witnesses = get_block_witnesses(epoch_height);
     if (!witnesses) {
         log::error(LOG_HEADER)
@@ -381,51 +389,78 @@ std::shared_ptr<std::vector<std::string>> witness::get_inactive_witnesses(uint64
         return inactives;
     }
 
+    log::info(LOG_HEADER) << "get_witnesses at epoch " << height;
+    // map address and witness_id
+    std::vector<std::string> addresses;
     for (auto& witness : *witnesses) {
-        log::info(LOG_HEADER)
-            << "\n  > witness: " << witness_to_string(witness)
-            << "\n  > address: " << witness_to_address(witness);
+        auto address = witness_to_address(witness);
+        addresses.push_back(address);
+
+        log::info(LOG_HEADER) << " > address: " << address;
     }
 
-    // TODO
+    // statistic votes
+    std::map<std::string, uint32_t> votes;
+    auto start = epoch_height + vote_maturity;
+    auto end = epoch_height + epoch_cycle_height - vote_maturity;
+    uint32_t total_vote = 0;
+    for (auto h = start; h < end; ++h) {
+        auto block = fetch_block(h);
+        if (!block) {
+            log::error(LOG_HEADER) << "get_inactive_witnesses: failed to get block " << h;
+            continue;
+        }
+
+        if (!block->is_proof_of_dpos()) {
+            continue;
+        }
+
+        auto address = get_miner_address(*block);
+        if (votes.find(address) != votes.end()) {
+            votes[address] += 1;
+        }
+        else {
+            votes[address] = 1;
+        }
+
+        ++total_vote;
+    }
+
+    // nobody votes.
+    auto size = votes.size();
+    if (size == 0) {
+        *inactives = addresses;
+        return inactives;
+    }
+
+    // find addresses that did not vote.
+    for (auto& address : addresses) {
+        if (votes.find(address) == votes.end()) {
+            inactives->push_back(address);
+        }
+    }
+
+    log::info(LOG_HEADER) << "vote witnesses at epoch " << height;
+    for (auto& entry : votes) {
+        log::info(LOG_HEADER) << " > vote address: " << entry.first << ", vote: " << entry.second;
+    }
+
+    // find addresses that had low vote percentage.
+    auto average = 1.0 / size;
+    for (auto& entry : votes) {
+        auto& address = entry.first;
+        auto percent = entry.second * 1.0 / total_vote;
+        if (percent * 5 < average) {
+            inactives->push_back(address);
+        }
+    }
+
+    log::info(LOG_HEADER) << "inactive witnesses at epoch " << height;
+    for (auto& address : *inactives) {
+        log::info(LOG_HEADER) << " > inactive address: " << address;
+    }
+
     return inactives;
-}
-
-bool witness::verify_witness_list(const chain::block& block, list& witness_list) const
-{
-    uint64_t height = block.header.number;
-    std::shared_ptr<list> stored_witnesses = get_block_witnesses(block);
-    if (!stored_witnesses) {
-        log::error(LOG_HEADER)
-            << "failed to verify vote result: can not get witnesses at height " << height;
-        return false;
-    }
-
-    if (!calc_witness_list(witness_list, height)) {
-        log::error(LOG_HEADER)
-            << "in verify_witness_list -> calc_witness_list failed, height " << height;
-        return false;
-    }
-
-    if (stored_witnesses->size() != witness_list.size()) {
-        log::error(LOG_HEADER)
-            << "in verify_witness_list -> verify witness_list size failed, height " << height
-            << ", stored size = " << stored_witnesses->size()
-            << ", calced size = " << witness_list.size();
-        return false;
-    }
-
-    auto stored_mixhash = (h256)calc_mixhash(*stored_witnesses);
-    auto calced_mixhash = (h256)calc_mixhash(witness_list);
-    if (calced_mixhash != stored_mixhash) {
-        log::error(LOG_HEADER)
-            << "in verify_witness_list -> verify mixhash failed, height " << height
-            << ", stored_mixhash = " << stored_mixhash
-            << ", calced_mixhash = " << calced_mixhash;
-        return false;
-    }
-
-    return true;
 }
 
 chain::block::ptr witness::fetch_block(uint64_t height) const
@@ -468,13 +503,44 @@ bool witness::update_witness_list(uint64_t height)
 
 bool witness::update_witness_list(const chain::block& block)
 {
-    list witness_list;
-    if (!verify_witness_list(block, witness_list)) {
-        log::info(LOG_HEADER)
-            << "verify vote result failed at height " << block.header.number;
+    uint64_t height = block.header.number;
+
+    // get witnesses from block
+    std::shared_ptr<list> stored_witnesses = get_block_witnesses(block);
+    if (!stored_witnesses) {
+        log::error(LOG_HEADER)
+            << "update_witness_list: can not get witnesses at height " << height;
         return false;
     }
 
+    // calculate witnesses on blockchain
+    list witness_list;
+    if (!calc_witness_list(witness_list, height)) {
+        log::error(LOG_HEADER)
+            << "update_witness_list: calc_witness_list failed, height " << height;
+        return false;
+    }
+
+    // verify witnesses
+    if (stored_witnesses->size() != witness_list.size()) {
+        log::error(LOG_HEADER)
+            << "update_witness_list: verify witness size failed, height " << height
+            << ", stored size = " << stored_witnesses->size()
+            << ", calced size = " << witness_list.size();
+        return false;
+    }
+
+    auto stored_mixhash = (h256)calc_mixhash(*stored_witnesses);
+    auto calced_mixhash = (h256)calc_mixhash(witness_list);
+    if (calced_mixhash != stored_mixhash) {
+        log::error(LOG_HEADER)
+            << "update_witness_list: verify witness mixhash failed, height " << height
+            << ", stored_mixhash = " << stored_mixhash
+            << ", calced_mixhash = " << calced_mixhash;
+        return false;
+    }
+
+    // swap witnesses
     swap_witness_list(witness_list);
     return true;
 }
@@ -560,10 +626,15 @@ uint32_t witness::calc_slot_num(uint64_t block_height) const
     return (calced_slot_num + offset) % size;
 }
 
-std::string witness::witness_to_address(const witness_id& witness) const
+bool witness::is_testnet()
+{
+    return setting_.use_testnet_rules;
+}
+
+std::string witness::witness_to_address(const witness_id& witness)
 {
     uint32_t payment_version = wallet::payment_address::mainnet_p2kh;
-    if (setting_.use_testnet_rules) {
+    if (witness::get().is_testnet()) {
         payment_version = 127;  // testnet
     }
 
@@ -676,7 +747,7 @@ bool witness::is_dpos_enabled()
     return true;
 #endif
 
-    if (instance_->setting_.use_testnet_rules) {
+    if (instance_->is_testnet()) {
         return true;
     }
     else {

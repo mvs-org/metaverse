@@ -86,11 +86,11 @@ public:
 
     static std::shared_ptr<witness::list> get_block_witnesses(const chain::block& block);
     std::shared_ptr<witness::list> get_block_witnesses(uint64_t height) const;
-    std::shared_ptr<std::vector<std::string>> get_inactive_witnesses(uint64_t height) const;
+    std::shared_ptr<std::vector<std::string>> get_inactive_witnesses(uint64_t height);
 
     // generate a new epoch witness list
     bool calc_witness_list(uint64_t height);
-    bool calc_witness_list(list& witness_list, uint64_t height) const;
+    bool calc_witness_list(list& witness_list, uint64_t height);
     bool init_witness_list();
     bool update_witness_list(uint64_t height);
     bool update_witness_list(const chain::block& block);
@@ -102,9 +102,8 @@ public:
     uint32_t calc_slot_num(uint64_t height) const;
     size_t get_witness_number();
 
-    std::string witness_to_address(const witness_id& witness) const;
-
     static public_key_t witness_to_public_key(const witness_id& id);
+    static std::string witness_to_address(const witness_id& witness);
     static std::string witness_to_string(const witness_id& id);
     static std::string endorse_to_string(const endorsement& endorse);
     static witness_id to_witness_id(const public_key_t& public_key);
@@ -126,7 +125,6 @@ public:
     static bool verify_sign(const endorsement& out, const public_key_t& public_key, const chain::header& h);
     bool verify_signer(const public_key_t& public_key, uint64_t height) const;
     bool verify_signer(uint32_t witness_slot_num, uint64_t height) const;
-    bool verify_witness_list(const chain::block& block, list& witness_list) const;
 
     static u256 calc_mixhash(const list& witness_list);
 
@@ -134,6 +132,9 @@ public:
     bool get_header(chain::header& out_header, uint64_t height) const;
     uint64_t get_last_height();
 
+    static std::string get_miner_address(const chain::block& block);
+
+    bool is_testnet();
 private:
     witness(p2p_node& node);
 

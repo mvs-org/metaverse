@@ -2894,7 +2894,7 @@ filter_witness(const block_chain_impl& chain, const business_record& buss, const
 /// stake holder is publickey and lockvalue pair
 std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_witnesses_with_stake(
     uint64_t epoch_height,
-    std::shared_ptr<std::vector<std::string>> excluded_witnesses,
+    std::shared_ptr<std::vector<std::string>> excluded_addresses,
     uint64_t limit, uint64_t page_number) const
 {
     using namespace consensus;
@@ -2930,9 +2930,9 @@ std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_wit
             continue;
         }
 
-        if (excluded_witnesses && !excluded_witnesses->empty()) {
-            auto fit = std::find(excluded_witnesses->begin(), excluded_witnesses->end(), pubkey);
-            if (fit != excluded_witnesses->end()) {
+        if (excluded_addresses && !excluded_addresses->empty()) {
+            auto fit = std::find(excluded_addresses->begin(), excluded_addresses->end(), addr);
+            if (fit != excluded_addresses->end()) {
                 continue;
             }
         }
@@ -2987,9 +2987,9 @@ bool block_chain_impl::can_use_dpos(uint64_t height) const
         }
 
         // [epoch_cycle_height - vote_maturity .. epoch_cycle_height)
-        // if (height_in_epoch > witness::epoch_cycle_height - witness::vote_maturity) {
-        //     return false;
-        // }
+        if (height_in_epoch >= witness::epoch_cycle_height - witness::vote_maturity) {
+            return false;
+        }
     }
 
     // a dpos must followed by a pow.
