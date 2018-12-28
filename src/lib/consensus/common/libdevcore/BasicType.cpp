@@ -271,6 +271,12 @@ u256 HeaderAux::calculate_difficulty_v2(
     auto result = std::max<bigint>(prev_bits, minimumDifficulty);
     result = std::min<bigint>(result, std::numeric_limits<u256>::max());
 
+#ifdef PRIVATE_CHAIN
+    if (isPoW && current.number < 6000) {
+        result = bigint(10);
+    }
+#endif
+
 #ifdef ENABLE_PILLAR
     if (current.transaction_count > 0) {
         log::info("difficulty")

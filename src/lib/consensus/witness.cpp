@@ -31,9 +31,10 @@ namespace libbitcoin {
 namespace consensus {
 
 uint64_t witness::witness_enable_height = 2000000;
+uint64_t witness::witness_register_enable_height = 2000000;
 uint32_t witness::witness_number = 23;
-uint32_t witness::epoch_cycle_height = 20000;
-uint32_t witness::register_witness_lock_height = 10000;
+uint32_t witness::epoch_cycle_height = 10000;
+uint32_t witness::register_witness_lock_height = 20000; // it should larger than epoch_cycle_height
 uint64_t witness::witness_lock_threshold = coin_price(1000); // ETP bits
 uint32_t witness::vote_maturity = 24;
 
@@ -72,18 +73,20 @@ void witness::init(p2p_node& node)
 
     if (instance_->setting_.use_testnet_rules) {
         witness::witness_enable_height = 1000000;
+        witness::witness_register_enable_height = witness::witness_enable_height;
         witness::witness_number = 5;
         witness::epoch_cycle_height = 1000;
-        witness::register_witness_lock_height = 500;
+        witness::register_witness_lock_height = 5000;
         witness::witness_lock_threshold = coin_price(10); // ETP bits
         witness::vote_maturity = 24;
     }
 
 #ifdef PRIVATE_CHAIN
     witness::witness_enable_height = 5000;
+    witness::witness_register_enable_height = 1000;
     witness::witness_number = 23;
     witness::epoch_cycle_height = 100;
-    witness::register_witness_lock_height = 50;
+    witness::register_witness_lock_height = 500;
     witness::witness_lock_threshold = coin_price(1000); // ETP bits
     witness::vote_maturity = 6;
 #endif
@@ -163,6 +166,23 @@ size_t witness::get_witness_number()
     return witness_list_.size();
 }
 
+bool witness::add_witness_vote_result(chain::transaction& coinbase_tx, uint64_t block_height)
+{
+    BITCOIN_ASSERT(coinbase_tx.is_coinbase());
+    if (witness::is_begin_of_epoch(block_height)) {
+        auto&& vote_output = create_witness_vote_result(block_height);
+        if (vote_output.script.operations.empty()) {
+            log::error(LOG_HEADER) << "create_witness_vote_result failed";
+            return false;
+        }
+
+        coinbase_tx.outputs.emplace_back(vote_output);
+        log::debug(LOG_HEADER) << "create_witness_vote_result complete. " << vote_output.to_string(1);
+    }
+
+    return true;
+}
+
 chain::output witness::create_witness_vote_result(uint64_t height)
 {
     chain::output output;
@@ -179,24 +199,81 @@ chain::output witness::create_witness_vote_result(uint64_t height)
     data_chunk chunk = to_chunk(h256(mixhash).asBytes());
     ops.push_back({chain::opcode::special, chunk});
 
+    for (const auto& witness : witness_list_) {
+        ops.push_back({chain::opcode::special, witness_to_public_key(witness)});
+    }
+
     return output;
 }
 
-bool witness::add_witness_vote_result(chain::transaction& coinbase_tx, uint64_t block_height)
+bool witness::is_vote_result_output(const chain::output& output)
 {
-    BITCOIN_ASSERT(coinbase_tx.is_coinbase());
-    if (witness::is_begin_of_epoch(block_height)) {
-        auto&& vote_output = create_witness_vote_result(block_height);
-        if (vote_output.script.operations.empty()) {
-            log::error(LOG_HEADER) << "create_witness_vote_result failed";
-            return false;
-        }
+    if (!output.is_etp() || output.value != 0) {
+        return false;
+    }
 
-        coinbase_tx.outputs.emplace_back(vote_output);
-        log::debug(LOG_HEADER) << "create_witness_vote_result complete. " << vote_output.to_string(1);
+    auto& ops = output.script.operations;
+
+    // check operation of script where mixhash is stored.
+    if ((ops.size() < 1) || !chain::operation::is_push_only(ops)) {
+        return false;
     }
 
     return true;
+}
+
+std::shared_ptr<witness::list> witness::get_block_witnesses(uint64_t height) const
+{
+    auto block = get_epoch_begin_block(height);
+    if (!block) {
+        log::error(LOG_HEADER)
+            << "failed to get witness result block at height " << height;
+        return nullptr;
+    }
+
+    return get_block_witnesses(*block);
+}
+
+std::shared_ptr<witness::list> witness::get_block_witnesses(const chain::block& block)
+{
+    // check size of transactions
+    if (block.transactions.size() != 1) {
+        return nullptr;
+    }
+
+    auto& coinbase_tx = block.transactions.front();
+
+    // check size of outputs
+    if (coinbase_tx.outputs.size() != 2) {
+        log::debug(LOG_HEADER)
+            << "in get_block_witnesses -> no extra output to store witness mixhash, height "
+            << block.header.number;
+        return nullptr;
+    }
+
+    // get witness from block
+    auto& vote_result_output = coinbase_tx.outputs.back();
+
+    // check operation of script where mixhash is stored.
+    if (!is_vote_result_output(vote_result_output)) {
+        return nullptr;
+    }
+
+    auto witnesses = std::make_shared<list>();
+    auto& ops = vote_result_output.script.operations;
+    for (size_t i = 1; i < ops.size(); ++i) {
+        const auto& data = chain::operation::factory_from_data(ops[i].to_data()).data;
+        if (!is_public_key(data)) {
+            log::error(LOG_HEADER)
+                << "in get_block_witnesses ops is not public key, height " << block.header.number;
+            return nullptr;
+        }
+
+        auto witness = to_witness_id(data);
+        witnesses->emplace_back(witness);
+    }
+
+    return witnesses;
 }
 
 bool witness::calc_witness_list(uint64_t height)
@@ -217,16 +294,22 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
         return false;
     }
 
+    log::info(LOG_HEADER)
+        << "calc_witness_list at height " << height;
+
     witness_list.clear();
 
     auto& chain = const_cast<blockchain::block_chain_impl&>(node_.chain_impl());
-    auto did_detail = chain.get_registered_did(witness::witness_registry_did);
-    if (!did_detail) {
-        return true;
+    std::shared_ptr<std::vector<std::string>> inactive_witnesses;
+
+    // if it's not the first epoch, get inactive witnesses of previous epoch.
+    if (height >= witness_enable_height + epoch_cycle_height) {
+        // get previous height of epoch
+        uint64_t prev_epoch_height = get_epoch_begin_height(height - 1);
+        inactive_witnesses = get_inactive_witnesses(prev_epoch_height);
     }
 
-    auto stakeholders = chain.get_register_witnesses_with_stake(
-        did_detail->get_address(), "", 0, height + register_witness_lock_height);
+    auto stakeholders = chain.get_witnesses_with_stake(height, inactive_witnesses);
     if (stakeholders == nullptr || stakeholders->empty()) {
         return true;
     }
@@ -264,21 +347,6 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
     return true;
 }
 
-bool witness::is_vote_result_output(const chain::output& output)
-{
-    if (!output.is_etp() || output.value != 0) {
-        return false;
-    }
-
-    auto& ops = output.script.operations;
-
-    // check operation of script where mixhash is stored.
-    if ((ops.size() != 1) || !chain::operation::is_push_only(ops)) {
-        return false;
-    }
-    return true;
-}
-
 u256 witness::calc_mixhash(const list& witness_list)
 {
     RLPStream s;
@@ -290,47 +358,68 @@ u256 witness::calc_mixhash(const list& witness_list)
     return mix_hash;
 }
 
-bool witness::verify_vote_result(const chain::block& block, list& witness_list) const
+std::shared_ptr<std::vector<std::string>> witness::get_inactive_witnesses(uint64_t height) const
 {
-    const auto& transactions = block.transactions;
+    using namespace consensus;
 
-    // check size of transactions
-    if (transactions.size() != 1) {
+    uint64_t epoch_height = witness::get_epoch_begin_height(height);
+    if (epoch_height == 0) {
+        log::error(LOG_HEADER)
+            << "failed to get_epoch_begin_height for height " << height;
+        return nullptr;
+    }
+
+    auto witnesses = get_block_witnesses(epoch_height);
+    if (!witnesses) {
+        log::error(LOG_HEADER)
+            << "failed to get_block_witnesses at height " << epoch_height;
+        return nullptr;
+    }
+
+    auto inactives = std::make_shared<std::vector<std::string>>();
+    if (witnesses->empty()) {
+        return inactives;
+    }
+
+    for (auto& witness : *witnesses) {
+        log::info(LOG_HEADER)
+            << "\n  > witness: " << witness_to_string(witness)
+            << "\n  > address: " << witness_to_address(witness);
+    }
+
+    // TODO
+    return inactives;
+}
+
+bool witness::verify_witness_list(const chain::block& block, list& witness_list) const
+{
+    uint64_t height = block.header.number;
+    std::shared_ptr<list> stored_witnesses = get_block_witnesses(block);
+    if (!stored_witnesses) {
+        log::error(LOG_HEADER)
+            << "failed to verify vote result: can not get witnesses at height " << height;
         return false;
     }
 
-    auto& coinbase_tx = transactions.front();
-
-    // check size of outputs
-    if (coinbase_tx.outputs.size() != 2) {
-        log::debug(LOG_HEADER)
-            << "in verify_vote_result -> no extra output to store witness mixhash, height "
-            << block.header.number;
+    if (!calc_witness_list(witness_list, height)) {
+        log::error(LOG_HEADER)
+            << "in verify_witness_list -> calc_witness_list failed, height " << height;
         return false;
     }
 
-    auto& vote_result_output = coinbase_tx.outputs.back();
-
-    // check operation of script where mixhash is stored.
-    if (!is_vote_result_output(vote_result_output)) {
+    if (stored_witnesses->size() != witness_list.size()) {
+        log::error(LOG_HEADER)
+            << "in verify_witness_list -> verify witness_list size failed, height " << height
+            << ", stored size = " << stored_witnesses->size()
+            << ", calced size = " << witness_list.size();
         return false;
     }
 
-    if (!calc_witness_list(witness_list, block.header.number)) {
-        log::debug(LOG_HEADER)
-            << "in verify_vote_result -> calc_witness_list failed, height "
-            << block.header.number;
-        return false;
-    }
-
-    auto& ops = vote_result_output.script.operations;
-    auto buff = chain::operation::factory_from_data(ops[0].to_data()).data;
-    auto stored_mixhash = (h256::Arith)(h256((const uint8_t*)&buff[0], h256::ConstructFromPointer));
+    auto stored_mixhash = (h256)calc_mixhash(*stored_witnesses);
     auto calced_mixhash = (h256)calc_mixhash(witness_list);
     if (calced_mixhash != stored_mixhash) {
-        log::debug(LOG_HEADER)
-            << "in verify_vote_result -> verify mixhash failed, height "
-            << block.header.number
+        log::error(LOG_HEADER)
+            << "in verify_witness_list -> verify mixhash failed, height " << height
             << ", stored_mixhash = " << stored_mixhash
             << ", calced_mixhash = " << calced_mixhash;
         return false;
@@ -339,7 +428,7 @@ bool witness::verify_vote_result(const chain::block& block, list& witness_list) 
     return true;
 }
 
-chain::block::ptr witness::fetch_block(uint64_t height)
+chain::block::ptr witness::fetch_block(uint64_t height) const
 {
     std::promise<code> p;
     chain::block::ptr sp_block;
@@ -361,16 +450,6 @@ chain::block::ptr witness::fetch_block(uint64_t height)
     return sp_block;
 }
 
-chain::block::ptr witness::fetch_vote_result_block(uint64_t height)
-{
-    auto vote_height = get_epoch_begin_height(height);
-    if (vote_height == 0) {
-        return nullptr;
-    }
-
-    return fetch_block(vote_height);
-}
-
 bool witness::update_witness_list(uint64_t height)
 {
     if (!is_witness_enabled(height)) {
@@ -379,19 +458,18 @@ bool witness::update_witness_list(uint64_t height)
         return true;
     }
 
-    auto sp_block = fetch_vote_result_block(height);
-    if (!sp_block) {
-        log::info(LOG_HEADER)
-            << "fetch vote result block failed at height " << height;
-        return false;
+    auto block = get_epoch_begin_block(height);
+    if (!block) {
+        return true;
     }
-    return update_witness_list(*sp_block);
+
+    return update_witness_list(*block);
 }
 
 bool witness::update_witness_list(const chain::block& block)
 {
     list witness_list;
-    if (!verify_vote_result(block, witness_list)) {
+    if (!verify_witness_list(block, witness_list)) {
         log::info(LOG_HEADER)
             << "verify vote result failed at height " << block.header.number;
         return false;
@@ -480,6 +558,18 @@ uint32_t witness::calc_slot_num(uint64_t block_height) const
     }
 
     return (calced_slot_num + offset) % size;
+}
+
+std::string witness::witness_to_address(const witness_id& witness) const
+{
+    uint32_t payment_version = wallet::payment_address::mainnet_p2kh;
+    if (setting_.use_testnet_rules) {
+        payment_version = 127;  // testnet
+    }
+
+    wallet::ec_public ep = wallet::ec_public(witness_to_string(witness));
+    wallet::payment_address pay_address(ep, payment_version);
+    return pay_address.encoded();
 }
 
 witness::public_key_t witness::witness_to_public_key(const witness_id& id)
@@ -602,6 +692,16 @@ bool witness::is_witness_enabled(uint64_t height)
 uint64_t witness::get_height_in_epoch(uint64_t height)
 {
     return (height - witness_enable_height) % epoch_cycle_height;
+}
+
+chain::block::ptr witness::get_epoch_begin_block(uint64_t height) const
+{
+    auto vote_height = get_epoch_begin_height(height);
+    if (vote_height == 0) {
+        return nullptr;
+    }
+
+    return fetch_block(vote_height);
 }
 
 // vote result is stored in the beginning of each epoch

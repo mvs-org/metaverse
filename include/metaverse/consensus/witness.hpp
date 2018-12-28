@@ -60,6 +60,7 @@ public:
     static uint32_t register_witness_lock_height;
     static uint64_t witness_lock_threshold;
     static uint32_t vote_maturity;
+    static uint64_t witness_register_enable_height;
 
     static const uint32_t max_candidate_count;
     static const uint32_t witness_register_fee;
@@ -83,6 +84,10 @@ public:
 
     bool is_witness(const witness_id& id) const;
 
+    static std::shared_ptr<witness::list> get_block_witnesses(const chain::block& block);
+    std::shared_ptr<witness::list> get_block_witnesses(uint64_t height) const;
+    std::shared_ptr<std::vector<std::string>> get_inactive_witnesses(uint64_t height) const;
+
     // generate a new epoch witness list
     bool calc_witness_list(uint64_t height);
     bool calc_witness_list(list& witness_list, uint64_t height) const;
@@ -91,12 +96,13 @@ public:
     bool update_witness_list(const chain::block& block);
     chain::output create_witness_vote_result(uint64_t height);
     bool add_witness_vote_result(chain::transaction& coinbase_tx, uint64_t block_height);
-    chain::block::ptr fetch_vote_result_block(uint64_t height);
     static bool is_vote_result_output(const chain::output&);
 
     uint32_t get_slot_num(const witness_id& id) const;
     uint32_t calc_slot_num(uint64_t height) const;
     size_t get_witness_number();
+
+    std::string witness_to_address(const witness_id& witness) const;
 
     static public_key_t witness_to_public_key(const witness_id& id);
     static std::string witness_to_string(const witness_id& id);
@@ -113,12 +119,14 @@ public:
     static bool is_begin_of_epoch(uint64_t height);
     static bool is_in_same_epoch(uint64_t height1, uint64_t height2);
 
+    chain::block::ptr get_epoch_begin_block(uint64_t height) const;
+
     // signature
     static bool sign(endorsement& out, const ec_secret& secret, const chain::header& h);
     static bool verify_sign(const endorsement& out, const public_key_t& public_key, const chain::header& h);
     bool verify_signer(const public_key_t& public_key, uint64_t height) const;
     bool verify_signer(uint32_t witness_slot_num, uint64_t height) const;
-    bool verify_vote_result(const chain::block& block, list& witness_list) const;
+    bool verify_witness_list(const chain::block& block, list& witness_list) const;
 
     static u256 calc_mixhash(const list& witness_list);
 
@@ -134,7 +142,7 @@ private:
     static const_iterator finds(const list&, const witness_id&);
     static iterator finds(list&, const witness_id&);
 
-    chain::block::ptr fetch_block(uint64_t height);
+    chain::block::ptr fetch_block(uint64_t height) const;
 
 private:
     static witness* instance_;

@@ -409,16 +409,16 @@ public:
     uint64_t calc_number_of_blocks(uint64_t from, uint64_t to, const validate_block* validate_block=nullptr) const;
     uint64_t get_expiration_height(uint64_t from, uint64_t lock_height) const;
 
-    std::pair<uint64_t, uint64_t> get_locked_balance(const std::string& address,
-        uint64_t expiration, const std::string& asset_symbol="") const;
+    std::pair<uint64_t, uint64_t> get_locked_balance(
+        const std::string& address, uint64_t epoch_height=0, const std::string& asset_symbol="") const;
 
-    std::vector<std::pair<std::string, data_chunk>> get_register_witnesses(
-        const std::string& addr, const std::string& symbol,
-        size_t start_height, size_t end_height=0, uint64_t limit=0, uint64_t page_number=0) const;
+    // std::vector<std::pair<std::string, data_chunk>> get_register_witnesses(
+    //     uint64_t start_height, uint64_t end_height=0, uint64_t limit=0, uint64_t page_number=0) const;
 
-    std::shared_ptr<consensus::fts_stake_holder::ptr_list> get_register_witnesses_with_stake(
-        const std::string& addr, const std::string& symbol,
-        size_t start_height, size_t end_height=0, uint64_t limit=0, uint64_t page_number=0) const;
+    std::shared_ptr<consensus::fts_stake_holder::ptr_list> get_witnesses_with_stake(
+        uint64_t epoch_height,
+        std::shared_ptr<std::vector<std::string>> excluded_witnesses,
+        uint64_t limit=0, uint64_t page_number=0) const;
 
     bool can_use_dpos(uint64_t height) const;
     uint64_t get_pow_height_before_dpos(uint64_t height) const;
