@@ -61,6 +61,8 @@ public:
     virtual uint64_t get_fork_index() const override { return fork_index_; }
     uint64_t median_time_past() const override;
 
+    virtual chain::block::ptr fetch_full_block(uint64_t height) const override;
+
 protected:
     u256 previous_block_bits() const override;
     uint64_t actual_time_span(uint64_t interval) const override;

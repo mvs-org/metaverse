@@ -68,6 +68,8 @@ public:
     const uint64_t get_height() const {return height_;}
     virtual uint64_t median_time_past() const = 0;
 
+    virtual chain::block::ptr fetch_full_block(uint64_t height) const {return nullptr;}
+
     code check_coinbase(const chain::header& prev_header, bool check_genesis_tx) const;
 
 protected:

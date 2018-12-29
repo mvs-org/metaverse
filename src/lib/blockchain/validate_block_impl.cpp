@@ -22,6 +22,7 @@
 #include <metaverse/consensus/miner.hpp>
 
 #include <cstddef>
+#include <future>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/blockchain/block_detail.hpp>
 #include <metaverse/consensus/miner/MinerAux.h>
@@ -172,6 +173,34 @@ uint64_t validate_block_impl::median_time_past() const
     // Sort and select middle (median) value from the array.
     std::sort(times.begin(), times.end());
     return times.empty() ? 0 : times[times.size() / 2];
+}
+
+chain::block::ptr validate_block_impl::fetch_full_block(uint64_t fetch_height) const
+{
+    if (fetch_height > fork_index_) {
+        const auto fetch_index = fetch_height - fork_index_ - 1;
+        BITCOIN_ASSERT(fetch_index <= orphan_index_);
+        BITCOIN_ASSERT(orphan_index_ < orphan_chain_.size());
+        return orphan_chain_[fetch_index]->actual();
+    }
+
+    std::promise<code> p;
+    chain::block::ptr sp_block;
+    chain_.fetch_block(fetch_height,
+        [&p, &sp_block](const code & ec, chain::block::ptr block){
+            if (ec) {
+                p.set_value(ec);
+                return;
+            }
+            sp_block = block;
+            p.set_value(error::success);
+        });
+
+    auto result = p.get_future().get();
+    if (result) {
+        return nullptr;
+    }
+    return sp_block;
 }
 
 chain::header validate_block_impl::fetch_block(uint64_t fetch_height) const

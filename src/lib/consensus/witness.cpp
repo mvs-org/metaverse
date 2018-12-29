@@ -410,17 +410,21 @@ std::shared_ptr<std::vector<std::string>> witness::get_inactive_witnesses(uint64
     auto end = epoch_height + epoch_cycle_height - vote_maturity;
     uint32_t total_vote = 0;
     for (auto h = start; h < end; ++h) {
-        auto block = fetch_block(h);
-        if (!block) {
-            log::error(LOG_HEADER) << "get_inactive_witnesses: failed to get block " << h;
+        ec_compressed public_key;
+        node_.chain_impl().fetch_block_public_key(h,
+            [&public_key](const code& ec, const ec_compressed& pubkey) {
+                if (ec) {
+                    return;
+                }
+                public_key = pubkey;
+            });
+
+        if (!is_public_key(public_key)) {
             continue;
         }
 
-        if (!block->is_proof_of_dpos()) {
-            continue;
-        }
+        auto address = witness_to_address(to_chunk(encode_base16(public_key)));
 
-        auto address = get_miner_address(*block);
         if (votes.find(address) != votes.end()) {
             votes[address] += 1;
         }
