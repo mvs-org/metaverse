@@ -253,8 +253,7 @@ public:
     /// must be have enough etp locked in the address
     virtual bool check_pos_capability(
         uint64_t best_height,
-        const wallet::payment_address& pay_addres,
-        bool need_sync_lock = true) override;
+        const wallet::payment_address& pay_addres) override;
 
     /// select pos utxo. target value
     virtual bool select_utxo_for_staking(

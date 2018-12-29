@@ -1670,18 +1670,10 @@ uint64_t block_chain_impl::get_sequence_from_output(const chain::output& output)
 
 bool block_chain_impl::check_pos_capability(
     uint64_t best_height,
-    const wallet::payment_address& pay_address,
-    bool need_sync_lock)
+    const wallet::payment_address& pay_address)
 {
     history::list rows;
-
-    if (need_sync_lock) {
-        rows = get_address_history(pay_address, false);
-    }
-    else {
-        history_compact::list history = database_.history.get(pay_address.hash(), 0, 0);
-        rows = expand_history(history);
-    }
+    rows = get_address_history(pay_address, false);
 
     chain::transaction tx_temp;
     uint64_t tx_height;
