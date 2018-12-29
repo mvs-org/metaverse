@@ -128,16 +128,22 @@ bool block::from_data_t(reader& source, bool with_transaction_count)
         }
     }
 
+    if (result)
+    {
+        if (is_proof_of_stake() || is_proof_of_dpos()) {
+            source.read_data(blocksig.data(), blocksig.size());
+            result = static_cast<bool>(source);
+        }
+
+        if (result && is_proof_of_dpos()) {
+            source.read_data(public_key.data(), public_key.size());
+            result = static_cast<bool>(source);
+        }
+    }
+
     if (!result)
         reset();
 
-    if (header.is_proof_of_stake()) {
-        source.read_data(blocksig.data(), blocksig.size());
-    }
-    else if (header.is_proof_of_dpos()) {
-        source.read_data(blocksig.data(), blocksig.size());
-        source.read_data(public_key.data(), public_key.size());
-    }
     return result;
 }
 
@@ -149,11 +155,11 @@ void block::to_data_t(writer& sink, bool with_transaction_count) const
     for (const auto& tx: transactions)
         tx.to_data(sink);
 
-    if (header.is_proof_of_stake()){
+    if (is_proof_of_stake() || is_proof_of_dpos()) {
         sink.write_data(blocksig.data(), blocksig.size());
     }
-    else if (header.is_proof_of_dpos()) {
-        sink.write_data(blocksig.data(), blocksig.size());
+
+    if (is_proof_of_dpos()) {
         sink.write_data(public_key.data(), public_key.size());
     }
 }
@@ -165,11 +171,11 @@ uint64_t block::serialized_size(bool with_transaction_count) const
     for (const auto& tx: transactions)
         block_size += tx.serialized_size();
 
-    if (header.is_proof_of_stake()) {
+    if (is_proof_of_stake() || is_proof_of_dpos()) {
         block_size += blocksig.size();
     }
-    else if (header.is_proof_of_dpos()) {
-        block_size += blocksig.size();
+
+    if (is_proof_of_dpos()) {
         block_size += public_key.size();
     }
 

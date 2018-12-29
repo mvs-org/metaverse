@@ -309,7 +309,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
     RETURN_IF_STOPPED();
 
     if (!check_block_signature(chain)) {
-        return error::cointstake_signature_invalid;
+        return error::block_signature_invalid;
     }
 
     RETURN_IF_STOPPED();
@@ -775,22 +775,22 @@ bool validate_block::check_block_signature(blockchain::block_chain_impl& chain) 
         return false;
     }
 
-    data_chunk pubkey_data;
-
     if (is_proof_of_stake) {
         BITCOIN_ASSERT(current_block_.transactions.size() > 1);
-        const auto & coinstake_tx = current_block_.transactions[1];
-        pubkey_data = coinstake_tx.inputs[0].script.operations.back().data;
+        const auto& coinstake_tx = current_block_.transactions[1];
+        const auto& pubkey_data = coinstake_tx.inputs[0].script.operations.back().data;
+        return verify_signature(pubkey_data, header.hash(), blocksig);
     }
-    else if (is_proof_of_dpos) {
+
+    if (is_proof_of_dpos) {
         const auto& ec_pubkey = current_block_.public_key;
         if (ec_pubkey.empty()) {
             return false;
         }
-        pubkey_data = to_chunk(ec_pubkey);
+        return verify_signature(ec_pubkey, header.hash(), blocksig);
     }
 
-    return verify_signature(pubkey_data, header.hash(), blocksig);
+    return false;
 }
 
 bool validate_block::is_spent_duplicate(const transaction& tx) const

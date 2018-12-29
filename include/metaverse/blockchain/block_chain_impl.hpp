@@ -182,6 +182,11 @@ public:
     void fetch_block_signature(const hash_digest& hash,
                                block_signature_fetch_handler handler) override;
 
+    void fetch_block_public_key(uint64_t height,
+        block_public_key_fetch_handler handler) override;
+
+    void fetch_block_public_key(const hash_digest& hash,
+        block_public_key_fetch_handler handler) override;
 
     /// fetch a block locator relative to the current top and threshold.
     void fetch_block_locator(block_locator_fetch_handler handler) override;

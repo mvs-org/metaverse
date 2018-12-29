@@ -848,7 +848,15 @@ miner::block_ptr miner::create_new_block_dpos(
         return nullptr;
     }
 
-    pblock->public_key = to_array<ec_compressed_size>(public_key_data_);
+    pblock->public_key = wallet::ec_public(public_key_data_);
+
+#ifdef ENABLE_PILLAR
+    log::info(LOG_HEADER)
+        << "create a DPoS block at height " << block_height
+        << ", header hash is " << encode_hash(pblock->header.hash())
+        << ", blocksig is " << encode_base16(pblock->blocksig)
+        << ", public key is " << encode_base16(pblock->public_key);
+#endif
 
     return pblock;
 }

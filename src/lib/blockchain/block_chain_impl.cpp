@@ -1030,7 +1030,7 @@ void block_chain_impl::fetch_block_signature(uint64_t height,
             const auto result = database_.blocks.get(height);
             if(result)
             {
-                if (result.header().is_proof_of_stake() )
+                if (result.header().is_proof_of_stake() || result.header().is_proof_of_dpos())
                     sig = result.blocksig();
                 found = true;
             }
@@ -1061,7 +1061,7 @@ void block_chain_impl::fetch_block_signature(const hash_digest& hash,
             const auto result = database_.blocks.get(hash);
             if(result)
             {
-                if (result.header().is_proof_of_stake() )
+                if (result.header().is_proof_of_stake() || result.header().is_proof_of_dpos())
                     sig = result.blocksig();
                 found = true;
             }
@@ -1070,6 +1070,60 @@ void block_chain_impl::fetch_block_signature(const hash_digest& hash,
         return found ?
                finish_fetch(slock, handler, error::success, sig) :
                finish_fetch(slock, handler, error::not_found, sig);
+    };
+    fetch_serial(do_fetch);
+}
+
+void block_chain_impl::fetch_block_public_key(uint64_t height, block_public_key_fetch_handler handler)
+{
+    if (stopped()) {
+        handler(error::service_stopped, {});
+        return;
+    }
+
+    const auto do_fetch = [this, height, handler](size_t slock)
+    {
+        ec_compressed pubkey;
+        auto found = false;
+        {
+            const auto result = database_.blocks.get(height);
+            if (result) {
+                if (result.header().is_proof_of_dpos())
+                    pubkey = result.public_key();
+                found = true;
+            }
+        }
+
+        return found ?
+               finish_fetch(slock, handler, error::success, pubkey) :
+               finish_fetch(slock, handler, error::not_found, pubkey);
+    };
+    fetch_serial(do_fetch);
+}
+
+void block_chain_impl::fetch_block_public_key(const hash_digest& hash, block_public_key_fetch_handler handler)
+{
+    if (stopped()) {
+        handler(error::service_stopped, {});
+        return;
+    }
+
+    const auto do_fetch = [this, hash, handler](size_t slock)
+    {
+        ec_compressed pubkey;
+        auto found = false;
+        {
+            const auto result = database_.blocks.get(hash);
+            if (result) {
+                if (result.header().is_proof_of_dpos())
+                    pubkey = result.public_key();
+                found = true;
+            }
+        }
+
+        return found ?
+               finish_fetch(slock, handler, error::success, pubkey) :
+               finish_fetch(slock, handler, error::not_found, pubkey);
     };
     fetch_serial(do_fetch);
 }

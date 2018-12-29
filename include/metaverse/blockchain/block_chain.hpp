@@ -50,6 +50,7 @@ public:
     typedef handle1<chain::header::list> locator_block_headers_fetch_handler;
     typedef handle1<hash_list> transaction_hashes_fetch_handler;
     typedef handle1<ec_signature> block_signature_fetch_handler;
+    typedef handle1<ec_compressed> block_public_key_fetch_handler;
     typedef handle1<uint64_t> block_height_fetch_handler;
     typedef handle1<uint64_t> last_height_fetch_handler;
     typedef handle1<chain::transaction> transaction_fetch_handler;
@@ -94,6 +95,12 @@ public:
 
     virtual void fetch_block_signature(const hash_digest& hash,
                                block_signature_fetch_handler handler) = 0;
+
+    virtual void fetch_block_public_key(uint64_t height,
+        block_public_key_fetch_handler handler) = 0;
+
+    virtual void fetch_block_public_key(const hash_digest& hash,
+        block_public_key_fetch_handler handler) = 0;
 
     virtual void fetch_block_locator(block_locator_fetch_handler handler) = 0;
 

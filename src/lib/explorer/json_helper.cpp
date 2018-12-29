@@ -1013,6 +1013,13 @@ Json::Value json_helper::prop_tree(const block& block, bool json, bool tx_json)
         else {
             tree = prop_tree(block.header);
             tree["transactions"] = prop_tree(txs, tx_json);
+            if (block.is_proof_of_stake()) {
+                tree["blocksig"] = encode_base16(block.blocksig);
+            }
+            else if (block.is_proof_of_dpos()) {
+                tree["blocksig"] = encode_base16(block.blocksig);
+                tree["public_key"] = encode_base16(block.public_key);
+            }
         }
     }
     else {
