@@ -56,7 +56,7 @@
 #include <metaverse/explorer/extensions/commands/listbalances.hpp>
 #include <metaverse/explorer/extensions/commands/getbalance.hpp>
 #include <metaverse/explorer/extensions/commands/listtxs.hpp>
-#include <metaverse/explorer/extensions/commands/deposit.hpp>
+// #include <metaverse/explorer/extensions/commands/deposit.hpp>
 #include <metaverse/explorer/extensions/commands/listassets.hpp>
 #include <metaverse/explorer/extensions/commands/getasset.hpp>
 #include <metaverse/explorer/extensions/commands/secondaryissue.hpp>
@@ -172,7 +172,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<send>());
     func(make_shared<sendmore>());
     func(make_shared<sendfrom>());
-    func(make_shared<deposit>());
+    // func(make_shared<deposit>());
     func(make_shared<lock>());
     func(make_shared<listbalances>());
     func(make_shared<getbalance>());
@@ -323,8 +323,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getbalance>();
     if (symbol == getaddressetp::symbol() || symbol == "fetch-balance")
         return make_shared<getaddressetp>();
-    if (symbol == deposit::symbol())
-        return make_shared<deposit>();
+    // if (symbol == deposit::symbol())
+    //     return make_shared<deposit>();
     if (symbol == lock::symbol())
         return make_shared<lock>();
     if (symbol == getlocked::symbol())

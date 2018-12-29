@@ -81,7 +81,7 @@ public:
         (
             "TO_",
             value<std::string>(&argument_.to)->required(),
-            "Lock to this did/address"
+            "Lock to this did."
         )
         (
             "AMOUNT",

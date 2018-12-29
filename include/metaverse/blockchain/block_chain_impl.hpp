@@ -289,7 +289,6 @@ public:
 
     std::shared_ptr<chain::transaction>  get_spends_output(const input_point& input);
 
-
     // account related api
     std::shared_ptr<account> is_account_passwd_valid(const std::string& name, const std::string& passwd);
     std::string is_account_lastwd_valid(const account& acc, std::string& auth, const std::string& lastwd);
@@ -431,6 +430,8 @@ public:
 
     bool can_use_dpos(uint64_t height) const;
     uint64_t get_pow_height_before_dpos(uint64_t height) const;
+
+    static uint64_t get_sequence_from_output(const chain::output& output);
 
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;

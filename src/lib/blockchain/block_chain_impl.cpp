@@ -1659,6 +1659,15 @@ static history::list expand_history(history_compact::list& compact)
     return result;
 }
 
+uint64_t block_chain_impl::get_sequence_from_output(const chain::output& output)
+{
+    if (operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
+        return operation::get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
+    }
+
+    return 0;
+}
+
 bool block_chain_impl::check_pos_capability(
     uint64_t best_height,
     const wallet::payment_address& pay_address,
@@ -1680,29 +1689,29 @@ bool block_chain_impl::check_pos_capability(
     for (auto & row : rows) {
         if ((row.spend.hash == null_hash)
             && get_transaction(tx_temp, tx_height, row.output.hash)) {
+
+            // tx not maturity
+            if (tx_height + consensus::witness::vote_maturity > best_height) {
+                continue;
+            }
+
+            if (row.value < pos_lock_min_value) {
+                continue;
+            }
+
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
-            auto output = tx_temp.outputs.at(row.output.index);
-            if (output.get_script_address() != pay_address.encoded()) {
+            const auto& output = tx_temp.outputs.at(row.output.index);
+
+            if (!output.is_etp()) {
                 continue;
             }
 
-            // deposit tx must be maturity
-            if (tx_height + coinbase_maturity > best_height) {
-                continue;
-            }
+            uint64_t lock_height = get_sequence_from_output(output);
 
-            if ( row.value >= pos_lock_min_value &&
-                chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations))
-            {
-                // deposit utxo in block
-                uint64_t lock_height = chain::operation::
-                    get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-
-                // utxo deposit height > pos_lock_min_height and min_pos_lock_rate percent of height limited
-                if (lock_height >= pos_lock_min_height &&
-                    (row.output_height + lock_height - pos_lock_gap_height) > best_height){
-                    return true;
-                }
+            // utxo deposit height > pos_lock_min_height and min_pos_lock_rate percent of height limited
+            if (lock_height >= pos_lock_min_height &&
+                (row.output_height + lock_height - pos_lock_gap_height) > best_height){
+                return true;
             }
         }
     }
@@ -2820,12 +2829,7 @@ std::pair<uint64_t, uint64_t> block_chain_impl::get_locked_balance(
                 continue;
             }
 
-            if (!operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-                continue;
-            }
-
-            uint64_t lock_sequence = chain::operation::
-                get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
+            uint64_t lock_sequence = get_sequence_from_output(output);
             auto seq_expiration = tx_height + lock_sequence;
 
             // use any kind of blocks
