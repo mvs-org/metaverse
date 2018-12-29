@@ -2736,44 +2736,33 @@ void block_chain_impl::set_sync_disabled(bool b)
 uint64_t block_chain_impl::get_expiration_height(uint64_t from, uint64_t lock_height) const
 {
     uint64_t to = from + lock_height;
-    if (to > pos_enabled_height) {
-        auto blocks_after_pos_enabled = to - std::max(from, pos_enabled_height);
-        to += blocks_after_pos_enabled;
+    const auto witness_enable_height = consensus::witness::witness_enable_height;
+    if (from >= witness_enable_height) {
+        to += lock_height;
+    }
+    else if (to > witness_enable_height) {
+        auto blocks_after_dpos_enabled = to - witness_enable_height;
+        to += blocks_after_dpos_enabled;
     }
     return to;
 }
 
 uint64_t block_chain_impl::calc_number_of_blocks(
-    uint64_t from, uint64_t to, const validate_block* validate_block) const
+    uint64_t from, uint64_t to, const validate_block*) const
 {
     if (from >= to) {
         return 0;
     }
 
     uint64_t number = to - from;
-
-    if (to > pos_enabled_height) {
-        auto blocks_after_pos_enabled = to - std::max(from, pos_enabled_height);
-        number -= (blocks_after_pos_enabled + 1) / 2;
+    const auto witness_enable_height = consensus::witness::witness_enable_height;
+    if (from >= witness_enable_height) {
+        number /= 2;
     }
-
-    // excludes dpos blocks
-    if (consensus::witness::is_dpos_enabled()) {
-        uint64_t start = std::max(from, consensus::witness::witness_enable_height);
-        if (start < to) {
-            chain::header out_header;
-            for (auto i = start; i < to; ++i) {
-                if ((validate_block && !validate_block->get_header(out_header, i))
-                    || (!validate_block && !get_header(out_header, i))) {
-                    return 0;
-                }
-                if (out_header.is_proof_of_dpos()) {
-                    --number;
-                }
-            }
-        }
+    else if (to > witness_enable_height) {
+        auto blocks_after_dpos_enabled = to - witness_enable_height;
+        number -= (blocks_after_dpos_enabled / 2);
     }
-
     return number;
 }
 
