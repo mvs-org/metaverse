@@ -770,7 +770,7 @@ miner::block_ptr miner::create_new_block_dpos(
     uint64_t block_height = last_height + 1;
     uint32_t block_time = get_adjust_time(block_height);
 
-    if (!prev_header.is_proof_of_work() || (block_time - prev_header.timestamp < 3)) {
+    if (prev_header.is_proof_of_dpos() || (block_time - prev_header.timestamp < 3)) {
         sleep_for_mseconds(1000, true);
         return nullptr;
     }
@@ -877,7 +877,7 @@ miner::block_ptr miner::create_new_block_pos(
 
     // Check deposited stake
     if (!block_chain.check_pos_capability(last_height, pay_address)) {
-        log::error(LOG_HEADER) << "PoS mining is not allowed. no enough stake is deposited at address " << pay_address;
+        log::error(LOG_HEADER) << "no enough pos stake is deposited at address " << pay_address;
         sleep_for_mseconds(10 * 1000);
         return nullptr;
     }
@@ -885,7 +885,7 @@ miner::block_ptr miner::create_new_block_pos(
     // check utxo stake
     chain::output_info::list stake_outputs;
     if (!block_chain.select_utxo_for_staking(last_height, pay_address, stake_outputs, 1000)) {
-        log::error(LOG_HEADER) << "PoS mining is not allowed. no enough stake is holded at address " << pay_address;
+        log::warning(LOG_HEADER) << "no enough pos utxo stake is holded at address " << pay_address;
         sleep_for_mseconds(10 * 1000);
         return nullptr;
     }
