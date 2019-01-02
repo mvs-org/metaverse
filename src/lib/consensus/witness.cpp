@@ -160,7 +160,7 @@ std::string witness::show_list(const list& witness_list)
     return res;
 }
 
-size_t witness::get_witness_number()
+size_t witness::get_witness_number() const
 {
     shared_lock lock(mutex_);
     return witness_list_.size();
@@ -469,6 +469,10 @@ std::shared_ptr<std::vector<std::string>> witness::get_inactive_witnesses(uint64
 
 chain::block::ptr witness::fetch_block(uint64_t height) const
 {
+    if (validate_block_) {
+        return validate_block_->fetch_full_block(height);
+    }
+
     std::promise<code> p;
     chain::block::ptr sp_block;
 
@@ -566,7 +570,7 @@ bool witness::init_witness_list()
     }
 
     if (consensus::witness::is_witness_enabled(height)) {
-        if (!consensus::witness::get().update_witness_list(height)) {
+        if (!update_witness_list(height)) {
             log::info(LOG_HEADER) << "update witness list failed at height " << height;
             return false;
         }
@@ -596,7 +600,7 @@ uint32_t witness::get_slot_num(const witness_id& id) const
 
 uint32_t witness::calc_slot_num(uint64_t block_height) const
 {
-    auto size = witness::get().get_witness_number();
+    auto size = get_witness_number();
     if (!is_witness_enabled(block_height) || size == 0) {
         return max_uint32;
     }
@@ -677,7 +681,7 @@ bool witness::verify_signer(const public_key_t& public_key, uint64_t height) con
 
 bool witness::verify_signer(uint32_t witness_slot_num, uint64_t height) const
 {
-    auto size = witness::get().get_witness_number();
+    auto size = get_witness_number();
     if (witness_slot_num >= size) {
         return false;
     }
@@ -772,17 +776,6 @@ bool witness::get_header(chain::header& out_header, uint64_t height) const
         return validate_block_->get_header(out_header, height);
     }
     return node_.chain_impl().get_header(out_header, height);
-}
-
-uint64_t witness::get_last_height()
-{
-    if (validate_block_) {
-        return validate_block_->get_height();
-    }
-
-    uint64_t height = 0;
-    node_.chain_impl().get_last_height(height);
-    return height;
 }
 
 void witness::set_validate_block(const validate_block* validate_block)

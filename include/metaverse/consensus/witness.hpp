@@ -100,7 +100,7 @@ public:
 
     uint32_t get_slot_num(const witness_id& id) const;
     uint32_t calc_slot_num(uint64_t height) const;
-    size_t get_witness_number();
+    size_t get_witness_number() const;
 
     static public_key_t witness_to_public_key(const witness_id& id);
     static std::string witness_to_address(const witness_id& witness);
@@ -127,7 +127,6 @@ public:
 
     void set_validate_block(const validate_block*);
     bool get_header(chain::header& out_header, uint64_t height) const;
-    uint64_t get_last_height();
 
     static std::string get_miner_address(const chain::block& block);
 
