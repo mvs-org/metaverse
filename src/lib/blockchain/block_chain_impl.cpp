@@ -3114,5 +3114,25 @@ bool block_chain_impl::get_signature_and_publick_key(ec_signature& blocksig, ec_
     return true;
 }
 
+uint32_t block_chain_impl::get_median_time_past(uint64_t height) const
+{
+    constexpr uint64_t median_time_span = 11;
+    const auto count = std::min(height, median_time_span);
+
+    chain::header header;
+    std::vector<uint32_t> times;
+
+    for (uint64_t i = 1; i <= count; ++i) {
+        if (!get_header(header, height - count + i)) {
+            return max_uint32;
+        }
+        times.push_back(header.timestamp);
+    }
+
+    sort(times.begin(), times.end());
+    return times.empty() ? 0 : times[times.size() / 2];
+}
+
+
 } // namespace blockchain
 } // namespace libbitcoin

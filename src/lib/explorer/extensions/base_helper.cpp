@@ -1079,6 +1079,15 @@ bool base_transfer_common::get_spendable_output(
             return false;
         }
     }
+    else if (tx_temp.version >= relative_locktime_min_version) {
+        uint64_t height = 0;
+        blockchain_.get_last_height(height);
+        uint32_t median_time_past = blockchain_.get_median_time_past(height);
+        ++height; // the next block's height
+        if (!tx_temp.is_final(height, median_time_past)) {
+            return false;
+        }
+    }
 
     return true;
 }

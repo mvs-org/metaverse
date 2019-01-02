@@ -433,6 +433,8 @@ public:
 
     static uint64_t get_sequence_from_output(const chain::output& output);
 
+    uint32_t get_median_time_past(uint64_t height) const;
+
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
 

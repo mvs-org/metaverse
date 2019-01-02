@@ -1362,26 +1362,6 @@ code validate_transaction::check_transaction() const
     return ret;
 }
 
-uint64_t median_time_past(const uint64_t &height, const block_chain_impl& chain)
-{
-    const uint64_t median_time_past_blocks = 11;
-    // Read last 11 (or height if height < 11) block times into array.
-    const auto count = std::min(height, median_time_past_blocks);
-
-    header header;
-    std::vector<uint64_t> times;
-    for (uint64_t i = 1; i <= count; ++i) {
-        if (!chain.get_header(header, height - count + i)) {
-            return MAX_UINT64;
-        }
-        times.push_back(header.timestamp);
-    }
-
-    // Sort and select middle (median) value from the array.
-    std::sort(times.begin(), times.end());
-    return times.empty() ? 0 : times[times.size() / 2];
-}
-
 code validate_transaction::check_final_tx() const
 {
     const chain::transaction& tx = *tx_;
@@ -1398,7 +1378,7 @@ code validate_transaction::check_final_tx() const
     else {
         block_chain_impl& chain = blockchain_;
         chain.get_last_height(height);
-        median_time_past_ = median_time_past(height, chain);
+        median_time_past_ = chain.get_median_time_past(height);
         ++height; // the next block's height
     }
 
@@ -1421,7 +1401,7 @@ code validate_transaction::check_sequence_locks() const
     }
     else {
         chain.get_last_height(last_height);
-        median_time_past_ = median_time_past(last_height, chain);
+        median_time_past_ = chain.get_median_time_past(last_height);
         ++last_height; // the next block's height
     }
 

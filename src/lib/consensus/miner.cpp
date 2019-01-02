@@ -1175,24 +1175,6 @@ uint32_t miner::get_adjust_time(uint64_t height) const
     return t;
 }
 
-uint32_t miner::get_median_time_past(uint64_t height) const
-{
-    block_chain_impl& block_chain = node_.chain_impl();
-
-    int num = std::min<uint64_t>(height, median_time_span);
-    std::vector<uint64_t> times;
-
-    for (int i = 0; i < num; i++) {
-        header header;
-        if (block_chain.get_header(header, height - i - 1)) {
-            times.push_back(header.timestamp);
-        }
-    }
-
-    sort(times.begin(), times.end());
-    return times.empty() ? 0 : times[times.size() / 2];
-}
-
 uint64_t miner::store_block(block_ptr block)
 {
     uint64_t height;
