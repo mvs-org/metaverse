@@ -410,7 +410,7 @@ std::shared_ptr<std::vector<std::string>> witness::get_inactive_witnesses(uint64
     auto end = epoch_height + epoch_cycle_height - vote_maturity;
     uint32_t total_vote = 0;
     for (auto h = start; h < end; ++h) {
-        ec_compressed public_key;
+        ec_compressed public_key(null_compressed_point);
         node_.chain_impl().fetch_block_public_key(h,
             [&public_key](const code& ec, const ec_compressed& pubkey) {
                 if (ec) {
