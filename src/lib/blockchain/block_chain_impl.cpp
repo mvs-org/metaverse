@@ -1024,15 +1024,16 @@ void block_chain_impl::fetch_block_signature(uint64_t height,
 
     const auto do_fetch = [this, height, handler](size_t slock)
     {
-        ec_signature sig;
+        ec_signature sig{};
         auto found = false;
         {
             const auto result = database_.blocks.get(height);
             if(result)
             {
-                if (result.header().is_proof_of_stake() || result.header().is_proof_of_dpos())
+                if (result.header().is_proof_of_stake() || result.header().is_proof_of_dpos()) {
                     sig = result.blocksig();
-                found = true;
+                    found = true;
+                }
             }
         }
 
@@ -1055,15 +1056,16 @@ void block_chain_impl::fetch_block_signature(const hash_digest& hash,
 
     const auto do_fetch = [this, hash, handler](size_t slock)
     {
-        ec_signature sig;
+        ec_signature sig{};
         auto found = false;
         {
             const auto result = database_.blocks.get(hash);
             if(result)
             {
-                if (result.header().is_proof_of_stake() || result.header().is_proof_of_dpos())
+                if (result.header().is_proof_of_stake() || result.header().is_proof_of_dpos()) {
                     sig = result.blocksig();
-                found = true;
+                    found = true;
+                }
             }
         }
 
@@ -1083,14 +1085,15 @@ void block_chain_impl::fetch_block_public_key(uint64_t height, block_public_key_
 
     const auto do_fetch = [this, height, handler](size_t slock)
     {
-        ec_compressed pubkey;
+        ec_compressed pubkey{};
         auto found = false;
         {
             const auto result = database_.blocks.get(height);
             if (result) {
-                if (result.header().is_proof_of_dpos())
+                if (result.header().is_proof_of_dpos()) {
                     pubkey = result.public_key();
-                found = true;
+                    found = true;
+                }
             }
         }
 
@@ -1110,14 +1113,15 @@ void block_chain_impl::fetch_block_public_key(const hash_digest& hash, block_pub
 
     const auto do_fetch = [this, hash, handler](size_t slock)
     {
-        ec_compressed pubkey;
+        ec_compressed pubkey{};
         auto found = false;
         {
             const auto result = database_.blocks.get(hash);
             if (result) {
-                if (result.header().is_proof_of_dpos())
+                if (result.header().is_proof_of_dpos()) {
                     pubkey = result.public_key();
-                found = true;
+                    found = true;
+                }
             }
         }
 
