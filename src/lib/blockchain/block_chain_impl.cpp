@@ -199,6 +199,13 @@ bool block_chain_impl::check_pos_utxo_capability(
         }
     }
 
+    else if (tx.version >= relative_locktime_min_version) {
+        uint32_t median_time_past = get_median_time_past(height);
+        if (!tx.is_final(height+1, median_time_past)) {
+            return false;
+        }
+    }
+
     return true;
 }
 
