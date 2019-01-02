@@ -182,6 +182,16 @@ bool block_chain_impl::check_pos_utxo_capability(
             return false;
         }
     }
+
+    else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
+        uint64_t lock_sequence = chain::operation::
+            get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
+        if (lock_sequence > calc_number_of_blocks(out_height, height, validate_block)) {
+            // utxo already in block but is locked with sequence and not mature
+            return false;
+        }
+    }
+
     else if (tx.is_coinbase()){ // coin base etp maturity etp check
         // add not coinbase_maturity etp into frozen
         if (coinbase_maturity > calc_number_of_blocks(out_height, height, validate_block)) {
@@ -219,6 +229,8 @@ bool block_chain_impl::select_utxo_for_staking(
     size_t stake_utxos = 0;
     size_t collect_utxos = 0;
 
+    bool enable_collect_stake = settings_.collect_split_stake;
+
     for (auto & row : rows) {
         if (row.value == 0) {
             continue;
@@ -245,7 +257,8 @@ bool block_chain_impl::select_utxo_for_staking(
                     break;
                 }
             }
-            else if (collect_utxos < pos_coinstake_max_utxos
+            else if (enable_collect_stake
+                && collect_utxos < pos_coinstake_max_utxos
                 && row.value < pos_stake_min_value) {
                 // collect utxos to satisfy pos_stake_min_value
                 ++collect_utxos;

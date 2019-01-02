@@ -33,7 +33,8 @@ settings::settings()
   : block_pool_capacity(5000),
     transaction_pool_capacity(4096),
     transaction_pool_consistency(false),
-    use_testnet_rules(false)
+    use_testnet_rules(false),
+    collect_split_stake(true)
 {
 }
 

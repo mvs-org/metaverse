@@ -1079,6 +1079,7 @@ miner::transaction_ptr miner::create_coinstake_tx(
     block_chain_impl& block_chain = node_.chain_impl();
     transaction_ptr coinstake = std::make_shared<message::transaction_message>();
     coinstake->version = transaction_version::first;
+    bool enable_collect_split = setting_.collect_split_stake;
 
     uint64_t nCredit = 0;
     for (const auto& stake: stake_outputs) {
@@ -1110,24 +1111,25 @@ miner::transaction_ptr miner::create_coinstake_tx(
     if (coinstake->inputs.empty())
         return nullptr;
 
-    const uint64_t pos_split_limit = pos_stake_min_value * 2;
+    uint64_t pos_split_limit = pos_stake_min_value * 2;
+    if (enable_collect_split) {
+        // Attempt to add more inputs
+        for (const auto& stake: stake_outputs) {
+            if (stake.data.value >= pos_stake_min_value) {
+                continue;
+            }
 
-    // Attempt to add more inputs
-    for (const auto& stake: stake_outputs) {
-        if (stake.data.value >= pos_stake_min_value) {
-            continue;
+            if (nCredit >= pos_split_limit) {
+                break;
+            }
+
+            if (coinstake->inputs.size() >= pos_coinstake_max_utxos) {
+                break;
+            }
+
+            coinstake->inputs.emplace_back(stake.point, stake.data.script, max_input_sequence);
+            nCredit += stake.data.value;
         }
-
-        if (nCredit >= pos_split_limit) {
-            break;
-        }
-
-        if (coinstake->inputs.size() >= pos_coinstake_max_utxos) {
-            break;
-        }
-
-        coinstake->inputs.emplace_back(stake.point, stake.data.script, max_input_sequence);
-        nCredit += stake.data.value;
     }
 
     auto&& script_operation = to_script_operation(pay_address);
@@ -1137,7 +1139,7 @@ miner::transaction_ptr miner::create_coinstake_tx(
         attachment(ETP_TYPE, 1, chain::etp(nCredit)));
 
     // split the output
-    if (nCredit >= pos_split_limit) {
+    if (enable_collect_split && nCredit >= pos_split_limit && nCredit > pos_stake_min_value) {
         auto value = nCredit - pos_stake_min_value;
         coinstake->outputs[1].value = value;
         coinstake->outputs[1].attach_data = {ETP_TYPE, 1, chain::etp(value)};
