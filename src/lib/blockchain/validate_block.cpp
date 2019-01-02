@@ -252,7 +252,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
         if (!check_work(current_block_)) {
             return error::proof_of_work;
         }
-        if (!chain.can_use_dpos(header.number)) {
+        if (!can_use_dpos(header.number)) {
             return error::block_version_not_match;
         }
     }

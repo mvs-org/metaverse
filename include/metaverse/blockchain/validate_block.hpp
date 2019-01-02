@@ -124,6 +124,10 @@ protected:
     //static uint64_t legacy_sigops_count(const chain::transaction& tx);
     static uint64_t legacy_sigops_count(const chain::transaction::list& txs);
 
+    virtual bool can_use_dpos(uint64_t height) const = 0;
+    virtual uint64_t get_pow_height_before_dpos(uint64_t height) const = 0;
+    virtual uint64_t get_prev_block_height(uint64_t height, chain::block_version ver) const = 0;
+
 private:
     bool testnet_;
     const uint64_t height_;

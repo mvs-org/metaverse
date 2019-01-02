@@ -429,6 +429,7 @@ public:
 
     bool can_use_dpos(uint64_t height) const;
     uint64_t get_pow_height_before_dpos(uint64_t height) const;
+    uint64_t get_prev_block_height(uint64_t height, chain::block_version ver) const;
 
     static uint64_t get_sequence_from_output(const chain::output& output);
 

@@ -27,6 +27,7 @@
 #include <metaverse/blockchain/block_detail.hpp>
 #include <metaverse/consensus/miner/MinerAux.h>
 #include <metaverse/blockchain/block_chain_impl.hpp>
+#include <metaverse/consensus/witness.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
@@ -520,6 +521,82 @@ bool validate_block_impl::check_get_coinage_reward_transaction(const chain::tran
         return false;
     }
 }
+
+bool validate_block_impl::can_use_dpos(uint64_t height) const
+{
+    using namespace consensus;
+
+    if (!witness::is_witness_enabled(height)) {
+        return false;
+    }
+
+    // ensure the vote is maturity
+    {
+        uint64_t height_in_epoch = witness::get_height_in_epoch(height);
+        // [0 .. vote_maturity)
+        if (height_in_epoch < witness::vote_maturity) {
+            return false;
+        }
+
+        // [epoch_cycle_height - vote_maturity .. epoch_cycle_height)
+        if (height_in_epoch >= witness::epoch_cycle_height - witness::vote_maturity) {
+            return false;
+        }
+    }
+
+    // a dpos must followed by a pow.
+    uint64_t pow_height = get_pow_height_before_dpos(height);
+    if (pow_height == 0) {
+        return false;
+    }
+
+    return true;
+}
+
+uint64_t validate_block_impl::get_pow_height_before_dpos(uint64_t height) const
+{
+    chain::header header;
+    uint64_t pos = height;
+    while (--pos && pos >= pos_enabled_height) {
+        header = fetch_block(pos);
+        if (header.is_proof_of_dpos()) {
+            return 0;
+        }
+        if (header.is_proof_of_work() || header.is_proof_of_stake()) {
+            return pos;
+        }
+    }
+    return 0;
+}
+
+uint64_t validate_block_impl::get_prev_block_height(uint64_t height, chain::block_version ver) const
+{
+    chain::header header;
+    uint64_t pos = height;
+    while (--pos && pos >= pos_enabled_height - 1) {
+        header = fetch_block(pos);
+        switch (ver) {
+        case chain::block_version_pow:
+            if (header.is_proof_of_work()) {
+                return pos;
+            }
+            break;
+        case chain::block_version_pos:
+            if (header.is_proof_of_stake()) {
+                return pos;
+            }
+            break;
+        case chain::block_version_dpos:
+            if (header.is_proof_of_dpos()) {
+                return pos;
+            }
+            break;
+        default:;
+        }
+    }
+    return 0;
+}
+
 
 } // namespace blockchain
 } // namespace libbitcoin
