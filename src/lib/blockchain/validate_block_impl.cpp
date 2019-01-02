@@ -54,7 +54,16 @@ bool validate_block_impl::check_work(const chain::block& block) const
     chain::header parent_header = fetch_block(block.header.number - 1);
 
     if (block.is_proof_of_dpos()) {
-        return block.header.bits == parent_header.bits;
+        if (block.header.bits != parent_header.bits) {
+            return false;
+        }
+        uint32_t stored_slot = static_cast<uint32_t>(block.header.nonce);
+        uint32_t expect_slot = consensus::witness::get().get_slot_num(
+            consensus::witness::to_witness_id(block.public_key));
+        if (stored_slot != expect_slot) {
+            return false;
+        }
+        return true;
     }
 
     chain::header::ptr last_header = get_last_block_header(parent_header, block.header.version);
@@ -569,7 +578,7 @@ uint64_t validate_block_impl::get_pow_height_before_dpos(uint64_t height) const
     return 0;
 }
 
-uint64_t validate_block_impl::get_prev_block_height(uint64_t height, chain::block_version ver) const
+chain::header::ptr validate_block_impl::get_prev_block_header(uint64_t height, chain::block_version ver) const
 {
     chain::header header;
     uint64_t pos = height;
@@ -578,23 +587,23 @@ uint64_t validate_block_impl::get_prev_block_height(uint64_t height, chain::bloc
         switch (ver) {
         case chain::block_version_pow:
             if (header.is_proof_of_work()) {
-                return pos;
+                return std::make_shared<chain::header>(header);
             }
             break;
         case chain::block_version_pos:
             if (header.is_proof_of_stake()) {
-                return pos;
+                return std::make_shared<chain::header>(header);
             }
             break;
         case chain::block_version_dpos:
             if (header.is_proof_of_dpos()) {
-                return pos;
+                return std::make_shared<chain::header>(header);
             }
             break;
         default:;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 

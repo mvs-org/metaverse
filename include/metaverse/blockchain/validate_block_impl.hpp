@@ -78,7 +78,7 @@ protected:
 
     virtual bool can_use_dpos(uint64_t height) const override;
     virtual uint64_t get_pow_height_before_dpos(uint64_t height) const override;
-    virtual uint64_t get_prev_block_height(uint64_t height, chain::block_version ver) const override;
+    virtual chain::header::ptr get_prev_block_header(uint64_t height, chain::block_version ver) const override;
 
 private:
     bool fetch_orphan_transaction(chain::transaction& tx,

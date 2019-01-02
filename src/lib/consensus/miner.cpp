@@ -795,7 +795,7 @@ miner::block_ptr miner::create_new_block_dpos(
     // Fill in header
     pblock->header.version = chain::block_version_dpos;
     pblock->header.number = block_height;
-    pblock->header.nonce = 0;
+    pblock->header.nonce = witness::get().get_slot_num(witness::to_witness_id(public_key_data_));
     pblock->header.mixhash = 0;
     pblock->header.timestamp = std::max(block_time, prev_header.timestamp + 1);
     pblock->header.previous_block_hash = prev_header.hash();

@@ -49,7 +49,7 @@ public:
     using validate_block = blockchain::validate_block;
 
     using public_key_t = data_chunk;
-    using witness_id = data_chunk;
+    using witness_id = data_chunk; // hex encoded
     using list = std::vector<witness_id>;
     using iterator = list::iterator;
     using const_iterator = list::const_iterator;
@@ -105,8 +105,8 @@ public:
     static public_key_t witness_to_public_key(const witness_id& id);
     static std::string witness_to_address(const witness_id& witness);
     static std::string witness_to_string(const witness_id& id);
-    static witness_id to_witness_id(const public_key_t& public_key);
-    static std::string to_string(const public_key_t& public_key);
+    static witness_id to_witness_id(const data_slice& public_key);
+    static std::string to_string(const data_slice& public_key);
 
     static bool is_witness_enabled(uint64_t height);
     static bool is_dpos_enabled();
@@ -120,7 +120,7 @@ public:
     chain::block::ptr get_epoch_begin_block(uint64_t height) const;
 
     // signature
-    bool verify_signer(const public_key_t& public_key, uint64_t height) const;
+    bool verify_signer(const data_slice& public_key, uint64_t height) const;
     bool verify_signer(uint32_t witness_slot_num, uint64_t height) const;
 
     static u256 calc_mixhash(const list& witness_list);

@@ -3034,34 +3034,34 @@ uint64_t block_chain_impl::get_pow_height_before_dpos(uint64_t height) const
     return 0;
 }
 
-uint64_t block_chain_impl::get_prev_block_height(uint64_t height, chain::block_version ver) const
+chain::header::ptr block_chain_impl::get_prev_block_header(uint64_t height, chain::block_version ver) const
 {
     chain::header header;
     uint64_t pos = height;
     while (--pos && pos >= pos_enabled_height - 1) {
         if (!get_header(header, pos)) {
-            return 0;
+            return nullptr;
         }
         switch (ver) {
         case chain::block_version_pow:
             if (header.is_proof_of_work()) {
-                return pos;
+                return std::make_shared<chain::header>(header);
             }
             break;
         case chain::block_version_pos:
             if (header.is_proof_of_stake()) {
-                return pos;
+                return std::make_shared<chain::header>(header);
             }
             break;
         case chain::block_version_dpos:
             if (header.is_proof_of_dpos()) {
-                return pos;
+                return std::make_shared<chain::header>(header);
             }
             break;
         default:;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 bool block_chain_impl::can_use_dpos(uint64_t height) const

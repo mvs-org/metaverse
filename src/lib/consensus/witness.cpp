@@ -605,33 +605,19 @@ uint32_t witness::calc_slot_num(uint64_t block_height) const
         return max_uint32;
     }
 
-    auto calced_slot_num = get_height_in_epoch(block_height) % size;
-    auto round_begin_height = get_round_begin_height(block_height);
-    if (is_begin_of_epoch(round_begin_height)) {
-        return calced_slot_num;
+    constexpr uint32_t dpos_missing_interval = 4;
+    auto prev_dpos_header = node_.chain_impl().get_prev_block_header(block_height, chain::block_version_dpos);
+
+    if (!prev_dpos_header) {
+        auto index = get_height_in_epoch(block_height) % size;
+        auto offset = (block_height - witness_enable_height) / dpos_missing_interval;
+        return (index + offset) % size;
     }
 
-    // remember latest calced offset to reuse it
-    static std::pair<uint64_t, uint32_t> height_offset = {0, 0};
-
-    uint32_t offset = 0;
-    if (round_begin_height == height_offset.first) {
-        offset = height_offset.second;
-    }
-    else {
-        chain::header header;
-        for (auto i = round_begin_height - size; i < round_begin_height; ++i) {
-            if (!get_header(header, i)) {
-                return max_uint32;
-            }
-            offset ^= hash_digest_to_uint(header.hash());
-        }
-
-        offset %= size;
-        height_offset = std::make_pair(round_begin_height, offset);
-    }
-
-    return (calced_slot_num + offset) % size;
+    auto prev_slot_num = static_cast<uint32_t>(prev_dpos_header->nonce);
+    auto offset = (block_height - prev_dpos_header->number) / dpos_missing_interval;
+    auto calced_slot_num = (prev_slot_num + 1 + offset) % size;
+    return calced_slot_num;
 }
 
 bool witness::is_testnet()
@@ -663,17 +649,17 @@ std::string witness::witness_to_string(const witness_id& id)
     return std::string(std::begin(id), std::end(id));
 }
 
-witness::witness_id witness::to_witness_id(const public_key_t& public_key)
+witness::witness_id witness::to_witness_id(const data_slice& public_key)
 {
     return to_chunk(encode_base16(public_key));
 }
 
-std::string witness::to_string(const public_key_t& public_key)
+std::string witness::to_string(const data_slice& public_key)
 {
     return encode_base16(public_key);
 }
 
-bool witness::verify_signer(const public_key_t& public_key, uint64_t height) const
+bool witness::verify_signer(const data_slice& public_key, uint64_t height) const
 {
     auto witness_slot_num = get_slot_num(to_witness_id(public_key));
     return verify_signer(witness_slot_num, height);
