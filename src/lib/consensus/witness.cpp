@@ -295,9 +295,6 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height)
         return false;
     }
 
-    log::info(LOG_HEADER)
-        << "calc_witness_list at height " << height;
-
     witness_list.clear();
 
     auto& chain = const_cast<blockchain::block_chain_impl&>(node_.chain_impl());
@@ -309,9 +306,9 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height)
         uint64_t prev_epoch_height = get_epoch_begin_height(height - 1);
         inactive_addresses = get_inactive_witnesses(prev_epoch_height);
 
-        log::info(LOG_HEADER) << "inactive witnesses at epoch " << prev_epoch_height;
+        log::info(LOG_HEADER) << inactive_addresses->size() << " inactive witnesses at epoch " << prev_epoch_height;
         for (auto& address : *inactive_addresses) {
-            log::info(LOG_HEADER) << " > inactive address: " << address;
+            log::info(LOG_HEADER) << " > witness address: " << address;
         }
     }
 
@@ -349,7 +346,8 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height)
     }
 
     log::info(LOG_HEADER)
-        << "calc_witness_list at height " << height << ", " << show_list(witness_list);
+        << "calculated " << witness_list.size() << " witnesses at height "
+        << height << ": " << show_list(witness_list);
     return true;
 }
 
@@ -395,14 +393,14 @@ std::shared_ptr<std::vector<std::string>> witness::get_inactive_witnesses(uint64
         return inactives;
     }
 
-    log::info(LOG_HEADER) << "get_witnesses at epoch " << height;
+    log::info(LOG_HEADER) << "total " << witnesses->size() << " witnesses at epoch " << height;
     // map address and witness_id
     std::vector<std::string> addresses;
     for (auto& witness : *witnesses) {
         auto address = witness_to_address(witness);
         addresses.push_back(address);
 
-        log::info(LOG_HEADER) << " > address: " << address;
+        log::info(LOG_HEADER) << " > witness address: " << address;
     }
 
     // statistic votes
@@ -450,9 +448,9 @@ std::shared_ptr<std::vector<std::string>> witness::get_inactive_witnesses(uint64
         }
     }
 
-    log::info(LOG_HEADER) << "vote witnesses at epoch " << height;
+    log::info(LOG_HEADER) << votes.size() << " active witnesses at epoch " << height;
     for (auto& entry : votes) {
-        log::info(LOG_HEADER) << " > vote address: " << entry.first << ", vote: " << entry.second;
+        log::info(LOG_HEADER) << " > witness address: " << entry.first << ", pack " << entry.second << " blocks";
     }
 
     // find addresses that had low vote percentage.

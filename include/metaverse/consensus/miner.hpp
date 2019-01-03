@@ -140,7 +140,7 @@ private:
     block_ptr create_new_block_dpos(const wallet::payment_address& pay_address, const header& prev_header);
 
     uint32_t get_adjust_time(uint64_t height) const;
-    bool get_transaction(std::vector<transaction_ptr>&, previous_out_map_t&, tx_fee_map_t&) const;
+    bool get_transaction(uint64_t last_height, std::vector<transaction_ptr>&, previous_out_map_t&, tx_fee_map_t&) const;
     bool get_block_transactions(
         uint64_t last_height, std::vector<transaction_ptr>& txs, std::vector<transaction_ptr>& reward_txs,
         uint64_t& total_fee, uint32_t& total_tx_sig_length);

@@ -148,8 +148,10 @@ bool miner::get_input_etp(const transaction& tx, const std::vector<transaction_p
     return true;
 }
 
-bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
-                            previous_out_map_t& previous_out_map, tx_fee_map_t& tx_fee_map) const
+bool miner::get_transaction(
+    uint64_t last_height,
+    std::vector<transaction_ptr>& transactions,
+    previous_out_map_t& previous_out_map, tx_fee_map_t& tx_fee_map) const
 {
     boost::mutex mutex;
     mutex.lock();
@@ -210,6 +212,24 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
                         break;
                     }
                 }
+
+                if (!transaction_is_ok) {
+                    continue;
+                }
+            }
+
+            // filter deposit tx after pos_enabled_height
+            if (last_height + 1 >= pos_enabled_height) {
+                auto transaction_is_ok = true;
+                for (const auto& output : tx.outputs) {
+                    if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
+                        i = transactions.erase(i);
+                        node_.pool().delete_tx(hash);
+                        transaction_is_ok = false;
+                        break;
+                    }
+                }
+
                 if (!transaction_is_ok) {
                     continue;
                 }
@@ -499,14 +519,7 @@ bool miner::get_block_transactions(
     uint64_t& total_fee, uint32_t& total_tx_sig_length)
 {
     block_chain_impl& block_chain = node_.chain_impl();
-
-    uint64_t current_block_height = 0;
-    header prev_header;
-    if (!block_chain.get_last_height(current_block_height)
-            || !block_chain.get_header(prev_header, current_block_height)) {
-        log::warning(LOG_HEADER) << "get_last_height or get_header fail. current_block_height:" << current_block_height;
-        return false;
-    }
+    uint64_t current_height = last_height + 1;
 
     std::vector<transaction_ptr> transactions;
     std::vector<transaction_priority> transaction_prioritys;
@@ -514,8 +527,8 @@ bool miner::get_block_transactions(
     previous_out_map_t previous_out_map;
     tx_fee_map_t tx_fee_map;
 
-    if (!witness::is_begin_of_epoch(current_block_height + 1)) {
-        get_transaction(transactions, previous_out_map, tx_fee_map);
+    if (!witness::is_begin_of_epoch(current_height)) {
+        get_transaction(last_height, transactions, previous_out_map, tx_fee_map);
     }
 
     // Largest block you're willing to create:
@@ -603,22 +616,26 @@ bool miner::get_block_transactions(
 
         // Size limits
         uint64_t serialized_size = ptx->serialized_size(1);
-        std::vector<transaction_ptr> coinage_reward_coinbases;
-        transaction_ptr coinage_reward_coinbase;
-        for (const auto& output : ptx->outputs) {
-            if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
-                int lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-                auto address = wallet::payment_address::extract(ptx->outputs[0].script);
-                auto reward = calculate_lockblock_reward(lock_height, output.value);
-                coinage_reward_coinbase = create_coinbase_tx(address, reward, last_height + 1, lock_height);
-                uint32_t tx_sig_length = get_tx_sign_length(coinage_reward_coinbase);
-                if (total_tx_sig_length + tx_sig_length >= blockchain::max_block_script_sigops) {
-                    continue;
-                }
 
-                total_tx_sig_length += tx_sig_length;
-                serialized_size += coinage_reward_coinbase->serialized_size(1);
-                coinage_reward_coinbases.push_back(coinage_reward_coinbase);
+        // add coinage reward coinbase
+        std::vector<transaction_ptr> coinage_reward_coinbases;
+        if (current_height < pos_enabled_height) {
+            transaction_ptr coinage_reward_coinbase;
+            for (const auto& output : ptx->outputs) {
+                if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
+                    int lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+                    auto address = wallet::payment_address::extract(ptx->outputs[0].script);
+                    auto reward = calculate_lockblock_reward(lock_height, output.value);
+                    coinage_reward_coinbase = create_coinbase_tx(address, reward, current_height, lock_height);
+                    uint32_t tx_sig_length = get_tx_sign_length(coinage_reward_coinbase);
+                    if (total_tx_sig_length + tx_sig_length >= blockchain::max_block_script_sigops) {
+                        continue;
+                    }
+
+                    total_tx_sig_length += tx_sig_length;
+                    serialized_size += coinage_reward_coinbase->serialized_size(1);
+                    coinage_reward_coinbases.push_back(coinage_reward_coinbase);
+                }
             }
         }
 

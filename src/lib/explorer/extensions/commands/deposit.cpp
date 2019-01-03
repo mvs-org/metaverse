@@ -25,6 +25,7 @@
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
+#include <metaverse/bitcoin/constants.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -35,6 +36,12 @@ console_result deposit::invoke(Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+
+    uint64_t last_height = 0;
+    blockchain.get_last_height(last_height);
+    if (last_height >= pos_enabled_height) {
+        throw fatal_exception{"deposit is not supported after block " + pos_enabled_height};
+    }
 
     attachment attach;
     std::string addr;
