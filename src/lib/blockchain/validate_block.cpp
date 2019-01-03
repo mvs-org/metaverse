@@ -137,16 +137,21 @@ code validate_block::check_coinbase(const chain::header& prev_header, bool check
 
         auto has_vote_result = is_begin_of_epoch && coinbase_count == 0;
         if (!has_vote_result) {
+            // <first:  coinbase reward>     (required)
+            // [second: coinbase mst reward] (optional)
             if (tx.outputs.size() > 2 ||
                 (tx.outputs.size() == 2 && !tx.outputs[1].is_asset_transfer())) {
                 return error::first_not_coinbase;
             }
         }
         else {
-            if (tx.outputs.size() < 2 || tx.outputs.size() > 3) {
+            // <first:  coinbase reward>     (required)
+            // [second: coinbase mst reward] (optional)
+            // [last:   witness vote result] (required)
+            if (!(tx.outputs.size() == 2 || tx.outputs.size() == 3)) {
                 return error::first_not_coinbase;
             }
-            if (tx.outputs.size() > 2 && !tx.outputs[1].is_asset_transfer()) {
+            if (tx.outputs.size() == 3 && !tx.outputs[1].is_asset_transfer()) {
                 return error::first_not_coinbase;
             }
             auto& vote_result_output = tx.outputs.back();
