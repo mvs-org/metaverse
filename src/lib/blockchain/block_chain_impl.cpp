@@ -285,31 +285,10 @@ bool block_chain_impl::select_utxo_for_staking(
 
 chain::header::ptr block_chain_impl::get_last_block_header(const chain::header& parent_header, uint32_t version) const
 {
-    uint64_t height = parent_header.number;
     if (parent_header.version == version) {
-        // log::info("BLOCKCHAIN") << "get_last_block_header: prev: "
-        //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
         return std::make_shared<chain::header>(parent_header);
     }
-
-    bool isPoW = (version == chain::block_version_pow);
-    while ((!isPoW && height > pos_enabled_height) || (isPoW && height > 2)) {
-        --height;
-
-        chain::header prev_header;
-        if (!get_header(prev_header, height)) {
-            log::warning("BLOCKCHAIN") << "Failed to get header at " << std::to_string(height);
-            return nullptr;
-        }
-
-        if (prev_header.version == version) {
-            // log::info("BLOCKCHAIN") << "get_last_block_header: prev: "
-            //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
-            return std::make_shared<chain::header>(prev_header);
-        }
-    }
-
-    return nullptr;
+    return get_prev_block_header(parent_header.number, static_cast<chain::block_version>(version));
 }
 
 // simple_chain (no locks, not thread safe).
@@ -3015,31 +2994,34 @@ std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_wit
 
 uint64_t block_chain_impl::get_pow_height_before_dpos(uint64_t height) const
 {
+    const auto witness_enable_height = consensus::witness::witness_enable_height;
+    if (height < witness_enable_height) {
+        return 0;
+    }
     chain::header header;
-    uint64_t pos = height;
-    while (--pos && pos >= pos_enabled_height) {
-        if (!get_header(header, pos)) {
+    while (height-- >= witness_enable_height) {
+        if (!get_header(header, height)) {
             return 0;
         }
-
         if (header.is_proof_of_dpos()) {
             return 0;
         }
-
         if (header.is_proof_of_work() || header.is_proof_of_stake()) {
-            return pos;
+            return height;
         }
     }
 
-    return 0;
+    return height;
 }
 
 chain::header::ptr block_chain_impl::get_prev_block_header(uint64_t height, chain::block_version ver) const
 {
+    if (height < 2) {
+        return nullptr;
+    }
     chain::header header;
-    uint64_t pos = height;
-    while (--pos && pos >= pos_enabled_height - 1) {
-        if (!get_header(header, pos)) {
+    while (--height > 0) {
+        if (!get_header(header, height)) {
             return nullptr;
         }
         switch (ver) {
@@ -3052,10 +3034,16 @@ chain::header::ptr block_chain_impl::get_prev_block_header(uint64_t height, chai
             if (header.is_proof_of_stake()) {
                 return std::make_shared<chain::header>(header);
             }
+            if (header.number < pos_enabled_height) {
+                return nullptr;
+            }
             break;
         case chain::block_version_dpos:
             if (header.is_proof_of_dpos()) {
                 return std::make_shared<chain::header>(header);
+            }
+            if (header.number < consensus::witness::witness_enable_height) {
+                return nullptr;
             }
             break;
         default:;

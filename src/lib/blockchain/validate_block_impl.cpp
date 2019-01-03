@@ -564,26 +564,31 @@ bool validate_block_impl::can_use_dpos(uint64_t height) const
 
 uint64_t validate_block_impl::get_pow_height_before_dpos(uint64_t height) const
 {
+    const auto witness_enable_height = consensus::witness::witness_enable_height;
+    if (height < witness_enable_height) {
+        return 0;
+    }
     chain::header header;
-    uint64_t pos = height;
-    while (--pos && pos >= pos_enabled_height) {
-        header = fetch_block(pos);
+    while (height-- >= witness_enable_height) {
+        header = fetch_block(height);
         if (header.is_proof_of_dpos()) {
             return 0;
         }
         if (header.is_proof_of_work() || header.is_proof_of_stake()) {
-            return pos;
+            return height;
         }
     }
-    return 0;
+    return height;
 }
 
 chain::header::ptr validate_block_impl::get_prev_block_header(uint64_t height, chain::block_version ver) const
 {
+    if (height < 2) {
+        return nullptr;
+    }
     chain::header header;
-    uint64_t pos = height;
-    while (--pos && pos >= pos_enabled_height - 1) {
-        header = fetch_block(pos);
+    while (--height > 0) {
+        header = fetch_block(height);
         switch (ver) {
         case chain::block_version_pow:
             if (header.is_proof_of_work()) {
@@ -594,10 +599,16 @@ chain::header::ptr validate_block_impl::get_prev_block_header(uint64_t height, c
             if (header.is_proof_of_stake()) {
                 return std::make_shared<chain::header>(header);
             }
+            if (header.number < pos_enabled_height) {
+                return nullptr;
+            }
             break;
         case chain::block_version_dpos:
             if (header.is_proof_of_dpos()) {
                 return std::make_shared<chain::header>(header);
+            }
+            if (header.number < consensus::witness::witness_enable_height) {
+                return nullptr;
             }
             break;
         default:;
