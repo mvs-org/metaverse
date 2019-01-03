@@ -237,22 +237,10 @@ std::shared_ptr<witness::list> witness::get_block_witnesses(uint64_t height) con
 
 std::shared_ptr<witness::list> witness::get_block_witnesses(const chain::block& block)
 {
-    // check size of transactions
-    if (block.transactions.size() != 1) {
-        return nullptr;
-    }
-
+    // coinbase is always the first tx.
     auto& coinbase_tx = block.transactions.front();
 
-    // check size of outputs
-    if (coinbase_tx.outputs.size() != 2) {
-        log::debug(LOG_HEADER)
-            << "in get_block_witnesses -> no extra output to store witness mixhash, height "
-            << block.header.number;
-        return nullptr;
-    }
-
-    // get witness from block
+    // witness output is always the last output.
     auto& vote_result_output = coinbase_tx.outputs.back();
 
     // check operation of script where mixhash is stored.
