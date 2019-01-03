@@ -1567,7 +1567,7 @@ code validate_transaction::check_transaction_basic() const
                     continue;
 
                 uint64_t lock_height = chain::operation::get_lock_height_from_sign_key_hash_with_lock_height(input.script.operations);
-                if (lock_height > chain.calc_number_of_blocks(prev_output_blockheight, current_blockheight, validate_block_)) {
+                if (lock_height > chain.calc_number_of_blocks(prev_output_blockheight, current_blockheight)) {
                     return error::invalid_input_script_lock_height;
                 }
             }
@@ -1696,7 +1696,7 @@ bool validate_transaction::connect_input( const transaction& previous_tx, uint64
     }
 
     if (previous_tx.is_coinbase()) {
-        if (coinbase_maturity > blockchain_.calc_number_of_blocks(parent_height, last_block_height_, validate_block_)) {
+        if (coinbase_maturity > blockchain_.calc_number_of_blocks(parent_height, last_block_height_)) {
             log::debug(LOG_BLOCKCHAIN)
                 << "coinbase not maturity from "
                 << parent_height << " to " << last_block_height_;

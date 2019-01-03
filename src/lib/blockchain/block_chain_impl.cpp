@@ -41,7 +41,6 @@
 #include <metaverse/blockchain/transaction_pool.hpp>
 #include <metaverse/blockchain/validate_transaction.hpp>
 #include <metaverse/blockchain/account_security_strategy.hpp>
-#include <metaverse/blockchain/validate_block.hpp>
 #include <metaverse/consensus/witness.hpp>
 #include <metaverse/consensus/libdevcore/BasicType.h>
 
@@ -160,53 +159,19 @@ void block_chain_impl::subscribe_reorganize(reorganize_handler handler)
 
 bool block_chain_impl::check_pos_utxo_capability(
     const uint64_t& height, const chain::transaction& tx, const uint32_t& out_index,
-    const uint64_t& out_height, bool strict, const validate_block* validate_block)
+    const uint64_t& out_height, bool strict)
 {
-    if (out_index >= tx.outputs.size()){
-        return false;
-    }
-
-    const auto output = tx.outputs[out_index];
-
     if (strict) {
+        if (out_index >= tx.outputs.size()){
+            return false;
+        }
+        const auto output = tx.outputs[out_index];
         if (!check_pos_utxo_height_and_value(out_height, height, output.value)) {
             return false;
         }
     }
 
-    if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)){
-        // deposit utxo in block
-        uint64_t lock_height = chain::operation::
-            get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-        if (lock_height > calc_number_of_blocks(out_height, height, validate_block)) {
-            return false;
-        }
-    }
-
-    else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-        uint64_t lock_sequence = chain::operation::
-            get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
-        if (lock_sequence > calc_number_of_blocks(out_height, height, validate_block)) {
-            // utxo already in block but is locked with sequence and not mature
-            return false;
-        }
-    }
-
-    else if (tx.is_coinbase()){ // coin base etp maturity etp check
-        // add not coinbase_maturity etp into frozen
-        if (coinbase_maturity > calc_number_of_blocks(out_height, height, validate_block)) {
-            return false;
-        }
-    }
-
-    else if (tx.version >= relative_locktime_min_version) {
-        uint32_t median_time_past = get_median_time_past(height);
-        if (!tx.is_final(height+1, median_time_past)) {
-            return false;
-        }
-    }
-
-    return true;
+    return is_utxo_spendable(tx, out_index, out_height, height);
 }
 
 bool block_chain_impl::pos_exist_before(const uint64_t& height)
@@ -2742,8 +2707,7 @@ uint64_t block_chain_impl::get_expiration_height(uint64_t from, uint64_t lock_he
     return to;
 }
 
-uint64_t block_chain_impl::calc_number_of_blocks(
-    uint64_t from, uint64_t to, const validate_block*) const
+uint64_t block_chain_impl::calc_number_of_blocks(uint64_t from, uint64_t to) const
 {
     if (from >= to) {
         return 0;
@@ -3126,6 +3090,48 @@ uint32_t block_chain_impl::get_median_time_past(uint64_t height) const
 
     sort(times.begin(), times.end());
     return times.empty() ? 0 : times[times.size() / 2];
+}
+
+bool block_chain_impl::is_utxo_spendable(const chain::transaction& tx, uint32_t index, uint64_t tx_height, uint64_t latest_height) const
+{
+    BITCOIN_ASSERT(index < tx.outputs.size());
+    if (index >= tx.outputs.size()){
+        return false;
+    }
+
+    const auto output = tx.outputs[index];
+
+    if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
+        // deposit utxo in block
+        uint64_t lock_height = chain::operation::
+            get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+        if (lock_height > calc_number_of_blocks(tx_height, latest_height)) {
+            return false;
+        }
+    }
+    else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
+        uint64_t lock_sequence = chain::operation::
+            get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
+        if (lock_sequence > calc_number_of_blocks(tx_height, latest_height)) {
+            // lock sequence check
+            return false;
+        }
+    }
+    else if (tx.is_coinbase()) {
+        // coin base maturity check
+        if (coinbase_maturity > calc_number_of_blocks(tx_height, latest_height)) {
+            return false;
+        }
+    }
+    else if (tx.version >= relative_locktime_min_version) {
+        uint32_t median_time_past = get_median_time_past(latest_height);
+        // lock time check
+        if (!tx.is_final(latest_height+1, median_time_past)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 

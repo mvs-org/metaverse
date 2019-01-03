@@ -1043,50 +1043,18 @@ bool base_transfer_common::get_spendable_output(
         }
     }
 
-    if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
-        if (is_in_pool) {
+    if (is_in_pool) {
+        if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
             // deposit utxo in transaction pool
             return false;
-        } else {
-            // deposit utxo in block
-            auto lock_height = chain::operation::
-                get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-            if (lock_height > blockchain_.calc_number_of_blocks(row.output_height, height)) {
-                // utxo already in block but deposit not expire
-                return false;
-            }
         }
-    }
-    else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-        if (is_in_pool) {
+        if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
             // lock sequence utxo in transaction pool
-            return false;
-        }
-        else {
-            uint64_t lock_sequence = chain::operation::
-                get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
-            // use any kind of blocks
-            if (row.output_height + lock_sequence > height) {
-                // utxo already in block but is locked with sequence and not mature
-                return false;
-            }
-        }
-    }
-    else if (tx_temp.is_coinbase()) { // incase readd deposit
-        // coin base etp maturity etp check
-        // coinbase_maturity etp check
-        if (coinbase_maturity > blockchain_.calc_number_of_blocks(row.output_height, height)) {
-            return false;
-        }
-    }
-    else if (tx_temp.version >= relative_locktime_min_version) {
-        uint32_t median_time_past = blockchain_.get_median_time_past(height);
-        if (!tx_temp.is_final(height+1, median_time_past)) {
             return false;
         }
     }
 
-    return true;
+    return blockchain_.is_utxo_spendable(tx_temp, row.output.index, row.output_height, height);
 }
 
 // only consider etp and asset and cert.

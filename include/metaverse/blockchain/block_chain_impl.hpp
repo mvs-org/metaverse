@@ -45,7 +45,6 @@ namespace blockchain {
 typedef console_result operation_result;
 
 class block_chain_impl;
-class validate_block;
 
 // encap to safer write database
 class block_chain_writer {
@@ -275,8 +274,7 @@ public:
         const chain::transaction& tx,
         const uint32_t& out_index ,
         const uint64_t& out_height,
-        bool strict=true,
-        const validate_block* validate_block=nullptr
+        bool strict=true
     );
 
     bool pos_exist_before(const uint64_t& height);
@@ -413,7 +411,7 @@ public:
     bool is_sync_disabled() const;
     void set_sync_disabled(bool b);
 
-    uint64_t calc_number_of_blocks(uint64_t from, uint64_t to, const validate_block* validate_block=nullptr) const;
+    uint64_t calc_number_of_blocks(uint64_t from, uint64_t to) const;
     uint64_t get_expiration_height(uint64_t from, uint64_t lock_height) const;
 
     std::pair<uint64_t, uint64_t> get_locked_balance(
@@ -434,6 +432,8 @@ public:
     static uint64_t get_sequence_from_output(const chain::output& output);
 
     uint32_t get_median_time_past(uint64_t height) const;
+    bool is_utxo_spendable(const chain::transaction& tx, uint32_t index,
+                           uint64_t tx_height, uint64_t latest_height) const;
 
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
