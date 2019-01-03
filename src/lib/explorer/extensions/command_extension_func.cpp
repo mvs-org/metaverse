@@ -102,6 +102,7 @@
 #include <metaverse/explorer/extensions/commands/getdid.hpp>
 #include <metaverse/explorer/extensions/commands/lock.hpp>
 #include <metaverse/explorer/extensions/commands/getlocked.hpp>
+#include <metaverse/explorer/extensions/commands/registerwitness.hpp>
 
 
 namespace libbitcoin {
@@ -141,7 +142,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<getwork>());
     func(make_shared<submitwork>());
     func(make_shared<getmemorypool>());
-    func(make_shared<popblock>());
+    func(make_shared<registerwitness>());
 
     os <<"\r\n";
     // block & tx
@@ -151,6 +152,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<fetchheaderext>());
     func(make_shared<gettx>());
     func(make_shared<listtxs>());
+    func(make_shared<popblock>());
 
     // raw tx
     func(make_shared<createrawtx>());
@@ -269,6 +271,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<submitwork>();
     if (symbol == getmemorypool::symbol())
         return make_shared<getmemorypool>();
+    if (symbol == registerwitness::symbol())
+        return make_shared<registerwitness>();
 
     // block & tx
     if (symbol == getheight::symbol())

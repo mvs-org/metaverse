@@ -93,6 +93,7 @@ void witness::init(p2p_node& node)
 
     BITCOIN_ASSERT(max_candidate_count >= witness_number);
     BITCOIN_ASSERT(epoch_cycle_height >= vote_maturity);
+    BITCOIN_ASSERT(register_witness_lock_height >= epoch_cycle_height);
 }
 
 witness& witness::create(p2p_node& node)
