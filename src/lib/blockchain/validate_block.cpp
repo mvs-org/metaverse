@@ -301,8 +301,8 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
         }
     }
 
-    if (current_block_.is_proof_of_dpos() && !prev_header.is_proof_of_work()) {
-        log::error(LOG_BLOCKCHAIN) << "DPos block must follow a PoW block!";
+    if (current_block_.is_proof_of_dpos() && prev_header.is_proof_of_dpos()) {
+        log::error(LOG_BLOCKCHAIN) << "DPoS block must follow a PoW or PoS block!";
         return error::proof_of_stake;
     }
 

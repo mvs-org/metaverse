@@ -530,7 +530,7 @@ void block_chain_impl::store(message::block_message::ptr block,
 void block_chain_impl::do_store(message::block_message::ptr block,
     block_store_handler handler)
 {
-    // fail fast if the bloc`k is already stored...
+    // fail fast if the block is already stored...
     if (database_.blocks.get(block->header.hash()))
     {
         handler(error::duplicate, 0);
