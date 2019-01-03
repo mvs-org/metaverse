@@ -40,7 +40,7 @@ console_result deposit::invoke(Json::Value& jv_output,
     uint64_t last_height = 0;
     blockchain.get_last_height(last_height);
     if (last_height >= pos_enabled_height) {
-        throw fatal_exception{"deposit is not supported after block " + pos_enabled_height};
+        throw fatal_exception{"deposit is not supported after block " + std::to_string(pos_enabled_height)};
     }
 
     attachment attach;
