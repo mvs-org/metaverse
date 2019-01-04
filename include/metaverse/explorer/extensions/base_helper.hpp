@@ -347,6 +347,9 @@ public:
     static chain::operation::stack get_pay_key_hash_with_attenuation_model_operations(
             const std::string& model_param, const receiver_record& record);
 
+    static chain::operation::stack get_pay_key_hash_with_lock_height_operations(
+            uint16_t lock_cycle, const receiver_record& record);
+
     void populate_etp_change(const std::string& address = std::string(""));
     void populate_asset_change(const std::string& address = std::string(""));
     void populate_tx_inputs();
@@ -498,10 +501,6 @@ public:
 
     ~depositing_etp(){}
 
-    static const std::vector<uint16_t> vec_cycle;
-
-    uint32_t get_reward_lock_height() const;
-
     chain::operation::stack get_script_operations(const receiver_record& record) const override;
 
 private:
@@ -514,25 +513,21 @@ class BCX_API depositing_etp_transaction : public base_transaction_constructor
 public:
     depositing_etp_transaction(bc::blockchain::block_chain_impl& blockchain, utxo_attach_type type,
         std::vector<std::string>&& from_vec, receiver_record::list&& receiver_list,
-        uint16_t deposit, std::string&& change,
+        uint16_t deposit_cycle, std::string&& change,
         std::string&& message, uint64_t fee, uint32_t locktime = 0)
         : base_transaction_constructor(
             blockchain, type, std::forward<std::vector<std::string>>(from_vec),
             std::move(receiver_list), std::string(""),
             std::move(change), std::move(message), fee, locktime)
-        , deposit_{deposit}
+        , deposit_cycle_{deposit_cycle}
     {}
 
     ~depositing_etp_transaction(){}
 
-    static const std::vector<uint16_t> vec_cycle;
-
-    uint32_t get_reward_lock_height() const;
-
     chain::operation::stack get_script_operations(const receiver_record& record) const override;
 
 private:
-    uint16_t                          deposit_{7}; // 7 days
+    uint16_t                          deposit_cycle_{7}; // 7 days
 };
 
 class BCX_API sending_etp : public base_transfer_helper

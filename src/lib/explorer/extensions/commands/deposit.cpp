@@ -57,13 +57,6 @@ console_result deposit::invoke(Json::Value& jv_output,
         addr = get_address(argument_.address, attach, false, blockchain);
     }
 
-    if (argument_.deposit != 7 && argument_.deposit != 30
-        && argument_.deposit != 90 && argument_.deposit != 182
-        && argument_.deposit != 365)
-    {
-        throw account_deposit_period_exception{"deposit must be one in [7, 30, 90, 182, 365]."};
-    }
-
     // receiver
     std::vector<receiver_record> receiver{
         {addr, "", argument_.amount, 0, utxo_attach_type::deposit, attach}

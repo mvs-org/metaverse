@@ -1545,6 +1545,31 @@ base_transfer_common::get_pay_key_hash_with_attenuation_model_operations(
     throw toaddress_invalid_exception{std::string("not supported version target address ") + record.target};
 }
 
+chain::operation::stack
+base_transfer_common::get_pay_key_hash_with_lock_height_operations(
+    uint16_t lock_cycle, const receiver_record& record)
+{
+    if ((utxo_attach_type::deposit != record.type)) {
+        throw std::logic_error("record type is not 'deposit'");
+    }
+
+    const wallet::payment_address payment(record.target);
+    if (!payment) {
+        throw toaddress_invalid_exception{"invalid target address"};
+    }
+
+    if (payment.version() == wallet::payment_address::mainnet_p2kh) {
+        auto lock_height = consensus::miner::get_reward_lock_height(lock_cycle);
+        if (lock_height == 0) {
+            throw account_deposit_period_exception{"wrong deposit cycle " + std::to_string(lock_cycle)};
+        }
+        return chain::operation::to_pay_key_hash_with_lock_height_pattern(payment.hash(), lock_height);
+    }
+
+    throw toaddress_invalid_exception{std::string("not supported version target address ") + record.target};
+}
+
+
 void base_transfer_common::populate_tx_outputs()
 {
     for (const auto& iter: receiver_list_) {
@@ -1979,84 +2004,16 @@ void base_transaction_constructor::populate_unspent_list()
     populate_change();
 }
 
-const std::vector<uint16_t> depositing_etp::vec_cycle{7, 30, 90, 182, 365};
-
-uint32_t depositing_etp::get_reward_lock_height() const
-{
-    int index = 0;
-    auto it = std::find(vec_cycle.begin(), vec_cycle.end(), deposit_cycle_);
-    if (it != vec_cycle.end()) { // found cycle
-        index = std::distance(vec_cycle.begin(), it);
-    }
-
-    return (uint32_t)bc::consensus::lock_heights[index];
-}
-
 chain::operation::stack
 depositing_etp::get_script_operations(const receiver_record& record) const
 {
-    chain::operation::stack payment_ops;
-
-    // complicated script and asset should be implemented in subclass
-    // generate script
-    const wallet::payment_address payment(record.target);
-    if (!payment)
-        throw toaddress_invalid_exception{"invalid target address"};
-
-    if (payment.version() == wallet::payment_address::mainnet_p2kh) {
-        const auto& hash = payment.hash();
-        if((to_ == record.target)
-            && (utxo_attach_type::deposit == record.type)) {
-            payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, get_reward_lock_height());
-        } else {
-            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
-        }
-    }
-    else {
-        throw toaddress_invalid_exception{std::string("not supported version target address ") + record.target};
-    }
-
-    return payment_ops;
-}
-
-const std::vector<uint16_t> depositing_etp_transaction::vec_cycle{7, 30, 90, 182, 365};
-
-uint32_t depositing_etp_transaction::get_reward_lock_height() const
-{
-    int index = 0;
-    auto it = std::find(vec_cycle.begin(), vec_cycle.end(), deposit_);
-    if (it != vec_cycle.end()) { // found cycle
-        index = std::distance(vec_cycle.begin(), it);
-    }
-
-    return (uint32_t)bc::consensus::lock_heights[index];
+    return get_pay_key_hash_with_lock_height_operations(deposit_cycle_, record);
 }
 
 chain::operation::stack
 depositing_etp_transaction::get_script_operations(const receiver_record& record) const
 {
-    chain::operation::stack payment_ops;
-
-    // complicated script and asset should be implemented in subclass
-    // generate script
-    const wallet::payment_address payment(record.target);
-    if (!payment)
-        throw toaddress_invalid_exception{"invalid target address"};
-
-    if (payment.version() == wallet::payment_address::mainnet_p2kh) {
-        const auto& hash = payment.hash();
-        if((utxo_attach_type::deposit == record.type)) {
-            payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(
-                hash, get_reward_lock_height());
-        } else {
-            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
-        }
-    }
-    else {
-        throw toaddress_invalid_exception{std::string("not supported version target address ") + record.target};
-    }
-
-    return payment_ops;
+    return get_pay_key_hash_with_lock_height_operations(deposit_cycle_, record);
 }
 
 void sending_multisig_tx::populate_change()

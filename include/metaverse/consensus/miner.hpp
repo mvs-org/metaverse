@@ -47,6 +47,7 @@ BC_CONSTEXPR uint32_t min_tx_fee_per_kb = 1000;
 
 extern int bucket_size;
 extern std::vector<uint64_t> lock_heights;
+extern std::vector<uint16_t> lock_cycles;
 
 class miner
 {
@@ -103,6 +104,10 @@ public:
     void get_state(uint64_t &height,  uint64_t &rate, std::string& difficulty, bool& is_mining);
     bool get_block_header(chain::header& block_header, const std::string& para);
 
+    static chain::operation::stack to_script_operation(
+        const wallet::payment_address& pay_address, uint64_t lock_height=0);
+
+    static uint64_t get_reward_lock_height(uint16_t lock_cycle);
     static int get_lock_heights_index(uint64_t height);
     static uint64_t calculate_block_subsidy(uint64_t height, bool is_testnet, uint32_t version);
     static uint64_t calculate_block_subsidy_pow(uint64_t height, bool is_testnet);

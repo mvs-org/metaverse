@@ -80,7 +80,8 @@ std::string timestamp_to_string(uint32_t timestamp)
     return std::string(buf);
 }
 
-chain::operation::stack to_script_operation(const wallet::payment_address& pay_address, uint64_t lock_height = 0)
+chain::operation::stack miner::to_script_operation(
+    const wallet::payment_address& pay_address, uint64_t lock_height)
 {
     if (lock_height > 0) {
         return chain::operation::to_pay_key_hash_with_lock_height_pattern(pay_address.hash(), lock_height);
@@ -365,8 +366,20 @@ std::shared_ptr<chain::output> miner::create_coinbase_mst_output(const wallet::p
 }
 
 int bucket_size = 500000;
+std::vector<uint16_t> lock_cycles = {7, 30, 90, 182, 365};
 std::vector<uint64_t> lock_heights = {25200, 108000, 331200, 655200, 1314000};
 std::vector<uint64_t> coinage_rewards = {95890, 666666, 3200000, 8000000, 20000000};
+
+uint64_t miner::get_reward_lock_height(uint16_t lock_cycle)
+{
+    uint64_t ret = 0;
+    auto it = std::find(lock_cycles.begin(), lock_cycles.end(), lock_cycle);
+    if (it != lock_cycles.end()) {
+        auto index = std::distance(lock_cycles.begin(), it);
+        ret = lock_heights[index];
+    }
+    return ret;
+}
 
 int miner::get_lock_heights_index(uint64_t height)
 {
