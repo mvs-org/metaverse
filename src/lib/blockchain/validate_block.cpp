@@ -93,11 +93,12 @@ bool validate_block::stopped() const
 
 code validate_block::check_coinbase(const chain::header& prev_header, bool check_genesis_tx) const
 {
+    using namespace consensus;
     const auto& header = current_block_.header;
     const auto& transactions = current_block_.transactions;
 
     const auto is_block_version_dpos = header.is_proof_of_dpos();
-    const auto is_begin_of_epoch = consensus::witness::is_begin_of_epoch(height_);
+    const auto is_begin_of_epoch = witness::is_begin_of_epoch(height_);
 
     uint64_t coinbase_count = 0, coinstake_count = 0;
     for (uint64_t index = 0; index < transactions.size(); ++index) {
@@ -205,11 +206,11 @@ code validate_block::check_coinbase(const chain::header& prev_header, bool check
         return error::success;
     }
 
-    consensus::witness_with_validate_block_context context(consensus::witness::get(), this);
+    consensus::witness_with_validate_block_context context(witness::get(), this);
 
     if (is_begin_of_epoch) {
         RETURN_IF_STOPPED();
-        if (!consensus::witness::get().update_witness_list(current_block_)) {
+        if (!witness::get().update_witness_list(current_block_)) {
             log::error(LOG_BLOCKCHAIN)
                 << "update witness list failed at " << height_
                 << " block hash: " << encode_hash(header.hash());
@@ -220,7 +221,7 @@ code validate_block::check_coinbase(const chain::header& prev_header, bool check
     if (is_block_version_dpos) {
         RETURN_IF_STOPPED();
         auto pubkey = to_chunk(current_block_.public_key);
-        if (!consensus::witness::get().verify_signer(pubkey, header.number)) {
+        if (!witness::get().verify_signer(pubkey, header.number)) {
             return error::witness_mismatch;
         }
     }

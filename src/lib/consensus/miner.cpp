@@ -750,13 +750,15 @@ miner::block_ptr miner::create_new_block_pow(
     coinbase->outputs[0].value =
         total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, pblock->header.version);
 
-    if (mining_asset_ != nullptr && mining_cert_ != nullptr) {
-        add_coinbase_mst_output(*coinbase, pay_address, block_height, pblock->header.version);
+    if (witness::is_begin_of_epoch(block_height)) {
+        if (!witness::get().add_witness_vote_result(*coinbase, block_height)) {
+            return nullptr;
+        }
     }
-
-    if (witness::is_begin_of_epoch(block_height)
-        && !witness::get().add_witness_vote_result(*coinbase, block_height)) {
-        return nullptr;
+    else {
+        if (mining_asset_ != nullptr && mining_cert_ != nullptr) {
+            add_coinbase_mst_output(*coinbase, pay_address, block_height, pblock->header.version);
+        }
     }
 
     // Put coinbase first
@@ -832,13 +834,15 @@ miner::block_ptr miner::create_new_block_dpos(
     coinbase->outputs[0].value =
         total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, pblock->header.version);
 
-    if (mining_asset_ != nullptr && mining_cert_ != nullptr) {
-        add_coinbase_mst_output(*coinbase, pay_address, block_height, pblock->header.version);
+    if (witness::is_begin_of_epoch(block_height)) {
+        if (!witness::get().add_witness_vote_result(*coinbase, block_height)) {
+            return nullptr;
+        }
     }
-
-    if (witness::is_begin_of_epoch(block_height)
-        && !witness::get().add_witness_vote_result(*coinbase, block_height)) {
-        return nullptr;
+    else {
+        if (mining_asset_ != nullptr && mining_cert_ != nullptr) {
+            add_coinbase_mst_output(*coinbase, pay_address, block_height, pblock->header.version);
+        }
     }
 
     // Put coinbase first
@@ -966,13 +970,15 @@ miner::block_ptr miner::create_new_block_pos(
     coinbase->outputs[0].value =
         total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, pblock->header.version);
 
-    if (mining_asset_ != nullptr && mining_cert_ != nullptr) {
-        add_coinbase_mst_output(*coinbase, pay_address, block_height, pblock->header.version);
+    if (witness::is_begin_of_epoch(block_height)) {
+        if (!witness::get().add_witness_vote_result(*coinbase, block_height)) {
+            return nullptr;
+        }
     }
-
-    if (witness::is_begin_of_epoch(block_height)
-        && !witness::get().add_witness_vote_result(*coinbase, block_height)) {
-        return nullptr;
+    else {
+        if (mining_asset_ != nullptr && mining_cert_ != nullptr) {
+            add_coinbase_mst_output(*coinbase, pay_address, block_height, pblock->header.version);
+        }
     }
 
     // Put coinbase first

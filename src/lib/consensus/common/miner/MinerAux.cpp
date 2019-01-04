@@ -178,7 +178,7 @@ bool MinerAux::check_proof_of_stake(const chain::header& header, const chain::ou
 
         succeed = (h256(pos) <= boundary);
 
-#ifdef ENABLE_PILLAR
+#ifdef MVS_DEBUG
         if (header.transaction_count > 0) {
             uint64_t coin_age = header.number - stake_output.height;
             log::info("verify_stake")

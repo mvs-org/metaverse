@@ -442,12 +442,9 @@ std::shared_ptr<std::vector<std::string>> witness::get_inactive_witnesses(uint64
     }
 
     // find addresses that had low vote percentage.
-    auto average = 1.0 / size;
     for (auto& entry : votes) {
-        auto& address = entry.first;
-        auto percent = entry.second * 1.0 / total_vote;
-        if (percent * 5 < average) {
-            inactives->push_back(address);
+        if (entry.second * 5 < total_vote) {
+            inactives->push_back(entry.first);
         }
     }
 
