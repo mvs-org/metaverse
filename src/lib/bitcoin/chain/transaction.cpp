@@ -344,6 +344,33 @@ uint64_t transaction::total_output_transfer_amount() const
     return std::accumulate(outputs.begin(), outputs.end(), uint64_t(0), value);
 }
 
+uint64_t transaction::legacy_sigops_count(bool accurate) const
+{
+    uint64_t total_sigs = 0;
+    for (const auto& input : inputs)
+    {
+        const auto& operations = input.script.operations;
+        total_sigs += operation::count_script_sigops(operations, accurate);
+    }
+
+    for (const auto& output : outputs)
+    {
+        const auto& operations = output.script.operations;
+        total_sigs += operation::count_script_sigops(operations, accurate);
+    }
+
+    return total_sigs;
+}
+
+uint64_t transaction::legacy_sigops_count(const transaction::list& txs, bool accurate)
+{
+    uint64_t total_sigs = 0;
+    for (const auto& tx : txs) {
+        total_sigs += tx.legacy_sigops_count(accurate);
+    }
+    return total_sigs;
+}
+
 bool transaction::has_asset_issue() const
 {
     for (auto& elem: outputs) {

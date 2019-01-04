@@ -174,6 +174,8 @@ public:
 
     bool operator==(const operation& other) const;
 
+    static uint64_t count_script_sigops(const operation::stack& operations, bool accurate);
+
     opcode code;
     data_chunk data;
 

@@ -50,9 +50,6 @@ if (stopped()) \
 
 using namespace chain;
 
-// The default sigops count for mutisignature scripts.
-static constexpr uint32_t multisig_default_sigops = 20;
-
 // The window by which a time stamp may exceed our current time (2 hours).
 static const auto time_stamp_window = asio::seconds(2 * 60 * 60);
 
@@ -425,7 +422,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     RETURN_IF_STOPPED();
 
-    const auto sigops = legacy_sigops_count(transactions);
+    const auto sigops = transaction::legacy_sigops_count(transactions);
     if (sigops > max_block_script_sigops)
         return error::too_many_sigs;
 
@@ -475,82 +472,6 @@ bool validate_block::check_time_stamp(uint32_t timestamp, const asio::seconds& w
     const auto block_time = wall_clock::from_time_t(timestamp);
     const auto future_time = wall_clock::now() + window;
     return block_time <= future_time;
-}
-
-// TODO: move to bc::chain::opcode.
-// Determine if code is in the op_n range.
-inline bool within_op_n(opcode code)
-{
-    const auto value = static_cast<uint8_t>(code);
-    constexpr auto op_1 = static_cast<uint8_t>(opcode::op_1);
-    constexpr auto op_16 = static_cast<uint8_t>(opcode::op_16);
-    return op_1 <= value && value <= op_16;
-}
-
-// TODO: move to bc::chain::opcode.
-// Return the op_n index (i.e. value of n).
-inline uint8_t decode_op_n(opcode code)
-{
-    BITCOIN_ASSERT(within_op_n(code));
-    const auto value = static_cast<uint8_t>(code);
-    constexpr auto op_0 = static_cast<uint8_t>(opcode::op_1) - 1;
-    return value - op_0;
-}
-
-// TODO: move to bc::chain::operation::stack.
-inline uint64_t count_script_sigops(const operation::stack& operations,
-                                  bool accurate)
-{
-    uint64_t total_sigs = 0;
-    opcode last_opcode = opcode::bad_operation;
-    for (const auto& op : operations)
-    {
-        if (op.code == opcode::checksig ||
-                op.code == opcode::checksigverify)
-        {
-            total_sigs++;
-        }
-        else if (op.code == opcode::checkmultisig ||
-                 op.code == opcode::checkmultisigverify)
-        {
-            if (accurate && within_op_n(last_opcode))
-                total_sigs += decode_op_n(last_opcode);
-            else
-                total_sigs += multisig_default_sigops;
-        }
-
-        last_opcode = op.code;
-    }
-
-    return total_sigs;
-}
-
-// TODO: move to bc::chain::transaction.
-uint64_t validate_block::legacy_sigops_count(const transaction& tx)
-{
-    uint64_t total_sigs = 0;
-    for (const auto& input : tx.inputs)
-    {
-        const auto& operations = input.script.operations;
-        total_sigs += count_script_sigops(operations, false);
-    }
-
-    for (const auto& output : tx.outputs)
-    {
-        const auto& operations = output.script.operations;
-        total_sigs += count_script_sigops(operations, false);
-    }
-
-    return total_sigs;
-}
-
-uint64_t validate_block::legacy_sigops_count(const transaction::list& txs)
-{
-    uint64_t total_sigs = 0;
-    for (const auto& tx : txs)
-        total_sigs += legacy_sigops_count(tx);
-
-    return total_sigs;
 }
 
 // BUGBUG: we should confirm block hash doesn't exist.
@@ -653,11 +574,6 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
 
         uint64_t value_in = 0;
         const auto& tx = transactions[tx_index];
-
-        // It appears that this is also checked in check_block().
-        total_sigops += legacy_sigops_count(tx);
-        if (total_sigops > max_block_script_sigops)
-            return error::too_many_sigs;
 
         RETURN_IF_STOPPED();
 
@@ -863,7 +779,7 @@ bool validate_block::script_hash_signature_operations_count(uint64_t& out_count,
         return false;
     }
 
-    out_count = count_script_sigops(eval_script.operations, true);
+    out_count = operation::count_script_sigops(eval_script.operations, true);
     return true;
 }
 

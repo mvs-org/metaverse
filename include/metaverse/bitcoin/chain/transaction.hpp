@@ -90,6 +90,10 @@ public:
     uint64_t total_output_value() const;
     uint64_t serialized_size() const;
     uint64_t total_output_transfer_amount() const;
+
+    uint64_t legacy_sigops_count(bool accurate=true) const;
+    static uint64_t legacy_sigops_count(const transaction::list& txs, bool accurate=true);
+
     bool has_asset_issue() const;
     bool has_asset_secondary_issue() const;
     bool has_asset_transfer() const;

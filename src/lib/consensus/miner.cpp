@@ -510,7 +510,7 @@ struct transaction_dependent {
 
 uint32_t miner::get_tx_sign_length(transaction_ptr tx)
 {
-    return blockchain::validate_block::validate_block::legacy_sigops_count(*tx);
+    return tx->legacy_sigops_count();
 }
 
 bool miner::get_block_transactions(
