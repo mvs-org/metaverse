@@ -56,7 +56,6 @@ public:
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
         load_input(argument_.payment_address, "PAYMENT_ADDRESS", variables, input, raw);
-        load_input(argument_.asset_symbol, "ASSET_SYMBOL", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -85,10 +84,11 @@ public:
             "the payment did/address of this account."
         )
         (
-            "ASSET_SYMBOL",
-            value<std::string>(&argument_.asset_symbol),
+            "symbol,s",
+            value<std::string>(&option_.symbol),
             "Mine Asset with specified symbol. Defaults to empty."
-        );
+        )
+        ;
 
         return options;
     }
@@ -103,11 +103,11 @@ public:
     struct argument
     {
         std::string payment_address;
-        std::string asset_symbol;
     } argument_;
 
     struct option
     {
+        std::string symbol;
     } option_;
 
 };

@@ -49,7 +49,7 @@ console_result setminingaccount::invoke(Json::Value& jv_output,
             "did/address does not match account. " + argument_.payment_address};
     }
 
-    auto& symbol = argument_.asset_symbol;
+    auto& symbol = option_.symbol;
     if (!symbol.empty()) {
         if (!miner.set_mining_asset_symbol(symbol)) {
             throw argument_legality_exception{"asset " + symbol + " can not be mined."};
