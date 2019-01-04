@@ -1627,15 +1627,6 @@ static history::list expand_history(history_compact::list& compact)
     return result;
 }
 
-uint64_t block_chain_impl::get_sequence_from_output(const chain::output& output)
-{
-    if (operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-        return operation::get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
-    }
-
-    return 0;
-}
-
 bool block_chain_impl::check_pos_capability(
     uint64_t best_height,
     const wallet::payment_address& pay_address)
@@ -1666,7 +1657,12 @@ bool block_chain_impl::check_pos_capability(
                 continue;
             }
 
-            uint64_t lock_height = get_sequence_from_output(output);
+            // only support lock sequence with block height
+            uint64_t lock_height = output.get_lock_sequence();
+            if (lock_height & relative_locktime_time_locked) {
+                continue;
+            }
+            lock_height &= relative_locktime_mask;
 
             // utxo deposit height > pos_lock_min_height and min_pos_lock_rate percent of height limited
             if (lock_height >= pos_lock_min_height &&
@@ -2777,7 +2773,13 @@ std::pair<uint64_t, uint64_t> block_chain_impl::get_locked_balance(
                 continue;
             }
 
-            uint64_t lock_sequence = get_sequence_from_output(output);
+            // only support lock sequence with block height
+            uint64_t lock_sequence = output.get_lock_sequence();
+            if (lock_sequence & relative_locktime_time_locked) {
+                continue;
+            }
+            lock_sequence &= relative_locktime_mask;
+
             auto seq_expiration = tx_height + lock_sequence;
 
             // use any kind of blocks

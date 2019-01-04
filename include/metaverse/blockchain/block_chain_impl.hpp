@@ -429,8 +429,6 @@ public:
     uint64_t get_pow_height_before_dpos(uint64_t height) const;
     chain::header::ptr get_prev_block_header(uint64_t height, chain::block_version ver) const;
 
-    static uint64_t get_sequence_from_output(const chain::output& output);
-
     uint32_t get_median_time_past(uint64_t height) const;
     bool is_utxo_spendable(const chain::transaction& tx, uint32_t index,
                            uint64_t tx_height, uint64_t latest_height) const;
