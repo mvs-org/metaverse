@@ -45,8 +45,7 @@ public:
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-            .add("PAYMENT_ADDRESS", 1)
-            .add("ASSET_SYMBOL", 1);
+            .add("PAYMENT_ADDRESS", 1);
     }
 
     void load_fallbacks (std::istream& input,
