@@ -1111,14 +1111,15 @@ miner::transaction_ptr miner::create_pos_genesis_tx(uint64_t block_height, uint3
     genesis_tx->inputs[0].previous_output = output_point(null_hash, max_uint32);
     genesis_tx->inputs[0].script.operations = {{chain::opcode::raw_data, {text.begin(), text.end()}}};
 
-    genesis_tx->outputs.resize(1);
-    wallet::payment_address pay_address(get_foundation_address(setting_.use_testnet_rules));
+    const std::string foundation_address = get_foundation_address(setting_.use_testnet_rules);
+    wallet::payment_address pay_address(foundation_address);
+    genesis_tx->outputs.resize(witness_cert_count + 1);
     genesis_tx->outputs[0].script.operations = to_script_operation(pay_address);
     genesis_tx->outputs[0].value = pos_genesis_reward;
 
     // add 23 witness cert output
     block_chain_impl& block_chain = node_.chain_impl();
-    auto to_did = block_chain.get_did_from_address(pay_address.encoded());
+    auto to_did = block_chain.get_did_from_address(foundation_address);
 
     for (uint32_t i = 0; i < witness_cert_count; ++i) {
         std::string symbol = (boost::format("%1%.%2%") % witness_cert_prefix % (i + 1)).str();

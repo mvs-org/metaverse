@@ -269,7 +269,8 @@ bool transaction::is_pos_genesis_tx(bool is_testnet) const
     }
 
     chain::script script;
-    wallet::payment_address pay_address(get_foundation_address(is_testnet));
+    std::string foundation_address = get_foundation_address(is_testnet);
+    wallet::payment_address pay_address(foundation_address);
     script.operations = chain::operation::to_pay_key_hash_pattern(pay_address.hash());
     const auto expected = script.to_data(false);
 
@@ -281,7 +282,10 @@ bool transaction::is_pos_genesis_tx(bool is_testnet) const
     // check witness cert
     for (uint32_t i = 0; i < witness_cert_count; ++i) {
         const auto & out = outputs[i + 1];
-        if (!out.is_asset_cert_autoissue() || out.get_asset_cert_type() != asset_cert_ns::witness) {
+        if (!out.is_asset_cert_autoissue()
+            || out.get_asset_cert_type() != asset_cert_ns::witness
+            || out.get_asset_cert_symbol().find(witness_cert_prefix) == 0
+            || out.get_asset_cert_address() != foundation_address) {
             return false;
         }
 
