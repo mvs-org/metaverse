@@ -133,6 +133,8 @@ code validate_block::check_coinbase(const chain::header& prev_header, bool check
             return error::first_not_coinbase;
         }
 
+        const auto is_pos_genesis = check_genesis_tx && index == 2;
+
         if (index == 0) {
             if (is_begin_of_epoch) {
                 // <first:  coinbase reward>     (required)
@@ -155,6 +157,11 @@ code validate_block::check_coinbase(const chain::header& prev_header, bool check
                 }
             }
         }
+        else if (is_pos_genesis) {
+            if (!tx.is_pos_genesis_tx(testnet_)) {
+                return error::check_pos_genesis_error;
+            }
+        }
         else {
             if (tx.outputs.size() != 1) {
                 return error::illegal_coinstake;
@@ -162,14 +169,9 @@ code validate_block::check_coinbase(const chain::header& prev_header, bool check
         }
 
         if (is_active(script_context::bip34_enabled)) {
-            //check pos genesis tx
-            if (check_genesis_tx && index == 2) {
-                if (!tx.is_pos_genesis_tx(testnet_)) {
-                    return error::check_pos_genesis_error;
-                }
-            }
             // Enforce rule that the coinbase starts with serialized height.
-            else if (!is_valid_coinbase_height(height_, current_block_, index)) {
+            if (!is_pos_genesis &&
+                !is_valid_coinbase_height(height_, current_block_, index)) {
                 return error::coinbase_height_mismatch;
             }
         }
