@@ -1122,7 +1122,7 @@ miner::transaction_ptr miner::create_pos_genesis_tx(uint64_t block_height, uint3
     auto to_did = block_chain.get_did_from_address(foundation_address);
 
     for (uint32_t i = 0; i < witness_cert_count; ++i) {
-        std::string symbol = (boost::format("%1%.%2%") % witness_cert_prefix % (i + 1)).str();
+        std::string symbol = (boost::format("%1%%2%") % witness_cert_prefix % (i + 1)).str();
         auto output = create_witness_cert_output(symbol, to_did, pay_address);
         if (output) {
             genesis_tx->outputs.emplace_back(*output);
