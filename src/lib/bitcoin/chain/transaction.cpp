@@ -258,23 +258,40 @@ bool transaction::is_coinbase() const
 
 bool transaction::is_pos_genesis_tx(bool is_testnet) const
 {
-    if (!is_coinbase() || outputs.size() != 1) {
+    if (!is_coinbase() || outputs.size() != (1 + dpos_witness_cert_count)) {
         return false;
     }
 
+    // check etp reward
     const auto & out = outputs[0];
     if (!out.is_etp() || out.value != pos_genesis_reward) {
         return false;
     }
-
-    const auto actual = out.script.to_data(false);
 
     chain::script script;
     wallet::payment_address pay_address(get_foundation_address(is_testnet));
     script.operations = chain::operation::to_pay_key_hash_pattern(pay_address.hash());
     const auto expected = script.to_data(false);
 
-    return std::equal(expected.begin(), expected.end(), actual.begin());
+    const auto actual = out.script.to_data(false);
+    if (!std::equal(expected.begin(), expected.end(), actual.begin())) {
+        return false;
+    }
+
+    // check witness cert
+    for (uint32_t i = 0; i < dpos_witness_cert_count; ++i) {
+        const auto & out = outputs[i + 1];
+        if (!out.is_asset_cert_autoissue() || out.get_asset_cert_type() != asset_cert_ns::witness) {
+            return false;
+        }
+
+        const auto actual = out.script.to_data(false);
+        if (!std::equal(expected.begin(), expected.end(), actual.begin())) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool transaction::is_coinstake() const

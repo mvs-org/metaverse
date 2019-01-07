@@ -93,7 +93,7 @@ BC_CONSTEXPR size_t relative_locktime_seconds_shift = 5;
 //-----------------------------------------------------------------------------
 extern const uint64_t future_blocktime_fork_height;
 
-// Relative PoS constants.
+// Relative PoS & DPoS constants.
 //-----------------------------------------------------------------------------
 extern uint64_t pos_enabled_height;
 extern const uint32_t pos_coinstake_max_utxos;
@@ -107,6 +107,8 @@ extern const uint64_t pos_stake_min_height;
 extern const double   pos_stake_factor;
 extern const uint32_t block_timespan_window;
 extern const uint64_t pos_genesis_reward;
+
+extern const uint32_t dpos_witness_cert_count;
 
 // price
 //-----------------------------------------------------------------------------

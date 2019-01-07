@@ -977,7 +977,9 @@ miner::block_ptr miner::create_new_block_pos(
     uint64_t total_fee = 0;
     std::vector<transaction_ptr> txs;
     std::vector<transaction_ptr> reward_txs;
-    get_block_transactions(last_height, txs, reward_txs, total_fee, total_tx_sig_length);
+    if (nullptr == genesis_tx) {
+        get_block_transactions(last_height, txs, reward_txs, total_fee, total_tx_sig_length);
+    }
 
     // Update coinbase reward
     coinbase->outputs[0].value =
@@ -1104,7 +1106,39 @@ miner::transaction_ptr miner::create_pos_genesis_tx(uint64_t block_height, uint3
     genesis_tx->outputs[0].script.operations = to_script_operation(pay_address);
     genesis_tx->outputs[0].value = pos_genesis_reward;
 
+    // add 23 witness cert output
+    block_chain_impl& block_chain = node_.chain_impl();
+    auto to_address = pay_address.encoded();
+    auto to_did = block_chain.get_did_from_address(to_address);
+
+    for (uint32_t i = 0; i < dpos_witness_cert_count; ++i)
+    {
+        std::string symbol = (boost::format("MVS.Witness.%1%") % (i + 1)).str();
+        auto output = create_witness_cert_output(symbol, to_did, to_address);
+        if (output) {
+            genesis_tx->outputs.emplace_back(*output);
+        }
+    }
     return genesis_tx;
+}
+
+std::shared_ptr<chain::output> miner::create_witness_cert_output(
+    const std::string& symbol, const std::string& to_did, const std::string& to_address)
+{
+    using namespace bc::chain;
+    auto cert_info = chain::asset_cert(symbol, to_did, to_address, asset_cert_ns::witness);
+    cert_info.set_status(ASSET_CERT_AUTOISSUE_TYPE);
+    if (!cert_info.is_valid()) {
+        log::error(LOG_HEADER) << "invalid witness cert! symbol: " << symbol
+            << ", to: " << to_did << ", address: " << to_address;
+        return nullptr;
+    }
+
+    chain::attachment attach(ASSET_CERT_TYPE, 1/*version*/, cert_info);
+    wallet::payment_address pay_address(to_address);
+    auto payment_script = chain::script{ to_script_operation(pay_address) };
+    auto output = std::make_shared<chain::output>(0, payment_script, attach);
+    return output;
 }
 
 miner::transaction_ptr miner::create_coinstake_tx(

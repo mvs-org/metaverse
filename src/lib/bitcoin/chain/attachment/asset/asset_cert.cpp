@@ -265,6 +265,7 @@ const std::map<asset_cert_type, std::string>& asset_cert::get_type_name_map()
         {asset_cert_ns::domain, "domain"},
         {asset_cert_ns::naming, "naming"},
         {asset_cert_ns::mining, "mining"},
+        {asset_cert_ns::witness, "witness"},
 
         {asset_cert_ns::marriage,   "marriage"},
         {asset_cert_ns::kyc,        "KYC"},

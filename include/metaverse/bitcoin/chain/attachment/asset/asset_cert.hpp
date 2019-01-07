@@ -122,6 +122,7 @@ namespace asset_cert_ns {
     const asset_cert_type domain        = 2;
     const asset_cert_type naming        = 3;
     const asset_cert_type mining        = 0x60000000 + 4;
+    const asset_cert_type witness       = 5;
 
     const asset_cert_type custom        = 0x80000000;
     const asset_cert_type custom_max    = 0x800fffff;
