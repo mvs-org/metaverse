@@ -221,7 +221,7 @@ uint32_t HeaderAux::limit_timespan(uint32_t timespan)
     }
 
     if (timespan > block_timespan_window * 2) {
-        return block_timespan_window * 2;
+        return uint32_t(block_timespan_window * 1.5);
     }
 
     return timespan;
@@ -233,7 +233,7 @@ bigint HeaderAux::adjust_difficulty(uint32_t timespan, bigint & result)
     timespan = limit_timespan(timespan);
 
     // Retarget
-    const uint32_t interval = 12;
+    const uint32_t interval = 40;
     result *= ((interval + 1) * block_timespan_window);
     result /= ((interval - 1) * block_timespan_window + timespan * 2);
     return result;

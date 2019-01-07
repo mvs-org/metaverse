@@ -42,6 +42,8 @@ const uint32_t witness::max_candidate_count = 10000;
 const uint32_t witness::witness_register_fee = 123456789;
 const std::string witness::witness_registry_did = "witness_registry";
 
+constexpr uint32_t dpos_missing_interval = 4;
+
 witness* witness::instance_ = nullptr;
 
 uint32_t hash_digest_to_uint(const hash_digest& hash)
@@ -589,18 +591,26 @@ uint32_t witness::calc_slot_num(uint64_t block_height) const
         return max_uint32;
     }
 
-    constexpr uint32_t dpos_missing_interval = 4;
-    auto prev_dpos_header = node_.chain_impl().get_prev_block_header(block_height, chain::block_version_dpos);
+    auto begin_height = get_epoch_begin_height(block_height);
+    uint64_t first_height = begin_height + vote_maturity;
+    uint32_t start_num = 0;
 
-    if (!prev_dpos_header) {
-        auto index = get_height_in_epoch(block_height) % size;
-        auto offset = (block_height - witness_enable_height) / dpos_missing_interval;
-        return (index + offset) % size;
+    auto prev_dpos_header = node_.chain_impl().get_prev_block_header(block_height, chain::block_version_dpos);
+    if (prev_dpos_header && prev_dpos_header->number > begin_height) {
+        first_height = prev_dpos_header->number + 1;
+        start_num = static_cast<uint32_t>(prev_dpos_header->nonce) + 1;
     }
 
-    auto prev_slot_num = static_cast<uint32_t>(prev_dpos_header->nonce);
-    auto offset = (block_height - prev_dpos_header->number) / dpos_missing_interval;
-    auto calced_slot_num = (prev_slot_num + 1 + offset) % size;
+    auto calced_slot_num = start_num;
+    if (block_height > first_height) {
+        auto offset = (block_height - first_height) / dpos_missing_interval;
+        calced_slot_num = (start_num + offset) % size;
+    }
+
+    log::info(LOG_HEADER) << "calc_slot_num at " << block_height
+        << ", start num: " << start_num
+        << ", missed num: " << (calced_slot_num - start_num)
+        << ", slot num: " << calced_slot_num;
     return calced_slot_num;
 }
 

@@ -66,9 +66,6 @@ const uint32_t block_timespan_window     = 20;
 // functions
 //==============================================================================
 
-// mnemonic for testnet & private net.
-// "steel lady blame arm sugar dolphin explain gas scare festival bronze spawn burst submit paper code carry slam december way there then north effort"
-
 std::string get_genesis_address(bool is_testnet)
 {
     if (is_testnet) {

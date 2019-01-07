@@ -133,28 +133,31 @@ code validate_block::check_coinbase(const chain::header& prev_header, bool check
             return error::first_not_coinbase;
         }
 
-        auto has_vote_result = is_begin_of_epoch && coinbase_count == 0;
-        if (!has_vote_result) {
-            // <first:  coinbase reward>     (required)
-            // [second: coinbase mst reward] (optional)
-            if (tx.outputs.size() > 2 ||
-                (tx.outputs.size() == 2 && !tx.outputs[1].is_asset_transfer())) {
-                return error::first_not_coinbase;
+        if (index == 0) {
+            if (is_begin_of_epoch) {
+                // <first:  coinbase reward>     (required)
+                // [last:   witness vote result] (required)
+                if (tx.outputs.size() != 2) {
+                    return error::illegal_coinstake;
+                }
+
+                auto& vote_result_output = tx.outputs.back();
+                if (!consensus::witness::is_vote_result_output(vote_result_output)) {
+                    return error::illegal_coinstake;
+                }
+            }
+            else {
+                // <first:  coinbase reward>     (required)
+                // [second: coinbase mst reward] (optional)
+                if (tx.outputs.size() > 2 ||
+                    (tx.outputs.size() == 2 && !tx.outputs[1].is_asset_transfer())) {
+                    return error::illegal_coinstake;
+                }
             }
         }
         else {
-            // <first:  coinbase reward>     (required)
-            // [second: coinbase mst reward] (optional)
-            // [last:   witness vote result] (required)
-            if (!(tx.outputs.size() == 2 || tx.outputs.size() == 3)) {
-                return error::first_not_coinbase;
-            }
-            if (tx.outputs.size() == 3 && !tx.outputs[1].is_asset_transfer()) {
-                return error::first_not_coinbase;
-            }
-            auto& vote_result_output = tx.outputs.back();
-            if (!consensus::witness::is_vote_result_output(vote_result_output)) {
-                return error::first_not_coinbase;
+            if (tx.outputs.size() != 1) {
+                return error::illegal_coinstake;
             }
         }
 
