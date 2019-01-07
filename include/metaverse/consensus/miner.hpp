@@ -164,7 +164,9 @@ private:
         transaction_ptr coinstake);
     transaction_ptr create_pos_genesis_tx(uint64_t block_height, uint32_t block_time);
     std::shared_ptr<chain::output> create_witness_cert_output(
-        const std::string& symbol, const std::string& to_did, const std::string& to_address);
+        const std::string& symbol,
+        const std::string& to_did,
+        const wallet::payment_address& pay_address);
 
 private:
     p2p_node& node_;

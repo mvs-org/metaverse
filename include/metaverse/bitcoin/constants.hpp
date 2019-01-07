@@ -108,7 +108,8 @@ extern const double   pos_stake_factor;
 extern const uint32_t block_timespan_window;
 extern const uint64_t pos_genesis_reward;
 
-extern const uint32_t dpos_witness_cert_count;
+extern const uint32_t witness_cert_count;
+extern const std::string witness_cert_prefix;
 
 // price
 //-----------------------------------------------------------------------------

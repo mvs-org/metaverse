@@ -258,7 +258,7 @@ bool transaction::is_coinbase() const
 
 bool transaction::is_pos_genesis_tx(bool is_testnet) const
 {
-    if (!is_coinbase() || outputs.size() != (1 + dpos_witness_cert_count)) {
+    if (!is_coinbase() || outputs.size() != (1 + witness_cert_count)) {
         return false;
     }
 
@@ -279,7 +279,7 @@ bool transaction::is_pos_genesis_tx(bool is_testnet) const
     }
 
     // check witness cert
-    for (uint32_t i = 0; i < dpos_witness_cert_count; ++i) {
+    for (uint32_t i = 0; i < witness_cert_count; ++i) {
         const auto & out = outputs[i + 1];
         if (!out.is_asset_cert_autoissue() || out.get_asset_cert_type() != asset_cert_ns::witness) {
             return false;
