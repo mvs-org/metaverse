@@ -1113,7 +1113,7 @@ miner::transaction_ptr miner::create_pos_genesis_tx(uint64_t block_height, uint3
 
     const std::string foundation_address = get_foundation_address(setting_.use_testnet_rules);
     wallet::payment_address pay_address(foundation_address);
-    genesis_tx->outputs.resize(witness_cert_count + 1);
+    genesis_tx->outputs.reserve(witness_cert_count + 1);
     genesis_tx->outputs[0].script.operations = to_script_operation(pay_address);
     genesis_tx->outputs[0].value = pos_genesis_reward;
 
