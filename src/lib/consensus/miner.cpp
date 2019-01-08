@@ -359,7 +359,7 @@ std::shared_ptr<chain::output> miner::create_coinbase_mst_output(const wallet::p
         return nullptr;
     }
 
-    chain::attachment attach(ASSET_TYPE, 1/*version*/, ass);
+    chain::attachment attach(ASSET_TYPE, ATTACH_INIT_VERSION, ass);
     auto payment_script = chain::script{ to_script_operation(pay_address) };
     auto output = std::make_shared<chain::output>(0, payment_script, attach);
     return output;
@@ -1149,7 +1149,7 @@ std::shared_ptr<chain::output> miner::create_witness_cert_output(
         return nullptr;
     }
 
-    chain::attachment attach(ASSET_CERT_TYPE, 1/*version*/, cert_info);
+    chain::attachment attach(ASSET_CERT_TYPE, ATTACH_INIT_VERSION, cert_info);
     auto payment_script = chain::script{ to_script_operation(pay_address) };
     auto output = std::make_shared<chain::output>(0, payment_script, attach);
     return output;
@@ -1220,17 +1220,17 @@ miner::transaction_ptr miner::create_coinstake_tx(
     // auto payment_script = chain::script{script_operation};
 
     coinstake->outputs.emplace_back(nCredit, chain::script{script_operation},
-        attachment(ETP_TYPE, 1, chain::etp(nCredit)));
+        attachment(ETP_TYPE, ATTACH_INIT_VERSION, chain::etp(nCredit)));
 
     // split the output
     if (enable_collect_split && nCredit >= pos_split_limit && nCredit > pos_stake_min_value) {
         auto value = nCredit - pos_stake_min_value;
         coinstake->outputs[1].value = value;
-        coinstake->outputs[1].attach_data = {ETP_TYPE, 1, chain::etp(value)};
+        coinstake->outputs[1].attach_data = {ETP_TYPE, ATTACH_INIT_VERSION, chain::etp(value)};
 
         value = pos_stake_min_value;
         coinstake->outputs.emplace_back(value, chain::script{script_operation},
-            attachment(ETP_TYPE, 1, chain::etp(value)));
+            attachment(ETP_TYPE, ATTACH_INIT_VERSION, chain::etp(value)));
     }
 
     // sign coinstake

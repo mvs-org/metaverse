@@ -1631,11 +1631,11 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         || (record.type == utxo_attach_type::deposit)
         || ((record.type == utxo_attach_type::asset_transfer)
             && ((record.amount > 0) && (!record.asset_amount)))) { // etp
-        return attachment(ETP_TYPE, attach_version, chain::etp(record.amount));
+        return attachment(ETP_TYPE, ATTACH_INIT_VERSION, chain::etp(record.amount));
     }
     else if (record.type == utxo_attach_type::asset_issue
         || record.type == utxo_attach_type::asset_secondaryissue) {
-        return attachment(ASSET_TYPE, attach_version, asset(/*set on subclass*/));
+        return attachment(ASSET_TYPE, ATTACH_INIT_VERSION, asset(/*set on subclass*/));
     }
     else if (record.type == utxo_attach_type::asset_transfer
             || record.type == utxo_attach_type::asset_locked_transfer
@@ -1645,7 +1645,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!ass.is_valid()) {
             throw tx_attachment_value_exception{"invalid asset transfer attachment"};
         }
-        return attachment(ASSET_TYPE, attach_version, ass);
+        return attachment(ASSET_TYPE, ATTACH_INIT_VERSION, ass);
     }
     else if (record.type == utxo_attach_type::message) {
         auto msg = boost::get<blockchain_message>(record.attach_elem.get_attach());
@@ -1655,7 +1655,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!msg.is_valid()) {
             throw tx_attachment_value_exception{"invalid message attachment"};
         }
-        return attachment(MESSAGE_TYPE, attach_version, msg);
+        return attachment(MESSAGE_TYPE, ATTACH_INIT_VERSION, msg);
     }
     else if (record.type == utxo_attach_type::did_register) {
         did_detail diddetail(symbol_, record.target);
@@ -1663,7 +1663,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!ass.is_valid()) {
             throw tx_attachment_value_exception{"invalid did register attachment"};
         }
-        return attachment(DID_TYPE, attach_version, ass);
+        return attachment(DID_TYPE, ATTACH_INIT_VERSION, ass);
     }
     else if (record.type == utxo_attach_type::did_transfer) {
         auto sh_did = blockchain_.get_registered_did(symbol_);
@@ -1675,7 +1675,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!ass.is_valid()) {
             throw tx_attachment_value_exception{"invalid did transfer attachment"};
         }
-        return attachment(DID_TYPE, attach_version, ass);
+        return attachment(DID_TYPE, ATTACH_INIT_VERSION, ass);
     }
     else if (record.type == utxo_attach_type::asset_cert
         || record.type == utxo_attach_type::asset_cert_autoissue
@@ -1705,11 +1705,11 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!cert_info.is_valid()) {
             throw tx_attachment_value_exception{"invalid cert attachment"};
         }
-        return attachment(ASSET_CERT_TYPE, attach_version, cert_info);
+        return attachment(ASSET_CERT_TYPE, ATTACH_INIT_VERSION, cert_info);
     }
     else if (record.type == utxo_attach_type::asset_mit
         || record.type == utxo_attach_type::asset_mit_transfer) {
-        return attachment(ASSET_MIT_TYPE, attach_version, asset_mit(/*set on subclass*/));
+        return attachment(ASSET_MIT_TYPE, ATTACH_INIT_VERSION, asset_mit(/*set on subclass*/));
     }
 
     throw tx_attachment_value_exception{

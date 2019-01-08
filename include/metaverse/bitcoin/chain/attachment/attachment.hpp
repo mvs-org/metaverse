@@ -53,9 +53,12 @@ using attachment = libbitcoin::chain::attachment;
 #define ASSET_CERT_TYPE TYPE2UINT32(attachment::attachment_type::attachment_asset_cert)
 #define ASSET_MIT_TYPE  TYPE2UINT32(attachment::attachment_type::attachment_asset_mit)
 
-#define DID_ATTACH_VERIFY_VERSION       TYPE2UINT32(207)
-
 #define ATTACH_NULL_TYPE MAX_UINT32
+
+enum attachment_version {
+    ATTACH_INIT_VERSION = 1,
+    DID_ATTACH_VERIFY_VERSION = 207
+};
 
 namespace libbitcoin {
 namespace chain {
