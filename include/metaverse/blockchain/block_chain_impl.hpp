@@ -36,6 +36,7 @@
 #include <metaverse/blockchain/transaction_pool.hpp>
 #include <metaverse/bitcoin/chain/header.hpp>
 #include <metaverse/consensus/fts.hpp>
+#include <metaverse/blockchain/profile.hpp>
 
 #define  LOG_BLOCK_CHAIN_IMPL  "block_chain_impl"
 
@@ -437,6 +438,8 @@ public:
     static bool is_valid_symbol(const std::string& symbol, uint32_t tx_version);
     static bool is_valid_did_symbol(const std::string& symbol,  bool check_sensitive = false);
     static bool is_valid_mit_symbol(const std::string& symbol,  bool check_sensitive = false);
+
+    profile::ptr get_profile(const profile_context&) const;
 
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;

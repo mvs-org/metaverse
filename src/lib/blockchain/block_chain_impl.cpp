@@ -3207,5 +3207,20 @@ bool block_chain_impl::is_valid_mit_symbol(const std::string& symbol, bool check
     return true;
 }
 
+profile::ptr block_chain_impl::get_profile(const profile_context& context) const
+{
+    switch (context.type) {
+        case profile_type::witness:
+            {
+                witness_profile profile;
+                return profile.get_profile(context);
+            }
+            break;
+        case profile_type::none:
+            break;
+    }
+    return nullptr;
+}
+
 } // namespace blockchain
 } // namespace libbitcoin

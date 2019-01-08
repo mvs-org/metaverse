@@ -20,6 +20,7 @@
     <ClInclude Include="..\..\..\include\metaverse\blockchain\define.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\blockchain\organizer.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\blockchain\orphan_pool.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\blockchain\profile.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\blockchain\settings.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\blockchain\simple_chain.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\blockchain\transaction_pool.hpp" />
@@ -37,6 +38,7 @@
     <ClCompile Include="..\..\..\src\lib\blockchain\block_fetcher.cpp" />
     <ClCompile Include="..\..\..\src\lib\blockchain\organizer.cpp" />
     <ClCompile Include="..\..\..\src\lib\blockchain\orphan_pool.cpp" />
+    <ClCompile Include="..\..\..\src\lib\blockchain\profile.cpp" />
     <ClCompile Include="..\..\..\src\lib\blockchain\settings.cpp" />
     <ClCompile Include="..\..\..\src\lib\blockchain\transaction_pool.cpp" />
     <ClCompile Include="..\..\..\src\lib\blockchain\transaction_pool_index.cpp" />
