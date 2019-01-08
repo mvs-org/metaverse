@@ -598,7 +598,7 @@ uint32_t witness::calc_slot_num(uint64_t block_height) const
     auto prev_dpos_header = node_.chain_impl().get_prev_block_header(block_height, chain::block_version_dpos);
     if (prev_dpos_header && prev_dpos_header->number > begin_height) {
         first_height = prev_dpos_header->number + 1;
-        start_num = static_cast<uint32_t>(prev_dpos_header->nonce) + 1;
+        start_num = (static_cast<uint32_t>(prev_dpos_header->nonce) + 1) % size;
     }
 
     auto calced_slot_num = start_num;
@@ -607,10 +607,16 @@ uint32_t witness::calc_slot_num(uint64_t block_height) const
         calced_slot_num = (start_num + offset) % size;
     }
 
+    std::vector<std::string> missed_vec;
+    for (auto num = start_num; num != calced_slot_num; num = (num+1)%size) {
+        missed_vec.push_back(std::to_string(num));
+    }
+    auto missed_nums = missed_vec.empty() ? std::string("none") : bc::join(missed_vec);
+
     log::info(LOG_HEADER) << "calc_slot_num at " << block_height
         << ", start num: " << start_num
-        << ", missed num: " << (calced_slot_num - start_num)
-        << ", slot num: " << calced_slot_num;
+        << ", slot num: " << calced_slot_num
+        << ", missed num: " << missed_nums;
     return calced_slot_num;
 }
 
