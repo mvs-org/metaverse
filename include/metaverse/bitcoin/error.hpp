@@ -194,6 +194,7 @@ enum error_code_t
     check_pos_genesis_error,
     mst_coinbase_too_large,         // 105
     mst_coinbase_invalid,
+    invalid_output_script_lock_sequence,
 };
 
 enum error_condition_t

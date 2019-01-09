@@ -1659,10 +1659,6 @@ bool block_chain_impl::check_pos_capability(
 
             // only support lock sequence with block height
             uint64_t lock_height = output.get_lock_sequence();
-            if (lock_height & relative_locktime_time_locked) {
-                continue;
-            }
-            lock_height &= relative_locktime_mask;
 
             // utxo deposit height > pos_lock_min_height and min_pos_lock_rate percent of height limited
             if (lock_height >= pos_lock_min_height &&
@@ -2774,12 +2770,7 @@ std::pair<uint64_t, uint64_t> block_chain_impl::get_locked_balance(
             }
 
             // only support lock sequence with block height
-            uint64_t lock_sequence = output.get_lock_sequence();
-            if (lock_sequence & relative_locktime_time_locked) {
-                continue;
-            }
-            lock_sequence &= relative_locktime_mask;
-
+            auto lock_sequence = output.get_lock_sequence();
             auto seq_expiration = tx_height + lock_sequence;
 
             // use any kind of blocks
@@ -3112,10 +3103,10 @@ bool block_chain_impl::is_utxo_spendable(const chain::transaction& tx, uint32_t 
         }
     }
     else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-        uint64_t lock_sequence = chain::operation::
-            get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
-        if (lock_sequence > calc_number_of_blocks(tx_height, latest_height)) {
-            // lock sequence check
+        auto lock_sequence = output.get_lock_sequence();
+        // lock sequence check
+        // use any kind of blocks
+        if (tx_height + lock_sequence > latest_height) {
             return false;
         }
     }

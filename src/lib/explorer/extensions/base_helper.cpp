@@ -477,8 +477,7 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
                 }
                 else if (asset_amount
                     && chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-                    uint64_t lock_sequence = chain::operation::
-                        get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
+                    auto lock_sequence = output.get_lock_sequence();
                     // use any kind of blocks
                     if (row.output_height + lock_sequence > height) {
                         // utxo already in block but is locked with sequence and not mature
@@ -538,8 +537,7 @@ void sync_fetch_locked_balance(const std::string& address,
                 continue;
             }
 
-            uint64_t lock_sequence = chain::operation::
-                get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
+            auto lock_sequence = output.get_lock_sequence();
             // use any kind of blocks
             if ((tx_height + lock_sequence <= height) ||
                 (expiration > height && tx_height + lock_sequence <= expiration)) {
@@ -785,8 +783,7 @@ auto sync_fetch_asset_view(const std::string& symbol,
                 }
                 else if (asset_amount
                     && chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-                    uint64_t lock_sequence = chain::operation::
-                        get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
+                    auto lock_sequence = output.get_lock_sequence();
                     // use any kind of blocks
                     if (tx_height + lock_sequence > height) {
                         // utxo already in block but is locked with sequence and not mature
@@ -914,8 +911,7 @@ void sync_fetchbalance(wallet::payment_address& address,
                 }
             }
             else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-                uint64_t lock_sequence = chain::operation::
-                    get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
+                auto lock_sequence = output.get_lock_sequence();
                 // use any kind of blocks
                 if (row.output_height + lock_sequence > height) {
                     // utxo already in block but is locked with sequence and not mature
@@ -989,8 +985,7 @@ void sync_fetchbalance(wallet::payment_address& address,
             }
         }
         else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-            uint64_t lock_sequence = chain::operation::
-                get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
+            auto lock_sequence = output.get_lock_sequence();
             // use any kind of blocks
             if (row.output_height + lock_sequence > height) {
                 // utxo already in block but is locked with sequence and not mature
@@ -1202,7 +1197,7 @@ void base_transfer_common::sync_fetchutxo(
 
         BITCOIN_ASSERT(asset_total_amount >= asset_amount);
 
-        auto lock_sequence = output.get_lock_sequence();
+        auto lock_sequence = output.get_lock_sequence(max_input_sequence);
 
         if (locktime_ > 0) {
             // ref. is_locktime_conflict() [BIP65]
@@ -2427,8 +2422,11 @@ chain::operation::stack lock_sending::get_script_operations(const receiver_recor
         }
 
         if (payment.version() == wallet::payment_address::mainnet_p2kh) {
-            const auto& hash = payment.hash();
-            return chain::operation::to_pay_key_hash_with_sequence_lock_pattern(hash, sequence_);
+            // only support block height sequence lock for this pattern
+            if (sequence_ & relative_locktime_time_locked) {
+                throw tx_lock_sequence_exception{"wrong lock sequence " + std::to_string(sequence_)};
+            }
+            return chain::operation::to_pay_key_hash_with_sequence_lock_pattern(payment.hash(), sequence_);
         }
         else {
             throw toaddress_invalid_exception{"not supported target address " + record.target};

@@ -24,7 +24,6 @@
 #include <cstdint>
 #include <istream>
 #include <vector>
-#include <metaverse/bitcoin/constants.hpp>
 #include <metaverse/bitcoin/error.hpp>
 #include <metaverse/bitcoin/chain/point.hpp>
 #include <metaverse/bitcoin/chain/script/script.hpp>
@@ -82,7 +81,7 @@ public:
     std::string get_asset_cert_address() const;
     asset_cert_type get_asset_cert_type() const;
     const data_chunk& get_attenuation_model_param() const;
-    uint32_t get_lock_sequence(uint32_t default_value=max_input_sequence) const;
+    uint32_t get_lock_sequence(uint32_t default_value=0) const;
     bool is_asset() const;
     bool is_asset_transfer() const;
     bool is_asset_issue() const;

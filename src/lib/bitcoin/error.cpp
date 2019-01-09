@@ -296,6 +296,9 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
         case error::mst_coinbase_invalid:
             return "asset coinbase value is invalid";
 
+        case error::invalid_output_script_lock_sequence:
+            return "invalid output script lock sequence";
+
         // unknown errors
         case error::unknown:
         default:

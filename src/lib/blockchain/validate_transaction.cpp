@@ -1583,6 +1583,13 @@ code validate_transaction::check_transaction_basic() const
                     return error::invalid_output_script_lock_height;
                 }
             }
+            else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
+                auto lock_sequence = chain::operation::get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
+                // only support block height sequence lock for this pattern
+                if (lock_sequence & relative_locktime_time_locked) {
+                    return error::invalid_output_script_lock_sequence;
+                }
+            }
         }
     }
 
