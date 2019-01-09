@@ -167,6 +167,7 @@ DEFINE_EXPLORER_EXCEPTION(tx_encode_get_exception, 5310);
 DEFINE_EXPLORER_EXCEPTION(tx_decode_get_exception, 5311);
 DEFINE_EXPLORER_EXCEPTION(tx_timestamp_exception, 5312);
 DEFINE_EXPLORER_EXCEPTION(tx_locktime_exception, 5313);
+DEFINE_EXPLORER_EXCEPTION(tx_lock_sequence_exception, 5314);
 
 DEFINE_EXPLORER_EXCEPTION(utxo_fetch_exception, 5401);
 

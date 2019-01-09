@@ -91,7 +91,7 @@ public:
         (
             "SEQUENCE",
             value<uint32_t>(&argument_.sequence)->required(),
-            "Lock sequence value"
+            "Lock sequence value, max value is 1048575 for block height unit"
         )
         (
             "symbol,s",

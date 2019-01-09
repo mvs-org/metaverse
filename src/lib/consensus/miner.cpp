@@ -878,7 +878,6 @@ miner::block_ptr miner::create_new_block_dpos(
     pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
 
     // add witness's signature to the current block header
-    bc::endorsement endorse;
     if (!sign(pblock->blocksig, private_key_, pblock->header.hash())) {
         log::error(LOG_HEADER) << "witness sign failed in create_new_block";
         return nullptr;

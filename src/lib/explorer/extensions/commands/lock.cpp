@@ -63,8 +63,7 @@ console_result lock::invoke(Json::Value& jv_output,
     }
 
     if ((argument_.sequence & bc::relative_locktime_disabled) ||
-        argument_.sequence == 0 ||
-        argument_.sequence == bc::max_input_sequence) {
+        (argument_.sequence & bc::relative_locktime_mask) == 0) {
         throw argument_legality_exception(
             "invalid sequence parameter!" + std::to_string(argument_.sequence));
     }
