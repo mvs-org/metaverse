@@ -434,6 +434,10 @@ public:
     bool is_utxo_spendable(const chain::transaction& tx, uint32_t index,
                            uint64_t tx_height, uint64_t latest_height) const;
 
+    static bool is_valid_symbol(const std::string& symbol, uint32_t tx_version);
+    static bool is_valid_did_symbol(const std::string& symbol,  bool check_sensitive = false);
+    static bool is_valid_mit_symbol(const std::string& symbol,  bool check_sensitive = false);
+
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
 

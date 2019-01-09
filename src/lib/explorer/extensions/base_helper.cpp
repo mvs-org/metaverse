@@ -123,7 +123,7 @@ bool is_ETH_Address(const string& address)
 
 void check_did_symbol(const std::string& symbol, bool check_sensitive)
 {
-    if (!chain::output::is_valid_did_symbol(symbol, check_sensitive)) {
+    if (!bc::blockchain::block_chain_impl::is_valid_did_symbol(symbol, check_sensitive)) {
         throw did_symbol_name_exception{"Did symbol " + symbol + " is not valid."};
     }
 
@@ -143,6 +143,18 @@ void check_asset_symbol(const std::string& symbol, bool check_sensitive)
     if (symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE) {
         throw asset_symbol_length_exception{"Asset symbol length must be less than "
             + std::to_string(ASSET_DETAIL_SYMBOL_FIX_SIZE) + "."};
+    }
+
+    // char check
+    for (const auto& i : symbol) {
+        if (!(std::isalnum(i) || i=='.')) {
+            throw asset_symbol_name_exception{"Asset symbol " + symbol + " contains invalid character."};
+        }
+    }
+
+    // upper char check
+    if (symbol != boost::to_upper_copy(symbol)) {
+        throw asset_symbol_name_exception{"Asset symbol " + symbol + " must be uppercase."};
     }
 
     if (check_sensitive) {
@@ -167,7 +179,7 @@ void check_mit_symbol(const std::string& symbol, bool check_sensitive)
     for (const auto& i : symbol) {
         if (!(std::isalnum(i) || i == '.'|| i == '@' || i == '_' || i == '-'))
             throw asset_symbol_name_exception(
-                "MIT symbol " + symbol + " has invalid character.");
+                "MIT symbol " + symbol + " contains invalid character.");
     }
 
     if (check_sensitive) {

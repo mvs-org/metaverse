@@ -62,7 +62,7 @@ const double   pos_stake_factor          = 100;
 const uint32_t block_timespan_window     = 20;
 
 const uint32_t witness_cert_count        = 23;
-const std::string witness_cert_prefix("MVS.Witness.");
+const std::string witness_cert_prefix("MVS.WITNESS.");
 
 
 //==============================================================================

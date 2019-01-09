@@ -60,9 +60,7 @@ public:
     typedef std::vector<output> list;
 
     static uint64_t satoshi_fixed_size();
-    static bool is_valid_symbol(const std::string& symbol, uint32_t tx_version);
-    static bool is_valid_did_symbol(const std::string& symbol,  bool check_sensitive = false);
-    static bool is_valid_mit_symbol(const std::string& symbol,  bool check_sensitive = false);
+
     bool from_data_t(reader& source);
     void to_data_t(writer& sink) const;
     std::string to_string(uint32_t flags) const;

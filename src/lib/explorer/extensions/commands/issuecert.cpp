@@ -73,9 +73,6 @@ console_result issuecert::invoke (Json::Value& jv_output,
         cert_symbol = fmt.str();
         check_asset_symbol(cert_symbol);
 
-        log::info("base_helper") << " issue_cert witness: primary cert: " << primary_symbol
-            << ", secondary cert: " << cert_symbol;
-
 #ifdef MVS_DEBUG
         auto pri_idx = asset_cert::get_primary_witness_index(cert_symbol);
         auto sec_idx = asset_cert::get_secondary_witness_index(cert_symbol);

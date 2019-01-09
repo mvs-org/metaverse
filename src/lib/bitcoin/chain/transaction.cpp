@@ -281,11 +281,13 @@ bool transaction::is_pos_genesis_tx(bool is_testnet) const
 
     // check witness cert
     for (uint32_t i = 0; i < witness_cert_count; ++i) {
-        const auto & out = outputs[i + 1];
-        if (!out.is_asset_cert_autoissue()
-            || out.get_asset_cert_type() != asset_cert_ns::witness
-            || out.get_asset_cert_address() != foundation_address
-            || asset_cert::is_valid_primary_witness(out.get_asset_cert_symbol())) {
+        const auto& out = outputs[i + 1];
+        if (!out.is_asset_cert_autoissue()) {
+            return false;
+        }
+
+        const auto cert = out.get_asset_cert();
+        if (cert.get_address() != foundation_address || !cert.is_primary_witness()) {
             return false;
         }
 

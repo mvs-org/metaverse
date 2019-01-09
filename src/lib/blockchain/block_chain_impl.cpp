@@ -30,6 +30,7 @@
 #include <unordered_map>
 #include <boost/filesystem.hpp>
 #include <boost/interprocess/sync/file_lock.hpp>
+#include <boost/algorithm/string.hpp>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_cert.hpp>
 #include <metaverse/database.hpp>
@@ -3141,6 +3142,79 @@ bool block_chain_impl::is_utxo_spendable(const chain::transaction& tx, uint32_t 
     return true;
 }
 
+bool block_chain_impl::is_valid_symbol(const std::string& symbol, uint32_t tx_version)
+{
+    if (symbol.empty() || symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
+        return false;
+
+    // char check
+    for (const auto& i : symbol) {
+        if (!(std::isalnum(i) || i=='.')) {
+            return false;
+        }
+    }
+
+    if (tx_version >= transaction_version::check_nova_feature) {
+        // upper char check
+        if (symbol != boost::to_upper_copy(symbol)) {
+            return false;
+        }
+
+        // sensitive check
+        if (bc::wallet::symbol::is_sensitive(symbol)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool block_chain_impl::is_valid_did_symbol(const std::string& symbol, bool check_sensitive)
+{
+    if (symbol.empty() || symbol.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
+        return false;
+    }
+
+    // char check
+    for (const auto& i : symbol) {
+        if (!(std::isalnum(i) || i=='.'|| i=='@' || i=='_' || i=='-')) {
+            return false;
+        }
+    }
+
+    if (check_sensitive) {
+        // sensitive check
+        auto upper = boost::to_upper_copy(symbol);
+        if (bc::wallet::symbol::is_sensitive(upper)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool block_chain_impl::is_valid_mit_symbol(const std::string& symbol, bool check_sensitive)
+{
+    if (symbol.empty() || symbol.length() > ASSET_MIT_SYMBOL_FIX_SIZE) {
+        return false;
+    }
+
+    // char check
+    for (const auto& i : symbol) {
+        if (!(std::isalnum(i) || i=='.'|| i=='@' || i=='_' || i=='-')) {
+            return false;
+        }
+    }
+
+    if (check_sensitive) {
+        // sensitive check
+        auto upper = boost::to_upper_copy(symbol);
+        if (bc::wallet::symbol::is_sensitive(upper)) {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 } // namespace blockchain
 } // namespace libbitcoin
