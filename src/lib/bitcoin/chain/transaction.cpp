@@ -284,8 +284,8 @@ bool transaction::is_pos_genesis_tx(bool is_testnet) const
         const auto & out = outputs[i + 1];
         if (!out.is_asset_cert_autoissue()
             || out.get_asset_cert_type() != asset_cert_ns::witness
-            || out.get_asset_cert_symbol().find(witness_cert_prefix) != 0
-            || out.get_asset_cert_address() != foundation_address) {
+            || out.get_asset_cert_address() != foundation_address
+            || asset_cert::is_valid_primary_witness(out.get_asset_cert_symbol())) {
             return false;
         }
 

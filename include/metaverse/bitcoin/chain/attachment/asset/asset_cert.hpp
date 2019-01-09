@@ -181,9 +181,6 @@ public:
     void set_content(const std::string& content);
     const std::string& get_content() const;
 
-    asset_cert_type get_certs() const;
-    void set_certs(asset_cert_type certs);
-
     asset_cert_type get_type() const;
     void set_type(asset_cert_type cert_type);
     std::string get_type_name() const;
@@ -207,6 +204,20 @@ public:
 
     static std::vector<std::string> get_mining_subsidy_param_keys();
     static mining_subsidy_param_ptr parse_mining_subsidy_param(const std::string& param);
+
+    bool is_primary_witness() const;
+    bool is_secondary_witness() const;
+
+    static std::string get_primary_witness_symbol(const std::string& symbol);
+    static bool is_valid_primary_witness(const std::string& symbol);
+    static bool is_valid_secondary_witness(const std::string& symbol);
+
+    // witness cert index start at 1.
+    static uint32_t get_primary_witness_index(const std::string& symbol);
+    static uint32_t get_secondary_witness_index(const std::string& symbol);
+
+private:
+    static bool parse_int32(const std::string& param, int32_t& value);
 
 private:
     // NOTICE: ref CAssetCert in transaction.h

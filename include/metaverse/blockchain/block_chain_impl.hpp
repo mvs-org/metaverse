@@ -336,8 +336,9 @@ public:
     // cert api
     std::shared_ptr<asset_cert> get_asset_cert(const std::string& symbol, asset_cert_type cert_type) const;
     bool is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_type);
-    uint64_t get_asset_cert_height(const std::string& cert_symbol,const asset_cert_type& cert_type);
-    std::shared_ptr<asset_cert::list> get_issued_asset_certs(const std::string& address = "");
+    uint64_t get_asset_cert_height(const std::string& cert_symbol, asset_cert_type cert_type);
+    std::shared_ptr<asset_cert::list> get_issued_asset_certs(
+        const std::string& address = "", asset_cert_type cert_type = asset_cert_ns::none);
     std::shared_ptr<asset_cert> get_account_asset_cert(
         const std::string& account, const std::string& symbol, asset_cert_type cert_type);
     std::shared_ptr<business_address_asset_cert::list> get_account_asset_certs(

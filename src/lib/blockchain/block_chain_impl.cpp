@@ -1761,12 +1761,16 @@ block_chain_impl::get_account_asset_certs(const std::string& account, const std:
 }
 
 std::shared_ptr<asset_cert::list> block_chain_impl::get_issued_asset_certs(
-    const std::string& address)
+    const std::string& address, asset_cert_type cert_type)
 {
     auto sp_vec = std::make_shared<asset_cert::list>();
     auto sp_asset_certs_vec = database_.certs.get_blockchain_asset_certs();
     for (const auto& each : *sp_asset_certs_vec) {
         if (!address.empty() && address != each.get_address()) {
+            continue;
+        }
+
+        if (cert_type != asset_cert_ns::none && cert_type != each.get_type()) {
             continue;
         }
 
@@ -2412,17 +2416,18 @@ uint64_t block_chain_impl::get_did_height(const std::string& did_name)const
     return database_.dids.get_register_height(did_name);
 }
 
-uint64_t block_chain_impl::get_asset_cert_height(const std::string& cert_symbol,const asset_cert_type& cert_type)
+uint64_t block_chain_impl::get_asset_cert_height(const std::string& cert_symbol, asset_cert_type cert_type)
 {
     auto&& key_str = asset_cert::get_key(cert_symbol, cert_type);
     const auto key = get_hash(key_str);
     auto cert = database_.certs.get(key);
     if(cert)
     {
-       business_history::list history_cert = database_.address_assets.get_asset_certs_history(cert->get_address(), cert_symbol, cert_type, 0);
-       if(history_cert.size()>0){
-           return history_cert.back().output_height;
-       }
+        business_history::list history_cert = database_.address_assets.get_asset_certs_history(
+            cert->get_address(), cert_symbol, cert_type, 0);
+        if(history_cert.size()>0){
+            return history_cert.back().output_height;
+        }
     }
     return max_uint64;
 }

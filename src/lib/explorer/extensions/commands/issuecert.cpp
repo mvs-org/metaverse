@@ -54,15 +54,65 @@ console_result issuecert::invoke (Json::Value& jv_output,
     // check asset cert types
     auto certs_create = check_issue_cert(blockchain, auth_.name, argument_.symbol, argument_.cert);
 
+    // update cert symbol
+    std::string cert_symbol = argument_.symbol;
+    std::string primary_symbol;
+
+    if (certs_create == asset_cert_ns::witness) {
+        uint32_t pri = 0, sec = 0;
+        get_secondary_witness_cert_index(blockchain, pri, sec);
+
+        if (pri == 0 || sec == 0) {
+            throw asset_cert_secondary_witness_full_exception("secondary witness cert reaches the maximum.");
+        }
+
+        auto fmt = boost::format("%1%%2%") % witness_cert_prefix % pri;
+        primary_symbol = fmt.str();
+
+        fmt = boost::format("%1%.%2%.%3%") % primary_symbol % sec % argument_.symbol;
+        cert_symbol = fmt.str();
+        check_asset_symbol(cert_symbol);
+
+        log::info("base_helper") << " issue_cert witness: primary cert: " << primary_symbol
+            << ", secondary cert: " << cert_symbol;
+
+#ifdef MVS_DEBUG
+        auto pri_idx = asset_cert::get_primary_witness_index(cert_symbol);
+        auto sec_idx = asset_cert::get_secondary_witness_index(cert_symbol);
+        assert(pri_idx == pri);
+        assert(sec_idx == sec);
+#endif
+    }
+
     // receiver
+    //
+    // init cert created
     std::vector<receiver_record> receiver{
         {
-            to_address, argument_.symbol, 0, 0,
+            to_address, cert_symbol, 0, 0,
             certs_create, utxo_attach_type::asset_cert_issue,
             attachment("", to_did)
         }
     };
 
+    // append cert required
+    if (certs_create == asset_cert_ns::naming) {
+        auto&& domain = asset_cert::get_domain(cert_symbol);
+        receiver.push_back({
+            to_address, domain, 0, 0,
+            asset_cert_ns::domain, utxo_attach_type::asset_cert,
+            attachment("", to_did)
+        });
+    }
+    else if (certs_create == asset_cert_ns::witness) {
+        receiver.push_back({
+            to_address, primary_symbol, 0, 0,
+            asset_cert_ns::witness, utxo_attach_type::asset_cert,
+            attachment("", to_did)
+        });
+    }
+
+    // append memo
     if (!option_.memo.empty()) {
         check_message(option_.memo);
 
@@ -72,19 +122,10 @@ console_result issuecert::invoke (Json::Value& jv_output,
         });
     }
 
-    if (certs_create == asset_cert_ns::naming) {
-        auto&& domain = asset_cert::get_domain(argument_.symbol);
-        receiver.push_back({
-            to_address, domain, 0, 0,
-            asset_cert_ns::domain, utxo_attach_type::asset_cert,
-            attachment("", to_did)
-        });
-    }
-
     auto helper = issuing_asset_cert(
                       *this, blockchain,
                       std::move(auth_.name), std::move(auth_.auth),
-                      std::move(to_address), std::move(argument_.symbol),
+                      std::move(to_address), std::move(cert_symbol),
                       std::move(receiver), argument_.fee);
 
     helper.exec();
@@ -96,6 +137,74 @@ console_result issuecert::invoke (Json::Value& jv_output,
     return console_result::okay;
 }
 
+void issuecert::get_secondary_witness_cert_index(
+    bc::blockchain::block_chain_impl& blockchain, uint32_t& pri, uint32_t& sec) const
+{
+    pri = 0;
+    sec = 0;
+
+    // get owned primary witness cert
+    auto account_certs = blockchain.get_account_asset_certs(auth_.name, "", asset_cert_ns::witness);
+    std::vector<uint32_t> pri_indexes;
+    for (auto& bus_cert : *account_certs) {
+        auto& cert = bus_cert.certs;
+        if (cert.is_primary_witness()) {
+            auto index = asset_cert::get_primary_witness_index(cert.get_symbol());
+            pri_indexes.push_back(index);
+        }
+    }
+
+    if (pri_indexes.empty()) {
+        throw asset_cert_notowned_exception("no primary witness cert owned by " + auth_.name);
+    }
+
+    std::map<uint32_t, std::set<uint32_t>> pri_sec_map;
+    auto issued_certs = blockchain.get_issued_asset_certs("", asset_cert_ns::witness);
+    for (auto& cert : *issued_certs) {
+        if (cert.is_secondary_witness()) {
+            auto pri_index = asset_cert::get_primary_witness_index(cert.get_symbol());
+            // not owned
+            if (std::find(pri_indexes.begin(), pri_indexes.end(), pri_index) == pri_indexes.end()) {
+                continue;
+            }
+
+            // record secondary witness
+            auto sec_index = asset_cert::get_secondary_witness_index(cert.get_symbol());
+            auto iter = pri_sec_map.find(pri_index);
+            if (iter == pri_sec_map.end()) {
+                std::set<uint32_t> set;
+                set.insert(sec_index);
+                pri_sec_map[pri_index] = set;
+            }
+            else {
+                auto& set = iter->second;
+                set.insert(sec_index);
+            }
+        }
+    }
+
+    // calculate primary and secondary index of new secondary cert.
+    for (auto iter : pri_sec_map) {
+        auto pri_index = iter.first;
+        auto& set = iter.second;
+        if (set.size() < witness_cert_count) {
+            pri = pri_index;
+            sec = set.size() + 1;
+            break;
+        }
+        else {
+            auto it = std::find(pri_indexes.begin(), pri_indexes.end(), pri_index);
+            if (it != pri_indexes.end()) {
+                pri_indexes.erase(it);
+            }
+        }
+    }
+
+    if (pri == 0 && !pri_indexes.empty()) {
+        pri = pri_indexes[0];
+        sec = 1;
+    }
+}
 
 } // namespace commands
 } // namespace explorer

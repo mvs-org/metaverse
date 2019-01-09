@@ -213,6 +213,7 @@ asset_cert_type check_cert_type_name(const string& cert_name, bool all)
     auto certs_create = asset_cert_ns::none;
     std::map <std::string, asset_cert_type> cert_map = {
         {"naming",      asset_cert_ns::naming},
+        {"witness",     asset_cert_ns::witness},
         {"marriage",    asset_cert_ns::marriage},
         {"kyc",         asset_cert_ns::kyc}
     };
@@ -290,8 +291,6 @@ asset_cert_type check_issue_cert(bc::blockchain::block_chain_impl& blockchain,
     }
 
     else if (certs_create == asset_cert_ns::mining) {
-        log::info("base_helper") << " check_issue_cert mining: " << cert_name;
-
         // check asset exist.
         if (!blockchain.is_asset_exist(symbol, false)) {
             throw asset_symbol_existed_exception(
@@ -1148,6 +1147,11 @@ void base_transfer_common::sync_fetchutxo(
             if (cert_type == asset_cert_ns::domain) {
                 auto&& domain = asset_cert::get_domain(symbol_);
                 if (domain != asset_symbol)
+                    continue;
+            }
+            else if (cert_type == asset_cert_ns::witness) {
+                auto&& primary = asset_cert::get_primary_witness_symbol(symbol_);
+                if (primary != asset_symbol)
                     continue;
             }
             else {
@@ -2231,6 +2235,10 @@ void issuing_asset_cert::sum_payment_amount()
 
         payment_asset_cert_.clear();
         payment_asset_cert_.push_back(asset_cert_ns::domain);
+    }
+    else if (asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::witness)) {
+        payment_asset_cert_.clear();
+        payment_asset_cert_.push_back(asset_cert_ns::witness);
     }
     else {
         payment_asset_cert_.clear();
