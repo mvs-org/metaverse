@@ -217,7 +217,7 @@ public:
     static uint32_t get_secondary_witness_index(const std::string& symbol);
 
 private:
-    static bool parse_int32(const std::string& param, int32_t& value);
+    static bool parse_uint32(const std::string& param, uint32_t& value);
 
 private:
     // NOTICE: ref CAssetCert in transaction.h

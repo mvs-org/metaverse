@@ -406,7 +406,7 @@ asset_cert::mining_subsidy_param_ptr asset_cert::parse_mining_subsidy_param(cons
     return nullptr;
 }
 
-bool asset_cert::parse_int32(const std::string& param, int32_t& value)
+bool asset_cert::parse_uint32(const std::string& param, uint32_t& value)
 {
     for (auto& i : param){
         if (!std::isalnum(i)) {
@@ -445,8 +445,8 @@ bool asset_cert::is_valid_primary_witness(const std::string& symbol)
     auto offset = witness_cert_prefix.size();
     auto index_str = symbol.substr(offset);
 
-    int32_t pri_index = -1;
-    if (!parse_int32(index_str, pri_index)) {
+    uint32_t pri_index = 0;
+    if (!parse_uint32(index_str, pri_index)) {
         return false;
     }
 
@@ -467,8 +467,8 @@ bool asset_cert::is_valid_secondary_witness(const std::string& symbol)
         return false;
     }
 
-    int32_t pri_index = -1, sec_index = -1;
-    if (!parse_int32(items[0], pri_index) || !parse_int32(items[1], sec_index)) {
+    uint32_t pri_index = 0, sec_index = 0;
+    if (!parse_uint32(items[0], pri_index) || !parse_uint32(items[1], sec_index)) {
         return false;
     }
 
@@ -490,8 +490,8 @@ uint32_t asset_cert::get_primary_witness_index(const std::string& symbol)
         return 0;
     }
 
-    int32_t pri_index = 0;
-    if (!parse_int32(items[0], pri_index)) {
+    uint32_t pri_index = 0;
+    if (!parse_uint32(items[0], pri_index)) {
         return 0;
     }
 
@@ -512,8 +512,8 @@ uint32_t asset_cert::get_secondary_witness_index(const std::string& symbol)
         return 0;
     }
 
-    int32_t sec_index = 0;
-    if (!parse_int32(items[1], sec_index)) {
+    uint32_t sec_index = 0;
+    if (!parse_uint32(items[1], sec_index)) {
         return 0;
     }
 
