@@ -427,7 +427,7 @@ uint64_t miner::calculate_block_subsidy_pow(uint64_t block_height, bool is_testn
 
 uint64_t miner::calculate_block_subsidy_pos(uint64_t block_height, bool is_testnet)
 {
-    return coin_price(1);
+    return coin_price(0);
 }
 
 uint64_t miner::calculate_block_subsidy_dpos(uint64_t block_height, bool is_testnet)

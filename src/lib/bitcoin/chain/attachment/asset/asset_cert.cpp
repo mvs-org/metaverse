@@ -473,7 +473,7 @@ bool asset_cert::is_valid_secondary_witness(const std::string& symbol)
     }
 
     return (pri_index >= 1 && pri_index <= witness_cert_count)
-        && (sec_index >= 1 && sec_index <= witness_cert_count);
+        && (sec_index >= 1 && sec_index <= secondary_witness_cert_max);
 }
 
 uint32_t asset_cert::get_primary_witness_index(const std::string& symbol)

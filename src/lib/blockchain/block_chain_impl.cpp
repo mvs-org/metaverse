@@ -3046,7 +3046,7 @@ bool block_chain_impl::can_use_dpos(uint64_t height) const
         }
     }
 
-    // a dpos must followed by a pow.
+    // a dpos must followed by a pow/pos.
     uint64_t pow_height = get_pow_height_before_dpos(height);
     if (pow_height == 0) {
         return false;

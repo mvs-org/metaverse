@@ -36,9 +36,9 @@ uint32_t witness::witness_number = 23;
 uint32_t witness::epoch_cycle_height = 10000;
 uint32_t witness::register_witness_lock_height = 20000; // it should larger than epoch_cycle_height
 uint64_t witness::witness_lock_threshold = coin_price(1000); // ETP bits
-uint32_t witness::vote_maturity = 24;
+uint32_t witness::vote_maturity = 120;
 
-const uint32_t witness::max_candidate_count = 10000;
+const uint32_t witness::max_candidate_count = 1024;
 const uint32_t witness::witness_register_fee = 123456789;
 const std::string witness::witness_registry_did = "witness_registry";
 

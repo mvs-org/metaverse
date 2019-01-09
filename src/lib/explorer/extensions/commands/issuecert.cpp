@@ -184,7 +184,7 @@ void issuecert::get_secondary_witness_cert_index(
     for (auto iter : pri_sec_map) {
         auto pri_index = iter.first;
         auto& set = iter.second;
-        if (set.size() < witness_cert_count) {
+        if (set.size() < secondary_witness_cert_max) {
             pri = pri_index;
             sec = set.size() + 1;
             break;
