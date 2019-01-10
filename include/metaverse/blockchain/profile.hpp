@@ -49,7 +49,7 @@ public:
     profile() = default;
     virtual ~profile() {}
     virtual profile_type get_type() const = 0;
-    virtual profile::ptr get_profile(const profile_context&) const = 0;
+    virtual profile::ptr get_profile(const profile_context&) = 0;
 
     static bool check_context(const profile_context&);
 };
@@ -61,7 +61,15 @@ public:
     ~witness_profile();
 
     profile_type get_type() const override { return profile_type::witness; }
-    profile::ptr get_profile(const profile_context&) const override;
+    profile::ptr get_profile(const profile_context&) override;
+
+    struct mining_stat {
+        uint32_t epoch_start_height;
+        uint32_t witness_count;
+        uint32_t witness_slot_num;
+        uint32_t mined_block_count;
+        ec_compressed public_key_data;
+    } witness_mining_stat;
 };
 
 } // namespace blockchain
