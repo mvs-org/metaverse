@@ -71,29 +71,17 @@ profile::ptr witness_profile::get_profile(const profile_context& context)
         return nullptr;
     }
 
-    const auto epoch_height = range.first;
+    const auto epoch_start_height = range.first;
 
     mining_stat stat = {};
-    stat.epoch_start_height = epoch_height; // epoch_start_height
+    stat.epoch_start_height = epoch_start_height; // epoch_start_height
 
-    auto sp_witnesses = witness::get().get_block_witnesses(epoch_height);
+    auto sp_witnesses = witness::get().get_block_witnesses(epoch_start_height);
     if (!sp_witnesses) {
         return nullptr;
     }
-    stat.witness_count = sp_witnesses->size(); // witness_count
-
-    uint32_t mined_block_count = 0;
-    for (auto height = range.first; height < range.second; ++height) {
-        ec_compressed public_key;
-        if (!chain.get_public_key(public_key, height)) {
-            return nullptr;
-        }
-        if (encode_base16(public_key) != hex_public_key) {
-            continue;
-        }
-        ++mined_block_count;
-    }
-    stat.mined_block_count = mined_block_count; // mined_block_coun
+    uint32_t witness_count = sp_witnesses->size();
+    stat.witness_count = witness_count; // witness_count
 
     const auto pos = std::find_if(std::begin(*sp_witnesses), std::end(*sp_witnesses),
         [&hex_public_key](const witness::witness_id& item) {
@@ -102,7 +90,47 @@ profile::ptr witness_profile::get_profile(const profile_context& context)
     if (pos == sp_witnesses->end()) {
         return nullptr;
     }
-    stat.witness_slot_num = std::distance(sp_witnesses->begin(), pos); // witness_slot_num
+    auto witness_slot_num = std::distance(sp_witnesses->begin(), pos);
+    stat.witness_slot_num = witness_slot_num; // witness_slot_num
+
+    auto get_next_slot = [&witness_count](uint32_t curr_slot){
+        return (curr_slot + 1) % witness_count;
+    };
+
+    uint32_t mined_block_count = 0;
+    uint32_t missed_block_count = 0;
+    uint32_t total_dpos_block_count = 0;
+    chain::header header;
+
+    uint32_t prev_slot_num = max_uint32;
+    uint32_t curr_slot_num = 0;
+    for (auto height = range.first; height < range.second; ++height) {
+        if (!chain.get_header(header, height)) {
+            return nullptr;
+        }
+        if (!header.is_proof_of_dpos()) {
+            continue;
+        }
+        ++total_dpos_block_count;
+
+        curr_slot_num = static_cast<uint32_t>(header.nonce);
+        if (curr_slot_num == witness_slot_num) {
+            ++mined_block_count;
+        }
+        else if (prev_slot_num != max_uint32) {
+            for (auto next = get_next_slot(prev_slot_num);
+                    next != curr_slot_num; next = get_next_slot(next)) {
+                if (next == witness_slot_num) {
+                    ++missed_block_count;
+                }
+            }
+        }
+        prev_slot_num = curr_slot_num;
+    }
+
+    stat.mined_block_count = mined_block_count; // mined_block_coun
+    stat.missed_block_count = missed_block_count; // missed_block_count
+    stat.total_dpos_block_count = total_dpos_block_count; // total_dpos_block_count
 
     witness_mining_stat = stat;
 

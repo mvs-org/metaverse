@@ -2913,10 +2913,6 @@ std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_wit
     }
 
     for (auto addr_pubkey_pair : *addr_pubkey_vec) {
-        // if (stakeholders->size() >= 10 * witness::max_candidate_count) {
-        //     break;
-        // }
-
         auto stake = get_address_witness_stake(epoch_height, addr_pubkey_pair.first);
         if (stake == 0) {
             continue;
@@ -2924,7 +2920,7 @@ std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_wit
 
         auto pubkey = encode_base16(addr_pubkey_pair.second);
 
-        witness_profile::mining_stat mining_stat{0,0,0,0};
+        witness_profile::mining_stat mining_stat = {};
         if (epoch_height > witness::witness_enable_height) {
             auto height_range = std::make_pair(
                 epoch_height - witness::witness_enable_height, epoch_height - 1);

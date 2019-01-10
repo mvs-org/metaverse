@@ -63,10 +63,12 @@ public:
     profile::ptr get_profile(const profile_context&) override;
 
     struct mining_stat {
-        uint32_t epoch_start_height;
+        uint64_t epoch_start_height;
         uint32_t witness_count;
         uint32_t witness_slot_num;
         uint32_t mined_block_count;
+        uint32_t missed_block_count;
+        uint32_t total_dpos_block_count;
     } witness_mining_stat;
 };
 
