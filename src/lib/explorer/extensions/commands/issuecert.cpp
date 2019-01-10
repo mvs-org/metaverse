@@ -59,26 +59,12 @@ console_result issuecert::invoke (Json::Value& jv_output,
     std::string primary_symbol;
 
     if (certs_create == asset_cert_ns::witness) {
-        uint32_t pri = 0, sec = 0;
-        get_secondary_witness_cert_index(blockchain, pri, sec);
+        primary_symbol = get_available_primary_witness_cert(blockchain);
 
-        if (pri == 0 || sec == 0) {
-            throw asset_cert_secondary_witness_full_exception("secondary witness cert reaches the maximum.");
-        }
-
-        auto fmt = boost::format("%1%%2%") % witness_cert_prefix % pri;
-        primary_symbol = fmt.str();
-
-        fmt = boost::format("%1%.%2%.%3%") % primary_symbol % sec % argument_.symbol;
+        auto fmt = boost::format("%1%.%2%") % primary_symbol % argument_.symbol;
         cert_symbol = fmt.str();
-        check_asset_symbol(cert_symbol);
 
-#ifdef MVS_DEBUG
-        auto pri_idx = asset_cert::get_primary_witness_index(cert_symbol);
-        auto sec_idx = asset_cert::get_secondary_witness_index(cert_symbol);
-        assert(pri_idx == pri);
-        assert(sec_idx == sec);
-#endif
+        check_asset_symbol(cert_symbol);
     }
 
     // receiver
@@ -134,73 +120,34 @@ console_result issuecert::invoke (Json::Value& jv_output,
     return console_result::okay;
 }
 
-void issuecert::get_secondary_witness_cert_index(
-    bc::blockchain::block_chain_impl& blockchain, uint32_t& pri, uint32_t& sec) const
+std::string issuecert::get_available_primary_witness_cert(
+    bc::blockchain::block_chain_impl& blockchain) const
 {
-    pri = 0;
-    sec = 0;
-
     // get owned primary witness cert
     auto account_certs = blockchain.get_account_asset_certs(auth_.name, "", asset_cert_ns::witness);
-    std::vector<uint32_t> pri_indexes;
+    std::vector<std::string> pri_symbols;
     for (auto& bus_cert : *account_certs) {
         auto& cert = bus_cert.certs;
         if (cert.is_primary_witness()) {
-            auto index = asset_cert::get_primary_witness_index(cert.get_symbol());
-            pri_indexes.push_back(index);
+            pri_symbols.push_back(cert.get_symbol());
         }
     }
 
-    if (pri_indexes.empty()) {
+    if (pri_symbols.empty()) {
         throw asset_cert_notowned_exception("no primary witness cert owned by " + auth_.name);
     }
 
-    std::map<uint32_t, std::set<uint32_t>> pri_sec_map;
-    auto issued_certs = blockchain.get_issued_asset_certs("", asset_cert_ns::witness);
-    for (auto& cert : *issued_certs) {
-        if (cert.is_secondary_witness()) {
-            auto pri_index = asset_cert::get_primary_witness_index(cert.get_symbol());
-            // not owned
-            if (std::find(pri_indexes.begin(), pri_indexes.end(), pri_index) == pri_indexes.end()) {
-                continue;
-            }
+    uint64_t last_height = 0;
+    blockchain.get_last_height(last_height);
 
-            // record secondary witness
-            auto sec_index = asset_cert::get_secondary_witness_index(cert.get_symbol());
-            auto iter = pri_sec_map.find(pri_index);
-            if (iter == pri_sec_map.end()) {
-                std::set<uint32_t> set;
-                set.insert(sec_index);
-                pri_sec_map[pri_index] = set;
-            }
-            else {
-                auto& set = iter->second;
-                set.insert(sec_index);
-            }
+    for (auto& symbol : pri_symbols) {
+        auto vec = blockchain.get_issued_secondary_witness_certs(symbol, last_height);
+        if (vec && vec->size() < secondary_witness_cert_max) {
+            return symbol;
         }
     }
 
-    // calculate primary and secondary index of new secondary cert.
-    for (auto iter : pri_sec_map) {
-        auto pri_index = iter.first;
-        auto& set = iter.second;
-        if (set.size() < secondary_witness_cert_max) {
-            pri = pri_index;
-            sec = set.size() + 1;
-            break;
-        }
-        else {
-            auto it = std::find(pri_indexes.begin(), pri_indexes.end(), pri_index);
-            if (it != pri_indexes.end()) {
-                pri_indexes.erase(it);
-            }
-        }
-    }
-
-    if (pri == 0 && !pri_indexes.empty()) {
-        pri = pri_indexes[0];
-        sec = 1;
-    }
+    throw asset_cert_secondary_witness_full_exception("secondary witness cert reaches the maximum.");
 }
 
 } // namespace commands

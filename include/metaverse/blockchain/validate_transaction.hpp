@@ -99,6 +99,7 @@ public:
     block_chain_impl& get_blockchain();
     const block_chain_impl& get_blockchain() const;
     const validate_block* get_validate_block() const;
+    uint64_t get_height() const;
 
 private:
     code basic_checks() const;

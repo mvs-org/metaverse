@@ -117,6 +117,24 @@ bool data_base::initialize_certs(const path& prefix)
     return instance.stop();
 }
 
+bool data_base::initialize_witness_certs(const path& prefix)
+{
+    const store paths(prefix);
+    if (paths.witness_certs_exist())
+        return true;
+    if (!paths.touch_witness_certs())
+        return false;
+
+    data_base instance(prefix, 0, 0);
+    if (!instance.create_witness_certs())
+        return false;
+
+    log::info(LOG_DATABASE)
+        << "Upgrading witness cert table is complete.";
+
+    return instance.stop();
+}
+
 bool data_base::initialize_mits(const path& prefix)
 {
     const store paths(prefix);
@@ -174,6 +192,33 @@ bool data_base::upgrade_version_63(const path& prefix)
     return true;
 }
 
+bool data_base::upgrade_version_64(const path& prefix)
+{
+    auto metadata_path = prefix / db_metadata::file_name;
+    if (!boost::filesystem::exists(metadata_path))
+        return false;
+
+    data_base::db_metadata metadata;
+    data_base::read_metadata(metadata_path, metadata);
+    if (metadata.version_.empty()) {
+        return false; // no version before, initialize all intead of upgrade.
+    }
+
+    if (!initialize_witness_certs(prefix)) {
+        log::error(LOG_DATABASE)
+            << "Failed to upgrade witness cert database.";
+        return false;
+    }
+
+    if (metadata.version_ != db_metadata::current_version) {
+        // write new db version to metadata
+        metadata = db_metadata(db_metadata::current_version);
+        data_base::write_metadata(metadata_path, metadata);
+    }
+
+    return true;
+}
+
 void data_base::set_admin(const std::string& name, const std::string& passwd)
 {
     accounts.set_admin(name, passwd);
@@ -207,6 +252,7 @@ data_base::store::store(const path& prefix)
     accounts_lookup = prefix / "account_table";
     assets_lookup = prefix / "asset_table";  // for blockchain assets
     certs_lookup = prefix / "cert_table";   // for blockchain certs
+    witness_certs_lookup = prefix / "witness_cert_table";   // for blockchain witness certs
     address_assets_lookup = prefix / "address_asset_table"; // for blockchain
     address_assets_rows = prefix / "address_asset_row"; // for blockchain
     account_assets_lookup = prefix / "account_asset_table";
@@ -249,6 +295,7 @@ bool data_base::store::touch_all() const
         touch_file(accounts_lookup) &&
         touch_file(assets_lookup) &&
         touch_file(certs_lookup) &&
+        touch_file(witness_certs_lookup) &&
         touch_file(address_assets_lookup) &&
         touch_file(address_assets_rows) &&
         touch_file(account_assets_lookup) &&
@@ -290,6 +337,16 @@ bool data_base::store::certs_exist() const
 bool data_base::store::touch_certs() const
 {
     return touch_file(certs_lookup);
+}
+
+bool data_base::store::witness_certs_exist() const
+{
+    return boost::filesystem::exists(witness_certs_lookup);
+}
+
+bool data_base::store::touch_witness_certs() const
+{
+    return touch_file(witness_certs_lookup);
 }
 
 bool data_base::store::mits_exist() const
@@ -465,6 +522,7 @@ data_base::data_base(const store& paths, size_t history_height,
     address_assets(paths.address_assets_lookup, paths.address_assets_rows, mutex_),
     account_assets(paths.account_assets_lookup, paths.account_assets_rows, mutex_),
     certs(paths.certs_lookup, mutex_),
+    witness_certs(paths.witness_certs_lookup, mutex_),
     dids(paths.dids_lookup, mutex_),
     address_dids(paths.address_dids_lookup, paths.address_dids_rows, mutex_),
     account_addresses(paths.account_addresses_lookup, paths.account_addresses_rows, mutex_),
@@ -525,6 +583,7 @@ bool data_base::create()
         address_assets.create() &&
         account_assets.create() &&
         certs.create() &&
+        witness_certs.create() &&
         dids.create() &&
         address_dids.create() &&
         account_addresses.create() &&
@@ -546,6 +605,12 @@ bool data_base::create_certs()
 {
     return
         certs.create();
+}
+
+bool data_base::create_witness_certs()
+{
+    return
+        witness_certs.create();
 }
 
 bool data_base::create_mits()
@@ -587,6 +652,7 @@ bool data_base::start()
         address_assets.start() &&
         account_assets.start() &&
         certs.start() &&
+        witness_certs.start() &&
         dids.start() &&
         address_dids.start() &&
         account_addresses.start() &&
@@ -616,6 +682,7 @@ bool data_base::stop()
     const auto address_assets_stop = address_assets.stop();
     const auto account_assets_stop = account_assets.stop();
     const auto certs_stop = certs.stop();
+    const auto witness_certs_stop = witness_certs.stop();
     const auto dids_stop = dids.stop();
     const auto address_dids_stop = address_dids.stop();
     const auto account_addresses_stop = account_addresses.stop();
@@ -644,6 +711,7 @@ bool data_base::stop()
         address_assets_stop &&
         account_assets_stop &&
         certs_stop &&
+        witness_certs_stop &&
         dids_stop &&
         address_dids_stop &&
         account_addresses_stop &&
@@ -669,6 +737,7 @@ bool data_base::close()
     const auto address_dids_close = address_dids.close();
     const auto account_assets_close = account_assets.close();
     const auto certs_close = certs.close();
+    const auto witness_certs_close = witness_certs.close();
     const auto dids_close = dids.close();
     const auto account_addresses_close = account_addresses.close();
     /* end database for account, asset, address_asset relationship */
@@ -690,6 +759,7 @@ bool data_base::close()
         address_dids_close &&
         account_assets_close&&
         certs_close &&
+        witness_certs_close &&
         dids_close &&
         account_addresses_close &&
         /* end database for account, asset, address_asset relationship */
@@ -762,6 +832,7 @@ void data_base::synchronize()
     address_assets.sync();
     account_assets.sync();
     certs.sync();
+    witness_certs.sync();
     dids.sync();
     address_dids.sync();
     account_addresses.sync();
@@ -781,6 +852,11 @@ void data_base::synchronize_dids()
 void data_base::synchronize_certs()
 {
     certs.sync();
+}
+
+void data_base::synchronize_witness_certs()
+{
+    witness_certs.sync();
 }
 
 void data_base::synchronize_mits()
@@ -809,7 +885,7 @@ void data_base::push(const block& block, uint64_t height)
         const auto tx_hash = tx.hash();
 
         timestamp_ = block.header.timestamp; // for address_asset_database store_input/store_output used only
-        
+
         // Add inputs
         if (!tx.is_coinbase())
             push_inputs(tx_hash, height, tx.inputs);
@@ -1079,6 +1155,10 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
                     const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
                     const auto key_hash = sha256_hash(data);
                     certs.remove(key_hash);
+
+                    if (asset_cert.get_type() == asset_cert_ns::witness) {
+                        witness_certs.remove(key_hash);
+                    }
                 }
             }
             else if (op.is_asset_mit()) {
@@ -1157,7 +1237,14 @@ void data_base::push_asset_cert(const asset_cert& sp_cert, const short_hash& key
     if (sp_cert.is_newly_generated()) {
         certs.store(sp_cert);
         certs.sync();
+
+        if (sp_cert.get_type() == asset_cert_ns::witness) {
+            auto bc_cert = blockchain_cert(0, outpoint, output_height, sp_cert);
+            witness_certs.store(bc_cert);
+            witness_certs.sync();
+        }
     }
+
     address_assets.store_output(key, outpoint, output_height, value,
         static_cast<typename std::underlying_type<business_kind>::type>(business_kind::asset_cert),
         timestamp_, sp_cert);

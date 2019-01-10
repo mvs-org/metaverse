@@ -112,6 +112,7 @@ extern const std::string witness_cert_prefix;
 extern const uint32_t witness_cert_count;
 extern const uint32_t secondary_witness_cert_min;
 extern const uint32_t secondary_witness_cert_max;
+extern const uint32_t secondary_witness_cert_expiration;
 
 // price
 //-----------------------------------------------------------------------------

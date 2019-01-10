@@ -879,46 +879,45 @@ code validate_transaction::check_asset_cert_transaction() const
         if (issue_cert_type == asset_cert_ns::naming) {
             if (!asset_cert::test_certs(cert_type, asset_cert_ns::domain)
                 || cert_owner.empty()) {
-                log::debug(LOG_BLOCKCHAIN) << "issue cert: "
-                                           << "no domain cert provided to issue naming cert.";
+                log::debug(LOG_BLOCKCHAIN) << "issue naming cert: "
+                                           << "no domain cert is provided."
+                                           << ", issuing: " << cert_symbol;
                 return error::asset_cert_issue_error;
             }
 
             auto&& domain = asset_cert::get_domain(cert_symbol);
             if (domain != domain_symbol) {
-                log::debug(LOG_BLOCKCHAIN) << "issue cert: "
-                                           << "invalid domain cert provided to issue naming cert.";
+                log::debug(LOG_BLOCKCHAIN) << "issue naming cert: "
+                                           << "invalid domain cert is provided."
+                                           << ", issuing: " << cert_symbol;
                 return error::asset_cert_issue_error;
-            }
-
-            // check asset not exist.
-            if (check_asset_exist(cert_symbol)) {
-                log::debug(LOG_BLOCKCHAIN) << "issue cert: "
-                                           << "asset symbol '" + cert_symbol + "' already exists in blockchain!";
-                return error::asset_exist;
             }
         }
         else if (issue_cert_type == asset_cert_ns::witness) {
             if (!asset_cert::test_certs(cert_type, asset_cert_ns::witness)
                 || cert_owner.empty()) {
-                log::debug(LOG_BLOCKCHAIN) << "issue cert: "
-                                           << "no primary witness cert provided to issue secondary witness cert.";
+                log::debug(LOG_BLOCKCHAIN) << "issue secondary witness cert: "
+                                           << "no primary witness cert is provided."
+                                           << ", issuing: " << cert_symbol;
                 return error::asset_cert_issue_error;
             }
 
             auto&& prefix = asset_cert::get_primary_witness_symbol(cert_symbol);
             if (prefix != primary_witness_symbol) {
-                log::debug(LOG_BLOCKCHAIN) << "issue cert: "
-                                           << "invalid primary witness cert provided to issue secondary witness cert."
-                                           << ", issueed: " << cert_symbol << ", provided: " << primary_witness_symbol;
+                log::debug(LOG_BLOCKCHAIN) << "issue secondary witness cert: "
+                                           << "invalid primary witness cert is provided."
+                                           << ", issuing: " << cert_symbol << ", provided: " << primary_witness_symbol;
                 return error::asset_cert_issue_error;
             }
 
-            // check asset not exist.
-            if (check_asset_exist(cert_symbol)) {
-                log::debug(LOG_BLOCKCHAIN) << "issue cert: "
-                                           << "asset symbol '" + cert_symbol + "' already exists in blockchain!";
-                return error::asset_exist;
+            auto last_height = get_height();
+            auto vec = chain.get_issued_secondary_witness_certs(primary_witness_symbol, last_height);
+            if (!vec || vec->size() >= secondary_witness_cert_max) {
+                log::debug(LOG_BLOCKCHAIN) << "issue secondary witness cert: "
+                                           << "primary witness cert is fullfiled"
+                                           << " at " << last_height
+                                           << ", issuing: " << cert_symbol;
+                return error::asset_cert_issue_error;
             }
         }
     }
@@ -1413,6 +1412,21 @@ code validate_transaction::check_transaction() const
     }
 
     return ret;
+}
+
+uint64_t validate_transaction::get_height() const
+{
+    uint64_t height = 0;
+    if (validate_block_) {
+        height = validate_block_->get_height();
+        --height;
+    }
+    else {
+        block_chain_impl& chain = blockchain_;
+        chain.get_last_height(height);
+    }
+
+    return height;
 }
 
 code validate_transaction::check_final_tx() const

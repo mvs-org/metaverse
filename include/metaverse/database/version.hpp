@@ -25,11 +25,11 @@
  *    these tables can be created automatically if not exist.
  *    this way only soft fork is needed when user upgrade.
  */
-#define MVS_DATABASE_VERSION "0.6.3"
+#define MVS_DATABASE_VERSION "0.6.4"
 
 #define MVS_DATABASE_MAJOR_VERSION 0
 #define MVS_DATABASE_MINOR_VERSION 6
-#define MVS_DATABASE_PATCH_VERSION 3
+#define MVS_DATABASE_PATCH_VERSION 4
 
 #define MVS_DATABASE_VERSION_NUMBER (((MVS_DATABASE_MAJOR_VERSION)*100) + ((MVS_DATABASE_MINOR_VERSION)*10) + (MVS_DATABASE_PATCH_VERSION))
 

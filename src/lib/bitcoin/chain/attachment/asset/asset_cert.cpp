@@ -94,9 +94,14 @@ bool asset_cert::is_valid_domain(const std::string& domain)
     return !domain.empty();
 }
 
-std::string asset_cert::get_key(const std::string&symbol, const asset_cert_type& bit)
+std::string asset_cert::get_key(const std::string& symbol, const asset_cert_type& bit)
 {
     return std::string(symbol + ":^#`@:" + std::to_string(bit));
+}
+
+std::string asset_cert::get_witness_key(const std::string& symbol)
+{
+    return std::string(symbol + ":^#`@:" + std::to_string(asset_cert_ns::witness));
 }
 
 std::string asset_cert::asset_cert::get_key() const
@@ -463,17 +468,16 @@ bool asset_cert::is_valid_secondary_witness(const std::string& symbol)
     auto index_str = symbol.substr(offset);
 
     std::vector<std::string> items = bc::split(index_str, ".");
-    if (items.size() < 2) {
+    if (items.size() < 2 || items[1].empty()) {
         return false;
     }
 
-    uint32_t pri_index = 0, sec_index = 0;
-    if (!parse_uint32(items[0], pri_index) || !parse_uint32(items[1], sec_index)) {
+    uint32_t pri_index = 0;
+    if (!parse_uint32(items[0], pri_index)) {
         return false;
     }
 
-    return (pri_index >= 1 && pri_index <= witness_cert_count)
-        && (sec_index >= 1 && sec_index <= secondary_witness_cert_max);
+    return (pri_index >= 1 && pri_index <= witness_cert_count);
 }
 
 uint32_t asset_cert::get_primary_witness_index(const std::string& symbol)
@@ -496,28 +500,6 @@ uint32_t asset_cert::get_primary_witness_index(const std::string& symbol)
     }
 
     return pri_index;
-}
-
-uint32_t asset_cert::get_secondary_witness_index(const std::string& symbol)
-{
-    if (symbol.empty() || symbol.find(witness_cert_prefix) != 0) {
-        return 0;
-    }
-
-    auto offset = witness_cert_prefix.size();
-    auto index_str = symbol.substr(offset);
-
-    std::vector<std::string> items = bc::split(index_str, ".");
-    if (items.size() < 2) {
-        return 0;
-    }
-
-    uint32_t sec_index = 0;
-    if (!parse_uint32(items[1], sec_index)) {
-        return 0;
-    }
-
-    return sec_index;
 }
 
 bool asset_cert::is_primary_witness() const
