@@ -442,9 +442,31 @@ public:
 
     profile::ptr get_profile(const profile_context&) const;
 
-    bool is_primary_witness_cert_actived(uint64_t epoch_height, const std::string& symbol);
-    std::shared_ptr<asset_cert::list> get_address_witness_certs(uint64_t epoch_height, const std::string& address);
-    uint64_t get_address_witness_stake(uint64_t epoch_height, const std::string& address);
+    uint64_t get_address_witness_stake(
+        const std::string& address, uint64_t epoch_height);
+
+    std::shared_ptr<asset_cert::list> get_address_witness_certs(
+        const std::string& address, uint64_t epoch_height);
+
+    // use witness_cert database
+    bool is_primary_witness_cert_actived(
+        const std::string& symbol, uint64_t epoch_height);
+
+    // use witness_cert database
+    std::shared_ptr<blockchain_cert::list> get_issued_witness_certs(
+        const std::string& symbol = "",
+        const std::string& address = "",
+        uint64_t epoch_height = 0);
+
+    // use witness_cert database
+    std::shared_ptr<blockchain_cert::list> get_issued_secondary_witness_certs(
+        const std::string& primary_symbol = "",
+        uint64_t epoch_height = 0);
+
+    // use witness_cert database
+    bool is_secondary_witness_cert_exists(
+        const std::string& symbol,
+        uint64_t expiration = 0);
 
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;

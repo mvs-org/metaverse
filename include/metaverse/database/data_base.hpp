@@ -52,6 +52,7 @@
 #include <metaverse/database/databases/account_asset_database.hpp>
 #include <metaverse/bitcoin/chain/attachment/did/did.hpp>
 #include <metaverse/database/databases/blockchain_asset_cert_database.hpp>
+#include <metaverse/database/databases/blockchain_witness_cert_database.hpp>
 #include <metaverse/database/databases/blockchain_did_database.hpp>
 #include <metaverse/database/databases/address_did_database.hpp>
 #include <metaverse/database/databases/blockchain_mit_database.hpp>
@@ -77,6 +78,8 @@ public:
         bool dids_exist() const;
         bool touch_certs() const;
         bool certs_exist() const;
+        bool touch_witness_certs() const;
+        bool witness_certs_exist() const;
         bool touch_mits() const;
         bool mits_exist() const;
 
@@ -92,6 +95,7 @@ public:
         path accounts_lookup;
         path assets_lookup;
         path certs_lookup;
+        path witness_certs_lookup;
         path address_assets_lookup;
         path address_assets_rows;
         path account_assets_lookup;
@@ -136,8 +140,12 @@ public:
 
     /// Create a new database file with a given path prefix and default paths.
     static bool initialize(const path& prefix, const chain::block& genesis);
+
     /// If database exists then upgrades to version 63.
     static bool upgrade_version_63(const path& prefix);
+
+    /// If database exists then upgrades to version 64.
+    static bool upgrade_version_64(const path& prefix);
 
     static bool touch_file(const path& file_path);
     static void write_metadata(const path& metadata_path, data_base::db_metadata& metadata);
@@ -154,6 +162,7 @@ public:
     bool create();
     bool create_dids();
     bool create_certs();
+    bool create_witness_certs();
     bool create_mits();
 
     /// Start all databases.
@@ -312,6 +321,7 @@ private:
 
     static bool initialize_dids(const path& prefix);
     static bool initialize_certs(const path& prefix);
+    static bool initialize_witness_certs(const path& prefix);
     static bool initialize_mits(const path& prefix);
 
     static void uninitialize_lock(const path& lock);
@@ -320,6 +330,7 @@ private:
     void synchronize();
     void synchronize_dids();
     void synchronize_certs();
+    void synchronize_witness_certs();
     void synchronize_mits();
 
     void push_inputs(const hash_digest& tx_hash, size_t height,
@@ -361,6 +372,7 @@ public:
     address_asset_database address_assets;
     account_asset_database account_assets;
     blockchain_asset_cert_database certs;
+    blockchain_witness_cert_database witness_certs;
     blockchain_did_database dids;
     address_did_database address_dids;
     account_address_database account_addresses;

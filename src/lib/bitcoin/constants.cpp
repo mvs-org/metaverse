@@ -29,17 +29,17 @@ namespace libbitcoin {
 
 #ifdef PRIVATE_CHAIN
 
-uint32_t coinbase_maturity                  = 10;
-uint64_t pos_enabled_height                 = 5000;
+uint32_t coinbase_maturity                      = 10;
+uint64_t pos_enabled_height                     = 5000;
 
-const uint64_t future_blocktime_fork_height = 0;
+const uint64_t future_blocktime_fork_height     = 0;
 
 #else //PRIVATE_CHAIN
 
-uint32_t coinbase_maturity                  = 1000;
-uint64_t pos_enabled_height                 = max_uint64;
+uint32_t coinbase_maturity                      = 1000;
+uint64_t pos_enabled_height                     = max_uint64;
 
-const uint64_t future_blocktime_fork_height = 1030000;
+const uint64_t future_blocktime_fork_height     = 1030000;
 
 #endif //PRIVATE_CHAIN
 
@@ -48,7 +48,7 @@ const uint64_t future_blocktime_fork_height = 1030000;
 // constants
 //==============================================================================
 
-const size_t relative_locktime_min_version  = 2;
+const size_t relative_locktime_min_version      = 2;
 
 // POS
 const uint64_t pos_genesis_reward               = coin_price(6000000);
@@ -64,7 +64,8 @@ const uint32_t block_timespan_window            = 24;
 const std::string witness_cert_prefix("MVS.WITNESS.");
 const uint32_t witness_cert_count               = 23;
 const uint32_t secondary_witness_cert_min       = 23;
-const uint32_t secondary_witness_cert_max       = 46;
+const uint32_t secondary_witness_cert_max       = 4;//46;
+const uint32_t secondary_witness_cert_expiration    = 100;//2000000;
 
 
 //==============================================================================

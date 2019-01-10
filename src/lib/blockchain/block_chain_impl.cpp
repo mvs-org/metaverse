@@ -2189,7 +2189,6 @@ std::shared_ptr<asset_detail::list> block_chain_impl::get_issued_assets(
     return sp_vec;
 }
 
-
 std::shared_ptr<blockchain_asset::list> block_chain_impl::get_asset_register_output(const std::string& symbol)
 {
     return database_.assets.get_asset_history(symbol);
@@ -2418,11 +2417,10 @@ uint64_t block_chain_impl::get_asset_cert_height(const std::string& cert_symbol,
     auto&& key_str = asset_cert::get_key(cert_symbol, cert_type);
     const auto key = get_hash(key_str);
     auto cert = database_.certs.get(key);
-    if(cert)
-    {
+    if (cert) {
         business_history::list history_cert = database_.address_assets.get_asset_certs_history(
             cert->get_address(), cert_symbol, cert_type, 0);
-        if(history_cert.size()>0){
+        if (history_cert.size() > 0) {
             return history_cert.back().output_height;
         }
     }
@@ -2917,7 +2915,7 @@ std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_wit
         //     break;
         // }
 
-        auto stake = get_address_witness_stake(epoch_height, addr_pubkey_pair.first);
+        auto stake = get_address_witness_stake(addr_pubkey_pair.first, epoch_height);
         if (stake == 0) {
             continue;
         }
@@ -2942,7 +2940,7 @@ std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_wit
     return stakeholders;
 }
 
-uint64_t block_chain_impl::get_address_witness_stake(uint64_t epoch_height, const std::string& address)
+uint64_t block_chain_impl::get_address_witness_stake(const std::string& address, uint64_t epoch_height)
 {
     auto locked_balance = get_locked_balance(epoch_height, address);
     if (locked_balance.first < consensus::witness::witness_lock_threshold) {
@@ -2953,10 +2951,90 @@ uint64_t block_chain_impl::get_address_witness_stake(uint64_t epoch_height, cons
     return stake;
 }
 
-std::shared_ptr<asset_cert::list>
-block_chain_impl::get_address_witness_certs(uint64_t epoch_height, const std::string& address)
+std::shared_ptr<blockchain_cert::list> block_chain_impl::get_issued_witness_certs(
+    const std::string& symbol,
+    const std::string& address,
+    uint64_t epoch_height)
 {
-    // TODO
+    auto sh_vec = std::make_shared<blockchain_cert::list>();
+
+    auto bc_cert_vec = database_.witness_certs.get_certs();
+    for (auto& bc_cert : *bc_cert_vec) {
+        if (epoch_height != 0
+                && (bc_cert.get_height() >= epoch_height
+                    || bc_cert.get_height() + secondary_witness_cert_expiration <= epoch_height)) {
+            continue;
+        }
+
+        auto cert = bc_cert.get_cert();
+        if (!symbol.empty() && symbol != cert.get_symbol()) {
+            continue;
+        }
+
+        if (!address.empty() && address != cert.get_address()) {
+            continue;
+        }
+
+        sh_vec->emplace_back(bc_cert);
+    }
+
+    return sh_vec;
+}
+
+std::shared_ptr<blockchain_cert::list> block_chain_impl::get_issued_secondary_witness_certs(
+    const std::string& primary_symbol,
+    uint64_t epoch_height)
+{
+    auto sh_vec = std::make_shared<blockchain_cert::list>();
+
+    auto bc_cert_vec = database_.witness_certs.get_certs();
+    for (auto& bc_cert : *bc_cert_vec) {
+
+        if (epoch_height != 0
+                && (bc_cert.get_height() >= epoch_height
+                    || bc_cert.get_height() + secondary_witness_cert_expiration <= epoch_height)) {
+            continue;
+        }
+
+        auto cert = bc_cert.get_cert();
+        if (!primary_symbol.empty() && cert.get_symbol().find(primary_symbol) != 0) {
+            continue;
+        }
+
+        sh_vec->emplace_back(bc_cert);
+    }
+
+    return sh_vec;
+}
+
+bool block_chain_impl::is_primary_witness_cert_actived(const std::string& symbol, uint64_t epoch_height)
+{
+    auto sh_vec = get_issued_secondary_witness_certs(symbol, epoch_height);
+    return (sh_vec && sh_vec->size() >= secondary_witness_cert_min);
+}
+
+bool block_chain_impl::is_secondary_witness_cert_exists(
+    const std::string& symbol,
+    uint64_t expiration)
+{
+    auto&& key_str = asset_cert::get_witness_key(symbol);
+    const auto key = get_hash(key_str);
+
+    auto bc_cert = database_.witness_certs.get(key);
+    if (bc_cert) {
+        if (expiration != 0 && bc_cert->get_height() + secondary_witness_cert_expiration <= expiration) {
+            return false;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+std::shared_ptr<asset_cert::list>
+block_chain_impl::get_address_witness_certs(const std::string& address, uint64_t epoch_height)
+{
     auto sh_vec = std::make_shared<asset_cert::list>();
 
     uint64_t tx_height;
@@ -2999,27 +3077,6 @@ block_chain_impl::get_address_witness_certs(uint64_t epoch_height, const std::st
     }
 
     return sh_vec;
-}
-
-bool block_chain_impl::is_primary_witness_cert_actived(uint64_t epoch_height, const std::string& symbol)
-{
-    // TODO
-    auto primary_index = asset_cert::get_primary_witness_index(symbol);
-    if (primary_index < 1) {
-        return false;
-    }
-
-    uint32_t secondary_count = 0;
-    auto issued_certs = get_issued_asset_certs("", asset_cert_ns::witness);
-    for (auto& cert : *issued_certs) {
-        if (cert.is_secondary_witness()) {
-            if (cert.get_symbol().find(symbol) == 0) {
-                ++secondary_count;
-            }
-        }
-    }
-
-    return (secondary_count >= secondary_witness_cert_min);
 }
 
 uint64_t block_chain_impl::get_pow_height_before_dpos(uint64_t height) const

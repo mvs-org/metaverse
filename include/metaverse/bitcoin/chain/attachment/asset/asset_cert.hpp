@@ -195,7 +195,8 @@ public:
 
     static std::string get_domain(const std::string& symbol);
     static bool is_valid_domain(const std::string& domain);
-    static std::string get_key(const std::string&symbol, const asset_cert_type& bit);
+    static std::string get_key(const std::string& symbol, const asset_cert_type& bit);
+    static std::string get_witness_key(const std::string& symbol);
 
     static bool has_content(asset_cert_type cert_type);
     bool has_content() const;
