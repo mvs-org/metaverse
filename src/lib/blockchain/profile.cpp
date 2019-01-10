@@ -40,12 +40,6 @@ bool profile::check_context(const profile_context& context)
     if (range.first >= range.second) {
         return false;
     }
-    // check did
-    auto& chain = context.block_chain;
-    auto& did = context.did;
-    if (!chain.is_did_exist(did)) {
-        return false;
-    }
     return true;
 }
 
@@ -68,7 +62,7 @@ profile::ptr witness_profile::get_profile(const profile_context& context)
 
     auto& range = context.height_range;
     auto& chain = context.block_chain;
-    auto& did = context.did;
+    auto& hex_public_key = context.hex_public_key;
 
     if (!witness::is_begin_of_epoch(range.first)) {
         return nullptr;
@@ -82,12 +76,6 @@ profile::ptr witness_profile::get_profile(const profile_context& context)
     mining_stat stat = {};
     stat.epoch_start_height = epoch_height; // epoch_start_height
 
-    auto diddetail = chain.get_registered_did(did);
-    if (!diddetail) {
-        return nullptr;
-    }
-    auto address = diddetail->get_address();
-
     auto sp_witnesses = witness::get().get_block_witnesses(epoch_height);
     if (!sp_witnesses) {
         return nullptr;
@@ -95,33 +83,21 @@ profile::ptr witness_profile::get_profile(const profile_context& context)
     stat.witness_count = sp_witnesses->size(); // witness_count
 
     uint32_t mined_block_count = 0;
-    ec_compressed ec_public_key;
     for (auto height = range.first; height < range.second; ++height) {
         ec_compressed public_key;
         if (!chain.get_public_key(public_key, height)) {
             return nullptr;
         }
-        if (!ec_public_key.empty()) {
-            if (ec_public_key != public_key) {
-                continue;
-            }
-        }
-        else {
-            auto pay_address = wallet::ec_public(public_key).to_payment_address();
-            if (address != pay_address.encoded()) {
-                continue;
-            }
-            ec_public_key = public_key;
+        if (encode_base16(public_key) != hex_public_key) {
+            continue;
         }
         ++mined_block_count;
     }
     stat.mined_block_count = mined_block_count; // mined_block_coun
-    stat.public_key_data = ec_public_key; // public_key_data
 
-    const auto witness_id = witness::to_witness_id(ec_public_key);
     const auto pos = std::find_if(std::begin(*sp_witnesses), std::end(*sp_witnesses),
-        [&witness_id](const witness::witness_id& item) {
-            return witness_id == item;
+        [&hex_public_key](const witness::witness_id& item) {
+            return item == to_chunk(hex_public_key);
         });
     if (pos == sp_witnesses->end()) {
         return nullptr;

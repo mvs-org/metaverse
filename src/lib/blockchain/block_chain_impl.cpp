@@ -2902,7 +2902,8 @@ std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_wit
     std::shared_ptr<std::vector<std::string>> excluded_addresses,
     uint64_t limit, uint64_t page_number) const
 {
-    using namespace consensus;
+    using fts_stake_holder = consensus::fts_stake_holder;
+    using witness = consensus::witness;
     uint64_t start_height = witness::witness_register_enable_height;
 
     auto stakeholders = std::make_shared<fts_stake_holder::ptr_list>();
@@ -2945,6 +2946,17 @@ std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_wit
         auto locked_balance = get_locked_balance(addr, epoch_height);
         if (locked_balance.first < consensus::witness::witness_lock_threshold) {
             continue;
+        }
+
+        witness_profile::mining_stat mining_stat{0,0,0,0};
+        if (epoch_height > witness::witness_enable_height) {
+            auto height_range = std::make_pair(
+                epoch_height-witness::witness_enable_height, epoch_height-1);
+            profile_context context{profile_type::witness, *this, height_range, pubkey};
+            auto sp_profile = get_profile(context);
+            if (sp_profile) {
+                mining_stat = static_cast<witness_profile*>(sp_profile.get())->witness_mining_stat;
+            }
         }
 
         witnesses.insert(pubkey);

@@ -36,8 +36,7 @@ struct BCB_API profile_context
     profile_type type;
     const block_chain_impl& block_chain;
     std::pair<uint64_t, uint64_t> height_range;
-    std::string did;
-    std::function<bool(const chain::output&)> filter;
+    std::string hex_public_key;
 };
 
 class BCB_API profile
@@ -68,7 +67,6 @@ public:
         uint32_t witness_count;
         uint32_t witness_slot_num;
         uint32_t mined_block_count;
-        ec_compressed public_key_data;
     } witness_mining_stat;
 };
 
