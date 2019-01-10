@@ -3116,16 +3116,16 @@ bool block_chain_impl::can_use_dpos(uint64_t height) const
 bool block_chain_impl::get_signature(ec_signature& blocksig, uint64_t height) const
 {
     ec_compressed dump;
-    return get_signature_and_publick_key(blocksig, dump, height);
+    return get_signature_and_public_key(blocksig, dump, height);
 }
 
-bool block_chain_impl::get_publick_key(ec_compressed& public_key, uint64_t height) const
+bool block_chain_impl::get_public_key(ec_compressed& public_key, uint64_t height) const
 {
     ec_signature dump;
-    return get_signature_and_publick_key(dump, public_key, height);
+    return get_signature_and_public_key(dump, public_key, height);
 }
 
-bool block_chain_impl::get_signature_and_publick_key(ec_signature& blocksig, ec_compressed& public_key, uint64_t height) const
+bool block_chain_impl::get_signature_and_public_key(ec_signature& blocksig, ec_compressed& public_key, uint64_t height) const
 {
     if (stopped())
         return false;
