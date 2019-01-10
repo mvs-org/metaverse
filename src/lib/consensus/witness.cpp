@@ -584,11 +584,13 @@ uint32_t witness::get_slot_num(const witness_id& id) const
     return max_uint32;
 }
 
-uint32_t witness::calc_slot_num(uint64_t block_height) const
+/// @return (actual num, expect num) pair
+/// If actual num != expect num, then there exist missed slot
+std::pair<uint32_t, uint32_t> witness::calc_slot_num(uint64_t block_height) const
 {
     auto size = get_witness_number();
     if (!is_witness_enabled(block_height) || size == 0) {
-        return max_uint32;
+        return std::make_pair(max_uint32, max_uint32);
     }
 
     auto begin_height = get_epoch_begin_height(block_height);
@@ -607,17 +609,7 @@ uint32_t witness::calc_slot_num(uint64_t block_height) const
         calced_slot_num = (start_num + offset) % size;
     }
 
-    std::vector<std::string> missed_vec;
-    for (auto num = start_num; num != calced_slot_num; num = (num+1)%size) {
-        missed_vec.push_back(std::to_string(num));
-    }
-    auto missed_nums = missed_vec.empty() ? std::string("none") : bc::join(missed_vec);
-
-    log::info(LOG_HEADER) << "calc_slot_num at " << block_height
-        << ", start num: " << start_num
-        << ", slot num: " << calced_slot_num
-        << ", missed num: " << missed_nums;
-    return calced_slot_num;
+    return std::make_pair(calced_slot_num, start_num);
 }
 
 bool witness::is_testnet()
@@ -672,12 +664,25 @@ bool witness::verify_signer(uint32_t witness_slot_num, uint64_t height) const
         return false;
     }
 
-    auto calced_slot_num = calc_slot_num(height);
-    if (calced_slot_num == witness_slot_num) {
-        return true;
+    auto result_pair = calc_slot_num(height);
+    auto calced_slot_num = result_pair.first;
+    if (calced_slot_num != witness_slot_num) {
+        return false;
     }
 
-    return false;
+    auto start_num = result_pair.second;
+    std::vector<std::string> missed_vec;
+    for (auto num = start_num; num != calced_slot_num; num = (num+1)%size) {
+        missed_vec.push_back(std::to_string(num));
+    }
+    auto missed_nums = missed_vec.empty() ? std::string("none") : bc::join(missed_vec);
+
+    log::info(LOG_HEADER) << "calc_slot_num at " << height
+        << ", start num: " << start_num
+        << ", slot num: " << calced_slot_num
+        << ", missed num: " << missed_nums;
+
+    return true;
 }
 
 bool witness::is_dpos_enabled()
