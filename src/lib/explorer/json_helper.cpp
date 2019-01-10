@@ -674,7 +674,7 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
         tree["content"] = msg_info.get_content();
     }
     else if(attach_data.get_type() == ATTACH_NULL_TYPE){
-        tree["type"] = "null";
+        tree["type"] = "coinstake";
     }
     else {
         tree["type"] = "unknown business";
