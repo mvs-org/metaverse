@@ -36,7 +36,7 @@ struct BCB_API profile_context
     profile_type type;
     const block_chain_impl& block_chain;
     std::pair<uint64_t, uint64_t> height_range;
-    std::string hex_public_key;
+    std::set<std::string> hex_public_keys;
 };
 
 class BCB_API profile
@@ -62,14 +62,19 @@ public:
     profile_type get_type() const override { return profile_type::witness; }
     profile::ptr get_profile(const profile_context&) override;
 
-    struct mining_stat {
+    struct epoch_stat {
         uint64_t epoch_start_height;
         uint32_t witness_count;
+        uint32_t total_dpos_block_count;
+    } witness_epoch_stat;
+
+    struct mining_stat {
         uint32_t witness_slot_num;
         uint32_t mined_block_count;
         uint32_t missed_block_count;
-        uint32_t total_dpos_block_count;
-    } witness_mining_stat;
+    };
+
+    std::unordered_map<std::string, mining_stat> witness_mining_stat_map;
 };
 
 } // namespace blockchain

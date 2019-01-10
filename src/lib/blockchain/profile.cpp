@@ -62,7 +62,7 @@ profile::ptr witness_profile::get_profile(const profile_context& context)
 
     auto& range = context.height_range;
     auto& chain = context.block_chain;
-    auto& hex_public_key = context.hex_public_key;
+    auto& hex_public_keys = context.hex_public_keys;
 
     if (!witness::is_begin_of_epoch(range.first)) {
         return nullptr;
@@ -73,29 +73,41 @@ profile::ptr witness_profile::get_profile(const profile_context& context)
 
     const auto epoch_start_height = range.first;
 
-    mining_stat stat = {};
-    stat.epoch_start_height = epoch_start_height; // epoch_start_height
+    epoch_stat res_epoch_stat = {};
+    res_epoch_stat.epoch_start_height = epoch_start_height; // epoch_start_height
 
     auto sp_witnesses = witness::get().get_block_witnesses(epoch_start_height);
     if (!sp_witnesses) {
         return nullptr;
     }
     uint32_t witness_count = sp_witnesses->size();
-    stat.witness_count = witness_count; // witness_count
+    res_epoch_stat.witness_count = witness_count; // witness_count
 
-    const auto pos = std::find_if(std::begin(*sp_witnesses), std::end(*sp_witnesses),
-        [&hex_public_key](const witness::witness_id& item) {
-            return item == to_chunk(hex_public_key);
-        });
-    if (pos == sp_witnesses->end()) {
-        return nullptr;
-    }
-    auto witness_slot_num = std::distance(sp_witnesses->begin(), pos);
-    stat.witness_slot_num = witness_slot_num; // witness_slot_num
+    auto get_slot_num = [sp_witnesses](const std::string& hex_public_key) -> uint32_t {
+        const auto pos = std::find_if(std::begin(*sp_witnesses), std::end(*sp_witnesses),
+            [&hex_public_key](const witness::witness_id& item) {
+                return item == to_chunk(hex_public_key);
+            });
+        if (pos == sp_witnesses->end()) {
+            return max_uint32;
+        }
+        return std::distance(sp_witnesses->begin(), pos);
+    };
 
-    auto get_next_slot = [&witness_count](uint32_t curr_slot){
+    auto get_next_slot = [&witness_count](uint32_t curr_slot) -> uint32_t {
         return (curr_slot + 1) % witness_count;
     };
+
+    std::vector<mining_stat*> mining_stat_vec(witness_count, nullptr);
+
+    for (auto& pubkey : hex_public_keys) {
+        auto witness_slot_num = get_slot_num(pubkey);
+        auto* stat_ptr = &witness_mining_stat_map[pubkey];
+        stat_ptr->witness_slot_num = witness_slot_num; // witness_slot_num
+        if (witness_slot_num < witness_count) {
+            mining_stat_vec[witness_slot_num] = stat_ptr;
+        }
+    }
 
     uint32_t mined_block_count = 0;
     uint32_t missed_block_count = 0;
@@ -114,25 +126,23 @@ profile::ptr witness_profile::get_profile(const profile_context& context)
         ++total_dpos_block_count;
 
         curr_slot_num = static_cast<uint32_t>(header.nonce);
-        if (curr_slot_num == witness_slot_num) {
-            ++mined_block_count;
+        if (mining_stat_vec[curr_slot_num] != nullptr) {
+            ++mining_stat_vec[curr_slot_num]->mined_block_count; // mined_block_count
         }
-        else if (prev_slot_num != max_uint32) {
+
+        if (prev_slot_num != max_uint32) {
             for (auto next = get_next_slot(prev_slot_num);
                     next != curr_slot_num; next = get_next_slot(next)) {
-                if (next == witness_slot_num) {
-                    ++missed_block_count;
+                if (mining_stat_vec[next] != nullptr) {
+                    ++mining_stat_vec[next]->missed_block_count; // missed_block_count
                 }
             }
         }
         prev_slot_num = curr_slot_num;
     }
 
-    stat.mined_block_count = mined_block_count; // mined_block_coun
-    stat.missed_block_count = missed_block_count; // missed_block_count
-    stat.total_dpos_block_count = total_dpos_block_count; // total_dpos_block_count
-
-    witness_mining_stat = stat;
+    res_epoch_stat.total_dpos_block_count = total_dpos_block_count; // total_dpos_block_count
+    witness_epoch_stat = res_epoch_stat;
 
     return std::make_shared<witness_profile>(*this);
 }
