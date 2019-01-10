@@ -188,10 +188,10 @@ bool block_chain_impl::pos_exist_before(const uint64_t& height)
     return false;
 }
 
-bool block_chain_impl::select_utxo_for_staking(
+uint32_t block_chain_impl::select_utxo_for_staking(
     uint64_t best_height,
     const wallet::payment_address& pay_address,
-    chain::output_info::list& stake_outputs,
+    std::shared_ptr<chain::output_info::list> stake_outputs,
     uint32_t max_count)
 {
     bool result = false;
@@ -199,8 +199,8 @@ bool block_chain_impl::select_utxo_for_staking(
 
     chain::transaction tx_temp;
     uint64_t tx_height;
-    size_t stake_utxos = 0;
-    size_t collect_utxos = 0;
+    uint32_t stake_utxos = 0;
+    uint32_t collect_utxos = 0;
 
     bool enable_collect_stake = settings_.collect_split_stake;
 
@@ -225,17 +225,20 @@ bool block_chain_impl::select_utxo_for_staking(
             bool satisfied = check_pos_utxo_height_and_value(row.output_height, best_height, row.value);
             if (satisfied) {
                 ++stake_utxos;
-                stake_outputs.push_back( {output, row.output, tx_height} );
+                if (stake_outputs) {
+                    stake_outputs->push_back( {output, row.output, tx_height} );
+                }
                 if (stake_utxos >= max_count) {
                     break;
                 }
             }
-            else if (enable_collect_stake
+            else if (stake_outputs
+                && enable_collect_stake
                 && collect_utxos < pos_coinstake_max_utxos
                 && row.value < pos_stake_min_value) {
                 // collect utxos to satisfy pos_stake_min_value
                 ++collect_utxos;
-                stake_outputs.push_back( {output, row.output, tx_height} );
+                stake_outputs->push_back( {output, row.output, tx_height} );
             }
         }
     }
@@ -246,7 +249,7 @@ bool block_chain_impl::select_utxo_for_staking(
     }
 #endif
 
-    return (stake_utxos > 0);
+    return stake_utxos;
 }
 
 chain::header::ptr block_chain_impl::get_last_block_header(const chain::header& parent_header, uint32_t version) const

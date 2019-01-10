@@ -150,10 +150,10 @@ public:
     virtual bool check_pos_capability(
         uint64_t best_height,
         const wallet::payment_address& pay_addres) = 0;
-    virtual bool select_utxo_for_staking(
+    virtual uint32_t select_utxo_for_staking(
         uint64_t best_height,
         const wallet::payment_address& pay_addres,
-        chain::output_info::list& outputs,
+        std::shared_ptr<chain::output_info::list> stake_outputs = nullptr,
         uint32_t max_count = max_uint32) = 0;
 };
 

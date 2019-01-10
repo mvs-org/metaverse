@@ -918,8 +918,8 @@ miner::block_ptr miner::create_new_block_pos(
     }
 
     // check utxo stake
-    chain::output_info::list stake_outputs;
-    if (!block_chain.select_utxo_for_staking(last_height, pay_address, stake_outputs, 1000)) {
+    auto stake_outputs = std::make_shared<chain::output_info::list>();
+    if (0 == block_chain.select_utxo_for_staking(last_height, pay_address, stake_outputs, 1000)) {
         log::warning(LOG_HEADER) << "no enough pos utxo stake is holded at address " << pay_address;
         sleep_for_mseconds(10 * 1000);
         return nullptr;
@@ -956,7 +956,7 @@ miner::block_ptr miner::create_new_block_pos(
     transaction_ptr coinstake(nullptr);
     while (nullptr == coinstake && block_time < (start_time  + block_timespan_window / 2)) {
         pblock->header.timestamp = std::max(block_time, prev_header.timestamp + 1);
-        coinstake = create_coinstake_tx(private_key_, pay_address, pblock, stake_outputs);
+        coinstake = create_coinstake_tx(private_key_, pay_address, pblock, *stake_outputs);
         if (coinstake) {
             break;
         }

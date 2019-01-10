@@ -66,6 +66,12 @@ console_result getmininginfo::invoke(Json::Value& jv_output,
         jv_output["payment_address"] = payment_address;
         jv_output["asset_symbol"] = asset_symbol;
         jv_output["block_version"] = block_version;
+
+        if (waddr && (miner.get_accept_block_version() == chain::block_version_pos)) {
+            auto& blockchain = node.chain_impl();
+            auto stake_utxo_count = blockchain.select_utxo_for_staking(height, waddr);
+            jv_output["stake_utxo_count"] = stake_utxo_count;
+        }
     }
 
     return console_result::okay;
