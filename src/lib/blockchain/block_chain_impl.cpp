@@ -2725,21 +2725,16 @@ uint64_t block_chain_impl::calc_number_of_blocks(uint64_t from, uint64_t to) con
 
 /// @return pair of <locked_balance, locked_weight>
 std::pair<uint64_t, uint64_t> block_chain_impl::get_locked_balance(
-    const std::string& address, uint64_t epoch_height,
-    const std::string& asset_symbol) const
+    uint64_t epoch_height,
+    const std::string& address)
 {
     using namespace consensus;
-    const bool is_asset = !asset_symbol.empty();
-    if (is_asset && wallet::symbol::is_forbidden(asset_symbol)) {
-        return std::make_pair(0, 0);
-    }
 
     uint64_t locked_balance = 0;
     uint64_t locked_weight = 0;
     uint64_t expiration = epoch_height + witness::register_witness_lock_height;
-    auto& rThis = const_cast<block_chain_impl&>(*this);
 
-    auto&& rows = rThis.get_address_history(wallet::payment_address(address));
+    auto&& rows = get_address_history(wallet::payment_address(address));
 
     chain::transaction tx_temp;
     uint64_t tx_height = 0;
@@ -2749,209 +2744,190 @@ std::pair<uint64_t, uint64_t> block_chain_impl::get_locked_balance(
 
     for (auto& row: rows)
     {
-        // spend unconfirmed (or no spend attempted)
-        if ((row.spend.hash == null_hash)
-            && rThis.get_transaction(tx_temp, tx_height, row.output.hash))
-        {
-            // tx not maturity
-            if (tx_height + witness::vote_maturity > last_height) {
-                continue;
-            }
-
-            // current epoch is not allowed.
-            auto tx_epoch = witness::get_epoch_begin_height(tx_height);
-            if (epoch_height != 0 && tx_epoch >= epoch_height) {
-                continue;
-            }
-
-            BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
-            const auto& output = tx_temp.outputs.at(row.output.index);
-
-            if (is_asset != output.is_asset()) {
-                continue;
-            }
-
-            if (is_asset && asset_symbol != output.get_asset_symbol()) {
-                continue;
-            }
-
-            // only support lock sequence with block height
-            auto lock_sequence = output.get_lock_sequence();
-            auto seq_expiration = tx_height + lock_sequence;
-
-            // use any kind of blocks
-            if ((seq_expiration <= last_height) ||
-                (expiration > last_height && seq_expiration <= expiration)) {
-                continue;
-            }
-
-            uint64_t locked_value = is_asset ? output.get_asset_amount() : row.value;
-            locked_balance += locked_value;
-            auto weight = std::min<uint64_t>(witness::epoch_cycle_height, seq_expiration - last_height);
-            locked_weight += locked_value * weight;
+        if (row.value == 0) {
+            continue;
         }
+
+        // spend unconfirmed (or no spend attempted)
+        bool tx_ready = (row.spend.hash == null_hash)
+            && get_transaction(tx_temp, tx_height, row.output.hash);
+        if (!tx_ready) {
+            continue;
+        }
+
+        // tx not maturity
+        if (tx_height + witness::vote_maturity > last_height) {
+            continue;
+        }
+
+        // current epoch is not allowed.
+        if (epoch_height != 0) {
+            auto tx_epoch = witness::get_epoch_begin_height(tx_height);
+            if (tx_epoch >= epoch_height) {
+                continue;
+            }
+        }
+
+        BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
+        const auto& output = tx_temp.outputs.at(row.output.index);
+
+        if (!output.is_etp()) {
+            continue;
+        }
+
+        // only support lock sequence with block height
+        auto lock_sequence = output.get_lock_sequence();
+        auto seq_expiration = tx_height + lock_sequence;
+
+        // use any kind of blocks
+        if ((seq_expiration <= last_height) ||
+            (expiration > last_height && seq_expiration <= expiration)) {
+            continue;
+        }
+
+        uint64_t locked_value = row.value;
+        locked_balance += locked_value;
+        auto weight = std::min<uint64_t>(witness::epoch_cycle_height, seq_expiration - last_height);
+        locked_weight += locked_value * weight;
     }
+
     return std::make_pair(locked_balance, locked_weight);
 }
 
 /// how to register witness? just send (p2kh) exact witness::witness_register_fee ETP
 /// to DID witness::witness_registry_did, and from your DID as the source.
 /// @return vector of pair of <address, public_key>
-static std::pair<std::string, data_chunk>
-filter_witness(const block_chain_impl& chain, const business_record& buss, const std::string& symbol="")
+std::shared_ptr<std::vector<std::pair<std::string, data_chunk>>> block_chain_impl::get_witnesses_addr_pubkey(
+    block_chain_impl& chain,
+    uint64_t epoch_height,
+    std::shared_ptr<std::vector<std::string>> excluded_addresses)
 {
+    using namespace consensus;
+    auto witnesses = std::make_shared<std::vector<std::pair<std::string, data_chunk>>>();
     std::pair<std::string, data_chunk> result;
-    if (buss.kind != point_kind::output) {
-        return result;
-    }
 
-    const bool is_asset = !symbol.empty();
-    uint64_t amount = 0;
-    const auto& bussi_data = buss.data;
-    auto bussi_kind = bussi_data.get_kind_value();
-    if (!is_asset) {
-        // etp business process
-        if (bussi_kind == business_kind::etp) {
-            amount = buss.val_chk_sum.value;
-        }
-    }
-    else {
-        // asset business process
-        if (bussi_kind == business_kind::asset_transfer) {
-            auto transfer = boost::get<asset_transfer>(bussi_data.get_data());
-            if (symbol == transfer.get_symbol()) {
-                amount = transfer.get_quantity();
-            }
-        }
-    }
+    uint64_t tx_height = 0, height = 0;
+    chain.get_last_height(height);
 
-    if (amount != consensus::witness::witness_register_fee) {
-        return result;
+    auto did_detail = chain.get_registered_did(witness::witness_registry_did);
+    if (!did_detail) {
+        return witnesses;
     }
+    std::string registry_addr = did_detail->get_address();
 
     chain::transaction tx_temp;
-    uint64_t tx_height = 0;
-    if (!chain.get_transaction(tx_temp, tx_height, buss.point.hash)) {
-        return result;
-    }
-
-    const auto& output = tx_temp.outputs.at(buss.point.index);
-    if (!operation::is_pay_key_hash_pattern(output.script.operations)) {
-        return result;
-    }
-
-    if (output.attach_data.get_to_did() != consensus::witness::witness_registry_did) {
-        return result;
-    }
-
-    const auto& from_did = output.attach_data.get_from_did();
-    if (from_did.empty()) {
-        return result;
-    }
-
-    auto did_detail = chain.get_registered_did(from_did);
-    if (!did_detail) {
-        return result;
-    }
-
-    const auto& from_address = did_detail->get_address();
-    if (from_address.empty()) {
-        return result;
-    }
-
-    const auto& input_ops = tx_temp.inputs.front().script.operations;
-    if (input_ops.size() < 2 || !is_public_key(input_ops[1].data)) {
-        return result;
-    }
-
-    return std::make_pair(from_address, input_ops[1].data);
-}
-
-// std::vector<std::pair<std::string, data_chunk>> block_chain_impl::get_register_witnesses(
-//     uint64_t start_height, uint64_t end_height, uint64_t limit, uint64_t page_number) const
-// {
-//     using addr_pubkey_pair_t = std::pair<std::string, data_chunk>;
-
-//     // get address of witness_registry_did
-//     auto did_detail = get_registered_did(consensus::witness::witness_registry_did);
-//     if (!did_detail) {
-//         return std::vector<addr_pubkey_pair_t>();
-//     }
-//     std::string did_address = did_detail->get_address();
-
-//     // get asset on address
-//     auto sh_vec = database_.address_assets.get(did_address, "", start_height, end_height, limit, page_number);
-
-//     // filter stake
-//     std::set<addr_pubkey_pair_t> witnesses;
-//     for (auto iter = sh_vec->begin(); iter != sh_vec->end(); ++iter) {
-//         auto addr_pubkey_pair = filter_witness(*this, *iter);
-//         if (addr_pubkey_pair.first.empty()) {
-//             continue;
-//         }
-
-//         witnesses.insert(addr_pubkey_pair);
-//     }
-
-//     return std::vector<addr_pubkey_pair_t>(witnesses.begin(), witnesses.end());
-// }
-
-/// stake holder is publickey and lockvalue pair
-std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_witnesses_with_stake(
-    uint64_t epoch_height,
-    std::shared_ptr<std::vector<std::string>> excluded_addresses,
-    uint64_t limit, uint64_t page_number) const
-{
-    using fts_stake_holder = consensus::fts_stake_holder;
-    using witness = consensus::witness;
-    uint64_t start_height = witness::witness_register_enable_height;
-
-    auto stakeholders = std::make_shared<fts_stake_holder::ptr_list>();
-
-    // get address of witness_registry_did
-    auto did_detail = get_registered_did(witness::witness_registry_did);
-    if (!did_detail) {
-        return stakeholders;
-    }
-    std::string did_address = did_detail->get_address();
-
-    // get asset on address
-    auto sh_vec = database_.address_assets.get(did_address, "", start_height, 0, limit, page_number);
-
-    // filter stake
-    std::set<std::string> witnesses;    // contains public key
-    for (auto iter = sh_vec->begin(); iter != sh_vec->end(); ++iter) {
-        if (stakeholders->size() >= 10 * witness::max_candidate_count) {
-            break;
-        }
-
-        auto addr_pubkey_pair = filter_witness(*this, *iter);
-        std::string addr = addr_pubkey_pair.first;
-        if (addr.empty()) {
+    std::set<std::string> addresses;
+    auto&& rows = chain.get_address_history(registry_addr, false);
+    for (const auto& row: rows) {
+        if (row.value != consensus::witness::witness_register_fee) {
             continue;
         }
 
-        auto pubkey = encode_base16(addr_pubkey_pair.second);
-        if (witnesses.count(pubkey)) {
+        if (row.output_height < witness::witness_register_enable_height) {
+            continue;
+        }
+
+        // spend unconfirmed (or no spend attempted)
+        bool tx_ready = (row.spend.hash == null_hash)
+            && chain.get_transaction(tx_temp, tx_height, row.output.hash);
+        if (!tx_ready) {
+            continue;
+        }
+
+       // current epoch is not allowed.
+        if (epoch_height != 0) {
+            auto tx_epoch = consensus::witness::get_epoch_begin_height(tx_height);
+            if (tx_epoch >= epoch_height) {
+                continue;
+            }
+        }
+
+        BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
+        auto output = tx_temp.outputs.at(row.output.index);
+
+        // check from and to
+        if (output.attach_data.get_to_did() != consensus::witness::witness_registry_did) {
+            continue;
+        }
+        if (output.get_script_address() != registry_addr) {
+            continue;
+        }
+
+        const auto& from_did = output.attach_data.get_from_did();
+        if (from_did.empty()) {
+            continue;
+        }
+
+        // check script
+        if (!operation::is_pay_key_hash_pattern(output.script.operations)) {
+            continue;
+        }
+
+        const auto& input_ops = tx_temp.inputs.front().script.operations;
+        if (input_ops.size() < 2 || !is_public_key(input_ops[1].data)) {
+            continue;
+        }
+
+        // get from address
+        auto did_detail = chain.get_registered_did(from_did);
+        if (!did_detail) {
+            continue;
+        }
+
+        const auto& from_address = did_detail->get_address();
+        if (from_address.empty()) {
+            continue;
+        }
+
+        if (addresses.count(from_address)) {
             continue;
         }
 
         if (excluded_addresses && !excluded_addresses->empty()) {
-            auto fit = std::find(excluded_addresses->begin(), excluded_addresses->end(), addr);
+            auto fit = std::find(excluded_addresses->begin(), excluded_addresses->end(), from_address);
             if (fit != excluded_addresses->end()) {
                 continue;
             }
         }
 
-        auto locked_balance = get_locked_balance(addr, epoch_height);
-        if (locked_balance.first < consensus::witness::witness_lock_threshold) {
+        addresses.insert(from_address);
+
+        // add address/public key data pair
+        witnesses->emplace_back(std::make_pair(from_address, input_ops[1].data));
+    }
+
+    return witnesses;
+}
+
+/// stake holder is publickey and lockvalue pair
+std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_witnesses_with_stake(
+    uint64_t epoch_height,
+    std::shared_ptr<std::vector<std::string>> excluded_addresses)
+{
+    using namespace consensus;
+    auto stakeholders = std::make_shared<fts_stake_holder::ptr_list>();
+
+    auto addr_pubkey_vec = get_witnesses_addr_pubkey(*this, epoch_height, excluded_addresses);
+    if (!addr_pubkey_vec || addr_pubkey_vec->empty()) {
+        return stakeholders;
+    }
+
+    for (auto addr_pubkey_pair : *addr_pubkey_vec) {
+        // if (stakeholders->size() >= 10 * witness::max_candidate_count) {
+        //     break;
+        // }
+
+        auto stake = get_address_witness_stake(epoch_height, addr_pubkey_pair.first);
+        if (stake == 0) {
             continue;
         }
+
+        auto pubkey = encode_base16(addr_pubkey_pair.second);
 
         witness_profile::mining_stat mining_stat{0,0,0,0};
         if (epoch_height > witness::witness_enable_height) {
             auto height_range = std::make_pair(
-                epoch_height-witness::witness_enable_height, epoch_height-1);
+                epoch_height - witness::witness_enable_height, epoch_height - 1);
             profile_context context{profile_type::witness, *this, height_range, pubkey};
             auto sp_profile = get_profile(context);
             if (sp_profile) {
@@ -2959,12 +2935,91 @@ std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_wit
             }
         }
 
-        witnesses.insert(pubkey);
-        auto item = std::make_shared<consensus::fts_stake_holder>(pubkey, locked_balance.first);
+        auto item = std::make_shared<fts_stake_holder>(pubkey, stake);
         stakeholders->emplace_back(item);
     }
 
     return stakeholders;
+}
+
+uint64_t block_chain_impl::get_address_witness_stake(uint64_t epoch_height, const std::string& address)
+{
+    auto locked_balance = get_locked_balance(epoch_height, address);
+    if (locked_balance.first < consensus::witness::witness_lock_threshold) {
+        return 0;
+    }
+
+    auto stake = (uint64_t)(std::log10(locked_balance.first) * 6.18);
+    return stake;
+}
+
+std::shared_ptr<asset_cert::list>
+block_chain_impl::get_address_witness_certs(uint64_t epoch_height, const std::string& address)
+{
+    // TODO
+    auto sh_vec = std::make_shared<asset_cert::list>();
+
+    uint64_t tx_height;
+    chain::transaction tx_temp;
+
+    auto&& rows = get_address_history(wallet::payment_address(address));
+    for (auto& row: rows) {
+        if (row.value != 0 || row.output_height < pos_enabled_height) {
+            continue;
+        }
+
+        // spend unconfirmed (or no spend attempted)
+        bool tx_ready = (row.spend.hash == null_hash)
+            && get_transaction(tx_temp, tx_height, row.output.hash);
+        if (!tx_ready) {
+            continue;
+        }
+
+        // current epoch is not allowed.
+        if (epoch_height != 0) {
+            auto tx_epoch = consensus::witness::get_epoch_begin_height(tx_height);
+            if (tx_epoch >= epoch_height) {
+                continue;
+            }
+        }
+
+        BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
+        auto output = tx_temp.outputs.at(row.output.index);
+
+        if (!output.is_asset_cert()) {
+            continue;
+        }
+
+        auto asset_cert = output.get_asset_cert();
+        if (asset_cert.get_type() != asset_cert_ns::witness) {
+            continue;
+        }
+
+        sh_vec->push_back(std::move(asset_cert));
+    }
+
+    return sh_vec;
+}
+
+bool block_chain_impl::is_primary_witness_cert_actived(uint64_t epoch_height, const std::string& symbol)
+{
+    // TODO
+    auto primary_index = asset_cert::get_primary_witness_index(symbol);
+    if (primary_index < 1) {
+        return false;
+    }
+
+    uint32_t secondary_count = 0;
+    auto issued_certs = get_issued_asset_certs("", asset_cert_ns::witness);
+    for (auto& cert : *issued_certs) {
+        if (cert.is_secondary_witness()) {
+            if (cert.get_symbol().find(symbol) == 0) {
+                ++secondary_count;
+            }
+        }
+    }
+
+    return (secondary_count >= secondary_witness_cert_min);
 }
 
 uint64_t block_chain_impl::get_pow_height_before_dpos(uint64_t height) const
@@ -3061,16 +3116,16 @@ bool block_chain_impl::can_use_dpos(uint64_t height) const
 bool block_chain_impl::get_signature(ec_signature& blocksig, uint64_t height) const
 {
     ec_compressed dump;
-    return get_signature_and_public_key(blocksig, dump, height);
+    return get_signature_and_publick_key(blocksig, dump, height);
 }
 
-bool block_chain_impl::get_public_key(ec_compressed& public_key, uint64_t height) const
+bool block_chain_impl::get_publick_key(ec_compressed& public_key, uint64_t height) const
 {
     ec_signature dump;
-    return get_signature_and_public_key(dump, public_key, height);
+    return get_signature_and_publick_key(dump, public_key, height);
 }
 
-bool block_chain_impl::get_signature_and_public_key(ec_signature& blocksig, ec_compressed& public_key, uint64_t height) const
+bool block_chain_impl::get_signature_and_publick_key(ec_signature& blocksig, ec_compressed& public_key, uint64_t height) const
 {
     if (stopped())
         return false;

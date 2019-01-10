@@ -419,9 +419,6 @@ public:
     std::pair<uint64_t, uint64_t> get_locked_balance(
         const std::string& address, uint64_t epoch_height=0, const std::string& asset_symbol="") const;
 
-    // std::vector<std::pair<std::string, data_chunk>> get_register_witnesses(
-    //     uint64_t start_height, uint64_t end_height=0, uint64_t limit=0, uint64_t page_number=0) const;
-
     std::shared_ptr<consensus::fts_stake_holder::ptr_list> get_witnesses_with_stake(
         uint64_t epoch_height,
         std::shared_ptr<std::vector<std::string>> excluded_addresses,
@@ -440,6 +437,9 @@ public:
     static bool is_valid_mit_symbol(const std::string& symbol,  bool check_sensitive = false);
 
     profile::ptr get_profile(const profile_context&) const;
+
+    bool is_primary_witness_cert_actived(const std::string& symbol);
+    std::shared_ptr<asset_cert::list> get_address_witness_certs(const std::string& address);
 
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
