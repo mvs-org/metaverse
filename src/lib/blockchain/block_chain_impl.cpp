@@ -2989,7 +2989,6 @@ std::shared_ptr<blockchain_cert::list> block_chain_impl::get_issued_secondary_wi
 
     auto bc_cert_vec = database_.witness_certs.get_certs();
     for (auto& bc_cert : *bc_cert_vec) {
-
         if (epoch_height != 0
                 && (bc_cert.get_height() >= epoch_height
                     || bc_cert.get_height() + secondary_witness_cert_expiration <= epoch_height)) {
@@ -2997,6 +2996,9 @@ std::shared_ptr<blockchain_cert::list> block_chain_impl::get_issued_secondary_wi
         }
 
         auto cert = bc_cert.get_cert();
+        if (!cert.is_secondary_witness()) {
+            continue;
+        }
         if (!primary_symbol.empty() && cert.get_symbol().find(primary_symbol) != 0) {
             continue;
         }
@@ -3026,7 +3028,7 @@ bool block_chain_impl::is_secondary_witness_cert_exists(
             return false;
         }
 
-        return true;
+        return bc_cert->get_cert().is_secondary_witness();
     }
 
     return false;

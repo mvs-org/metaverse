@@ -413,6 +413,7 @@ public:
     bool is_sync_disabled() const;
     void set_sync_disabled(bool b);
 
+    uint64_t get_height();
     uint64_t calc_number_of_blocks(uint64_t from, uint64_t to) const;
     uint64_t get_expiration_height(uint64_t from, uint64_t lock_height) const;
 

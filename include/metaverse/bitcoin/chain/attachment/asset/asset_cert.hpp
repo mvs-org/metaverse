@@ -215,7 +215,6 @@ public:
 
     // witness cert index start at 1.
     static uint32_t get_primary_witness_index(const std::string& symbol);
-    static uint32_t get_secondary_witness_index(const std::string& symbol);
 
 private:
     static bool parse_uint32(const std::string& param, uint32_t& value);

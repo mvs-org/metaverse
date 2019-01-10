@@ -137,8 +137,8 @@ public:
     } option_;
 
 private:
-    void get_secondary_witness_cert_index(
-        bc::blockchain::block_chain_impl& blockchain, uint32_t& pri, uint32_t& sec) const;
+    std::string get_available_primary_witness_cert(
+        bc::blockchain::block_chain_impl& blockchain) const;
 
 };
 

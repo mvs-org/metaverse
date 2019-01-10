@@ -64,8 +64,8 @@ const uint32_t block_timespan_window            = 24;
 const std::string witness_cert_prefix("MVS.WITNESS.");
 const uint32_t witness_cert_count               = 23;
 const uint32_t secondary_witness_cert_min       = 23;
-const uint32_t secondary_witness_cert_max       = 4;//46;
-const uint32_t secondary_witness_cert_expiration    = 100;//2000000;
+const uint32_t secondary_witness_cert_max       = 46;
+const uint32_t secondary_witness_cert_expiration    = 2000000;
 
 
 //==============================================================================
