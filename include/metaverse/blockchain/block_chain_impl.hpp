@@ -111,8 +111,8 @@ public:
     uint64_t get_transaction_count(uint64_t block_height) const;
 
     bool get_signature(ec_signature& blocksig, uint64_t height) const override;
-    bool get_publick_key(ec_compressed& public_key, uint64_t height) const override;
-    bool get_signature_and_publick_key(ec_signature& blocksig, ec_compressed& public_key, uint64_t height) const override;
+    bool get_public_key(ec_compressed& public_key, uint64_t height) const override;
+    bool get_signature_and_public_key(ec_signature& blocksig, ec_compressed& public_key, uint64_t height) const override;
 
     /// Get the height of the block with the given hash.
     bool get_height(uint64_t& out_height, const hash_digest& block_hash) const override;
