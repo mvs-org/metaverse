@@ -89,6 +89,10 @@ BC_CONSTEXPR uint32_t relative_locktime_mask = 0x000fffff;
  * 5 bits. */
 BC_CONSTEXPR size_t relative_locktime_seconds_shift = 5;
 
+BC_API bool is_relative_locktime_time_locked(uint32_t raw_value);
+BC_API uint32_t get_relative_locktime_locked_heights(uint32_t raw_value);
+BC_API uint32_t get_relative_locktime_locked_seconds(uint32_t raw_value);
+
 // Future blocktime fork constants.
 //-----------------------------------------------------------------------------
 extern const uint64_t future_blocktime_fork_height;

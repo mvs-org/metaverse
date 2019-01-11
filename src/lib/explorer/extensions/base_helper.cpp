@@ -488,9 +488,8 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
                 }
                 else if (asset_amount
                     && chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-                    auto lock_sequence = output.get_lock_sequence();
-                    // use any kind of blocks
-                    if (row.output_height + lock_sequence > height) {
+                    auto is_spendable = blockchain.is_utxo_spendable(tx_temp, row.output.index, tx_height, height);
+                    if (!is_spendable) {
                         // utxo already in block but is locked with sequence and not mature
                         locked_amount = asset_amount;
                     }
@@ -548,21 +547,39 @@ void sync_fetch_locked_balance(const std::string& address,
                 continue;
             }
 
-            auto lock_sequence = output.get_lock_sequence();
-            // use any kind of blocks
-            if ((tx_height + lock_sequence <= height) ||
-                (expiration > height && tx_height + lock_sequence <= expiration)) {
-                continue;
-            }
-
             uint64_t locked_value = is_asset ? output.get_asset_amount() : row.value;
             if (locked_value == 0) {
                 continue;
             }
 
-            uint64_t locked_height = lock_sequence;
-            uint64_t expiration_height = tx_height + lock_sequence;
-            locked_balance locked{address, locked_value, locked_height, expiration_height};
+            uint64_t locked_height = 0;
+            uint64_t expiration_height = 0;
+
+            auto raw_value = output.get_lock_sequence();
+            auto is_time_locked = is_relative_locktime_time_locked(raw_value);
+            if (is_time_locked) {
+                auto locked_seconds = get_relative_locktime_locked_seconds(raw_value);
+                auto prev_timestamp = blockchain.get_block_timestamp(tx_height);
+                auto curr_timestamp = blockchain.get_block_timestamp(height);
+                if ((prev_timestamp + locked_seconds <= curr_timestamp) ||
+                    (expiration > curr_timestamp && prev_timestamp + locked_seconds <= expiration)) {
+                    continue;
+                }
+                locked_height = locked_seconds;
+                expiration_height = prev_timestamp + locked_seconds;
+            }
+            else {
+                auto locked_heights = get_relative_locktime_locked_heights(raw_value);
+                // use any kind of blocks
+                if ((tx_height + locked_heights <= height) ||
+                    (expiration > height && tx_height + locked_heights <= expiration)) {
+                    continue;
+                }
+                locked_height = locked_heights;
+                expiration_height = tx_height + locked_heights;
+            }
+
+            locked_balance locked{address, locked_value, locked_height, expiration_height, tx_height, is_time_locked};
             sh_vec->emplace_back(locked);
         }
     }
@@ -794,9 +811,8 @@ auto sync_fetch_asset_view(const std::string& symbol,
                 }
                 else if (asset_amount
                     && chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-                    auto lock_sequence = output.get_lock_sequence();
-                    // use any kind of blocks
-                    if (tx_height + lock_sequence > height) {
+                    auto is_spendable = blockchain.is_utxo_spendable(tx_temp, out.index, tx_height, height);
+                    if (!is_spendable) {
                         // utxo already in block but is locked with sequence and not mature
                         locked_amount = asset_amount;
                     }
@@ -912,28 +928,9 @@ void sync_fetchbalance(wallet::payment_address& address,
                 continue;
             }
 
-            if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
-                // deposit utxo in block
-                uint64_t lock_height = chain::operation::
-                    get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-                if (lock_height > blockchain.calc_number_of_blocks(row.output_height, height)) {
-                    // utxo already in block but deposit not expire
-                    frozen_balance += row.value;
-                }
-            }
-            else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-                auto lock_sequence = output.get_lock_sequence();
-                // use any kind of blocks
-                if (row.output_height + lock_sequence > height) {
-                    // utxo already in block but is locked with sequence and not mature
-                    frozen_balance += row.value;
-                }
-            }
-            else if (tx_temp.is_coinbase()) { // coin base etp maturity etp check
-                // add not coinbase_maturity etp into frozen
-                if (coinbase_maturity > blockchain.calc_number_of_blocks(row.output_height, height)) {
-                    frozen_balance += row.value;
-                }
+            auto is_spendable = blockchain.is_utxo_spendable(tx_temp, row.output.index, tx_height, height);
+            if (!is_spendable) {
+                frozen_balance += row.value;
             }
 
             unspent_balance += row.value;
@@ -986,28 +983,9 @@ void sync_fetchbalance(wallet::payment_address& address,
             continue;
         }
 
-        if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
-            // deposit utxo in block
-            uint64_t lock_height = chain::operation::
-                get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-            if (lock_height > blockchain.calc_number_of_blocks(row.output_height, height)) {
-                // utxo already in block but deposit not expire
-                frozen_balance += row.value;
-            }
-        }
-        else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-            auto lock_sequence = output.get_lock_sequence();
-            // use any kind of blocks
-            if (row.output_height + lock_sequence > height) {
-                // utxo already in block but is locked with sequence and not mature
-                frozen_balance += row.value;
-            }
-        }
-        else if (tx_temp.is_coinbase()) { // coin base etp maturity etp check
-            // add not coinbase_maturity etp into frozen
-            if (coinbase_maturity > blockchain.calc_number_of_blocks(row.output_height, height)) {
-                frozen_balance += row.value;
-            }
+        auto is_spendable = blockchain.is_utxo_spendable(tx_temp, row.output.index, tx_height, height);
+        if (!is_spendable) {
+            frozen_balance += row.value;
         }
 
         unspent_balance += row.value;

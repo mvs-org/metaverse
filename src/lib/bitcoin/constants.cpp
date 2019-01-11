@@ -72,6 +72,27 @@ const uint32_t secondary_witness_cert_expiration    = 2000000;
 // functions
 //==============================================================================
 
+bool is_relative_locktime_time_locked(uint32_t raw_value)
+{
+    return (raw_value & relative_locktime_time_locked) != 0;
+}
+
+uint32_t get_relative_locktime_locked_heights(uint32_t raw_value)
+{
+    if (is_relative_locktime_time_locked(raw_value)) {
+        return 0;
+    }
+    return raw_value & relative_locktime_mask;
+}
+
+uint32_t get_relative_locktime_locked_seconds(uint32_t raw_value)
+{
+    if (!is_relative_locktime_time_locked(raw_value)) {
+        return 0;
+    }
+    return (raw_value & relative_locktime_mask) << relative_locktime_seconds_shift;
+}
+
 std::string get_genesis_address(bool is_testnet)
 {
     if (is_testnet) {

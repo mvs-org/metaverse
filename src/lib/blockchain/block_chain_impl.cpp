@@ -326,6 +326,15 @@ bool block_chain_impl::get_header(header& out_header, uint64_t height) const
     return true;
 }
 
+uint32_t block_chain_impl::get_block_timestamp(uint64_t height) const
+{
+    header out_header;
+    if (!get_header(out_header, height)) {
+        return 0;
+    }
+    return out_header.timestamp;
+}
+
 uint64_t block_chain_impl::get_transaction_count(uint64_t block_height) const
 {
     auto result = database_.blocks.get(block_height);
@@ -1662,7 +1671,7 @@ bool block_chain_impl::check_pos_capability(
             }
 
             // only support lock sequence with block height
-            uint64_t lock_height = output.get_lock_sequence();
+            uint64_t lock_height = output.get_lock_heights_sequence();
 
             // utxo deposit height > pos_lock_min_height and min_pos_lock_rate percent of height limited
             if (lock_height >= pos_lock_min_height &&
@@ -2777,7 +2786,7 @@ std::pair<uint64_t, uint64_t> block_chain_impl::get_locked_balance(
         }
 
         // only support lock sequence with block height
-        auto lock_sequence = output.get_lock_sequence();
+        auto lock_sequence = output.get_lock_heights_sequence();
         auto seq_expiration = tx_height + lock_sequence;
 
         // use any kind of blocks
@@ -3235,11 +3244,23 @@ bool block_chain_impl::is_utxo_spendable(const chain::transaction& tx, uint32_t 
         }
     }
     else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-        auto lock_sequence = output.get_lock_sequence();
         // lock sequence check
-        // use any kind of blocks
-        if (tx_height + lock_sequence > latest_height) {
-            return false;
+        auto raw_value = output.get_lock_sequence();
+        auto is_time_locked = is_relative_locktime_time_locked(raw_value);
+        if (is_time_locked) {
+            auto locked_seconds = get_relative_locktime_locked_seconds(raw_value);
+            auto prev_timestamp = get_block_timestamp(tx_height);
+            auto curr_timestamp = get_block_timestamp(latest_height);
+            if (prev_timestamp + locked_seconds > curr_timestamp) {
+                return false;
+            }
+        }
+        else {
+            auto locked_heights = get_relative_locktime_locked_heights(raw_value);
+            // use any kind of blocks
+            if (tx_height + locked_heights > latest_height) {
+                return false;
+            }
         }
     }
     else if (tx.is_coinbase()) {

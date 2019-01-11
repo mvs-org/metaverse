@@ -519,11 +519,28 @@ const data_chunk& output::get_attenuation_model_param() const
 
 uint32_t output::get_lock_sequence(uint32_t default_value) const
 {
-    if (operation::is_pay_key_hash_with_sequence_lock_pattern(script.operations)) {
-        auto lock_sequence = operation::get_lock_sequence_from_pay_key_hash_with_sequence_lock(script.operations);
-        return lock_sequence & relative_locktime_mask;
+    if (!operation::is_pay_key_hash_with_sequence_lock_pattern(script.operations)) {
+        return default_value;
     }
-    return default_value;
+    return operation::get_lock_sequence_from_pay_key_hash_with_sequence_lock(script.operations);
+}
+
+uint32_t output::get_lock_heights_sequence(uint32_t default_value) const
+{
+    if (!operation::is_pay_key_hash_with_sequence_lock_pattern(script.operations)) {
+        return default_value;
+    }
+    auto raw_value = operation::get_lock_sequence_from_pay_key_hash_with_sequence_lock(script.operations);
+    return get_relative_locktime_locked_heights(raw_value);
+}
+
+uint32_t output::get_lock_seconds_sequence(uint32_t default_value) const
+{
+    if (!operation::is_pay_key_hash_with_sequence_lock_pattern(script.operations)) {
+        return default_value;
+    }
+    auto raw_value = operation::get_lock_sequence_from_pay_key_hash_with_sequence_lock(script.operations);
+    return get_relative_locktime_locked_seconds(raw_value);
 }
 
 } // namspace chain

@@ -1491,14 +1491,17 @@ code validate_transaction::check_sequence_locks() const
             return error::input_not_found;
         }
 
-        if (nSequence & relative_locktime_time_locked) {
+        if (is_relative_locktime_time_locked(nSequence)) {
             if (!chain.get_header(header, prev_height)) {
                 return error::not_found;
             }
-            min_time = std::max(min_time, header.timestamp + uint64_t((nSequence & relative_locktime_mask) << relative_locktime_seconds_shift) - 1);
-        }
+            uint64_t prev_timestamp = header.timestamp;
+            min_time = std::max(min_time, prev_timestamp
+                + get_relative_locktime_locked_seconds(nSequence) - 1);
+       }
         else {
-            min_height = std::max(min_height, prev_height + (nSequence & relative_locktime_mask) - 1);
+            min_height = std::max(min_height, prev_height
+                + get_relative_locktime_locked_heights(nSequence) - 1);
         }
     }
 
@@ -1648,13 +1651,6 @@ code validate_transaction::check_transaction_basic() const
                 if ((int)lock_height < 0
                         || consensus::miner::get_lock_heights_index(lock_height) < 0) {
                     return error::invalid_output_script_lock_height;
-                }
-            }
-            else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-                auto lock_sequence = chain::operation::get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
-                // only support block height sequence lock for this pattern
-                if (lock_sequence & relative_locktime_time_locked) {
-                    return error::invalid_output_script_lock_sequence;
                 }
             }
         }

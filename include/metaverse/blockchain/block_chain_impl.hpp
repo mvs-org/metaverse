@@ -109,6 +109,7 @@ public:
     /// Get the header of the block at the given height.
     bool get_header(chain::header& out_header, uint64_t height) const override;
     uint64_t get_transaction_count(uint64_t block_height) const;
+    uint32_t get_block_timestamp(uint64_t height) const;
 
     bool get_signature(ec_signature& blocksig, uint64_t height) const override;
     bool get_public_key(ec_compressed& public_key, uint64_t height) const override;

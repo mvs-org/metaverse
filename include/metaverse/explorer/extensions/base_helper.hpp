@@ -184,6 +184,8 @@ struct locked_balance {
     uint64_t locked_value;
     uint64_t locked_height;
     uint64_t expiration_height;
+    uint64_t lock_at_height;
+    bool is_time_locked;
 
     bool operator< (const locked_balance& other) const {
         return expiration_height < other.expiration_height;
