@@ -143,14 +143,17 @@ bool executor::do_initchain()
         log::info(LOG_SERVER) << BS_INITCHAIN_COMPLETE;
         return true;
     }
-    else if (MVS_DATABASE_VERSION_NUMBER >= 63)
-    {
-        if (!data_base::upgrade_version_63(data_path)) {
-            throw std::runtime_error{ " upgrade database to version 63 failed!" };
+    else {
+        if (MVS_DATABASE_VERSION_NUMBER >= 63) {
+            if (!data_base::upgrade_version_63(data_path)) {
+                throw std::runtime_error{ " upgrade database to version 63 failed!" };
+            }
         }
 
-        if (!data_base::upgrade_version_64(data_path)) {
-            throw std::runtime_error{ " upgrade database to version 63 failed!" };
+        if (MVS_DATABASE_VERSION_NUMBER >= 64) {
+            if (!data_base::upgrade_version_64(data_path)) {
+                throw std::runtime_error{ " upgrade database to version 63 failed!" };
+            }
         }
     }
 

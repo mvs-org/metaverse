@@ -153,6 +153,24 @@ bool data_base::initialize_mits(const path& prefix)
     return instance.stop();
 }
 
+bool data_base::initialize_witness_profiles(const path& prefix)
+{
+    const store paths(prefix);
+    if (paths.witness_profiles_exist())
+        return true;
+    if (!paths.touch_witness_profiles())
+        return false;
+
+    data_base instance(prefix, 0, 0);
+    if (!instance.create_witness_profiles())
+        return false;
+
+    log::info(LOG_DATABASE)
+        << "Upgrading witness profile table is complete.";
+
+    return instance.stop();
+}
+
 bool data_base::upgrade_version_63(const path& prefix)
 {
     auto metadata_path = prefix / db_metadata::file_name;
@@ -207,6 +225,12 @@ bool data_base::upgrade_version_64(const path& prefix)
     if (!initialize_witness_certs(prefix)) {
         log::error(LOG_DATABASE)
             << "Failed to upgrade witness cert database.";
+        return false;
+    }
+
+    if (!initialize_witness_profiles(prefix)) {
+        log::error(LOG_DATABASE)
+            << "Failed to upgrade witness profile database.";
         return false;
     }
 
@@ -268,6 +292,7 @@ data_base::store::store(const path& prefix)
     address_mits_rows = prefix / "address_mit_row"; // for blockchain
     mit_history_lookup = prefix / "mit_history_table"; // for blockchain
     mit_history_rows = prefix / "mit_history_row"; // for blockchain
+    witness_profiles_lookup = prefix / "witness_profile_table";   // for blockchain witness profiles
 
     // Height-based (reverse) lookup.
     blocks_index = prefix / "block_index";
@@ -310,7 +335,8 @@ bool data_base::store::touch_all() const
         touch_file(address_mits_lookup) &&
         touch_file(address_mits_rows) &&
         touch_file(mit_history_lookup) &&
-        touch_file(mit_history_rows);
+        touch_file(mit_history_rows) &&
+        touch_file(witness_profiles_lookup);
 }
 
 bool data_base::store::dids_exist() const
@@ -367,6 +393,16 @@ bool data_base::store::touch_mits() const
         touch_file(address_mits_rows) &&
         touch_file(mit_history_lookup) &&
         touch_file(mit_history_rows);
+}
+
+bool data_base::store::witness_profiles_exist() const
+{
+    return boost::filesystem::exists(witness_profiles_lookup);
+}
+
+bool data_base::store::touch_witness_profiles() const
+{
+    return touch_file(witness_profiles_lookup);
 }
 
 data_base::db_metadata::db_metadata():version_("")
@@ -529,7 +565,8 @@ data_base::data_base(const store& paths, size_t history_height,
     /* end database for account, asset, address_asset, did relationship */
     mits(paths.mits_lookup, mutex_),
     address_mits(paths.address_mits_lookup, paths.address_mits_rows, mutex_),
-    mit_history(paths.mit_history_lookup, paths.mit_history_rows, mutex_)
+    mit_history(paths.mit_history_lookup, paths.mit_history_rows, mutex_),
+    witness_profiles(paths.witness_profiles_lookup, mutex_)
 {
 }
 
@@ -590,7 +627,8 @@ bool data_base::create()
         /* end database for account, asset, address_asset relationship */
         mits.create() &&
         address_mits.create() &&
-        mit_history.create()
+        mit_history.create() &&
+        witness_profiles.create()
         ;
 }
 
@@ -619,6 +657,12 @@ bool data_base::create_mits()
         mits.create() &&
         address_mits.create() &&
         mit_history.create();
+}
+
+bool data_base::create_witness_profiles()
+{
+    return
+        witness_profiles.create();
 }
 
 // Start must be called before performing queries.
@@ -841,6 +885,7 @@ void data_base::synchronize()
     address_mits.sync();
     mit_history.sync();
     blocks.sync();
+    witness_profiles.sync();
 }
 
 void data_base::synchronize_dids()
@@ -864,6 +909,11 @@ void data_base::synchronize_mits()
     mits.sync();
     address_mits.sync();
     mit_history.sync();
+}
+
+void data_base::synchronize_witness_profiles()
+{
+    witness_profiles.sync();
 }
 
 void data_base::push(const block& block)

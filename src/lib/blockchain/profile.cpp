@@ -24,6 +24,8 @@
 namespace libbitcoin {
 namespace blockchain {
 
+constexpr size_t hex_public_key_size = 2 * ec_compressed_size;
+
 bool profile::check_context(const profile_context& context)
 {
     // check type
@@ -145,6 +147,80 @@ profile::ptr witness_profile::get_profile(const profile_context& context)
     witness_epoch_stat = res_epoch_stat;
 
     return std::make_shared<witness_profile>(*this);
+}
+
+uint64_t witness_profile::serialized_size() const
+{
+    constexpr uint64_t epoch_stat_size = 8 + 4 + 4;
+    constexpr uint64_t mining_stat_size = 4 + 4 + 4;
+    constexpr uint64_t space_to_store_witness_count = 4;
+    uint64_t stat_map_count = witness_mining_stat_map.size();
+    uint64_t stat_map_item_size = hex_public_key_size + mining_stat_size;
+    uint64_t stat_map_total_size = space_to_store_witness_count + (stat_map_count * stat_map_item_size);
+    return epoch_stat_size + stat_map_total_size;
+
+}
+
+bool witness_profile::from_data(reader& source)
+{
+    epoch_stat e_stat;
+    std::map<std::string, mining_stat> stat_map;
+
+    e_stat.epoch_start_height = source.read_8_bytes_little_endian();
+    e_stat.witness_count = source.read_4_bytes_little_endian();
+    e_stat.total_dpos_block_count = source.read_4_bytes_little_endian();
+
+    uint32_t witness_count = source.read_4_bytes_little_endian();
+
+    for (uint32_t i = 0; i < witness_count; ++i) {
+        auto pubkey = source.read_fixed_string(hex_public_key_size);
+        mining_stat stat = {};
+        stat.witness_slot_num = source.read_4_bytes_little_endian();
+        stat.mined_block_count = source.read_4_bytes_little_endian();
+        stat.missed_block_count = source.read_4_bytes_little_endian();
+        stat_map[pubkey] = stat;
+    }
+
+    auto result = static_cast<bool>(source);
+    if (!result) {
+        return false;
+    }
+
+    witness_epoch_stat = e_stat;
+    witness_mining_stat_map.swap(stat_map);
+
+    return true;
+}
+
+data_chunk witness_profile::to_data() const
+{
+    data_chunk data;
+    data_sink ostream(data);
+    ostream_writer sink(ostream);
+
+    sink.write_8_bytes_little_endian(witness_epoch_stat.epoch_start_height);
+    sink.write_4_bytes_little_endian(witness_epoch_stat.witness_count);
+    sink.write_4_bytes_little_endian(witness_epoch_stat.total_dpos_block_count);
+
+    uint32_t witness_count = witness_mining_stat_map.size();
+    sink.write_4_bytes_little_endian(witness_count);
+
+    for (auto& pair : witness_mining_stat_map) {
+        auto& hex_pubkey = pair.first;
+        auto& stat = pair.second;
+        sink.write_fixed_string(hex_pubkey, hex_public_key_size);
+        sink.write_4_bytes_little_endian(stat.witness_slot_num);
+        sink.write_4_bytes_little_endian(stat.mined_block_count);
+        sink.write_4_bytes_little_endian(stat.missed_block_count);
+    }
+
+    ostream.flush();
+    return data;
+}
+
+bool witness_profile::operator== (const witness_profile& other) const
+{
+    return to_data() == other.to_data();
 }
 
 } // namespace blockchain

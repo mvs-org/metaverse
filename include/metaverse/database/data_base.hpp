@@ -58,6 +58,7 @@
 #include <metaverse/database/databases/blockchain_mit_database.hpp>
 #include <metaverse/database/databases/address_mit_database.hpp>
 #include <metaverse/database/databases/mit_history_database.hpp>
+#include <metaverse/database/databases/blockchain_witness_profile_database.hpp>
 
 namespace libbitcoin {
 namespace database {
@@ -82,6 +83,8 @@ public:
         bool witness_certs_exist() const;
         bool touch_mits() const;
         bool mits_exist() const;
+        bool touch_witness_profiles() const;
+        bool witness_profiles_exist() const;
 
         path database_lock;
         path blocks_lookup;
@@ -111,6 +114,7 @@ public:
         path address_mits_rows;
         path mit_history_lookup;
         path mit_history_rows;
+        path witness_profiles_lookup;
     };
 
     class db_metadata
@@ -164,6 +168,7 @@ public:
     bool create_certs();
     bool create_witness_certs();
     bool create_mits();
+    bool create_witness_profiles();
 
     /// Start all databases.
     bool start();
@@ -323,6 +328,7 @@ private:
     static bool initialize_certs(const path& prefix);
     static bool initialize_witness_certs(const path& prefix);
     static bool initialize_mits(const path& prefix);
+    static bool initialize_witness_profiles(const path& prefix);
 
     static void uninitialize_lock(const path& lock);
     static file_lock initialize_lock(const path& lock);
@@ -332,6 +338,7 @@ private:
     void synchronize_certs();
     void synchronize_witness_certs();
     void synchronize_mits();
+    void synchronize_witness_profiles();
 
     void push_inputs(const hash_digest& tx_hash, size_t height,
         const inputs& inputs);
@@ -380,6 +387,7 @@ public:
     blockchain_mit_database mits;
     address_mit_database address_mits;
     mit_history_database mit_history;
+    blockchain_witness_profile_database witness_profiles;
 };
 
 } // namespace database

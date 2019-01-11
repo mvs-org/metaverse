@@ -56,6 +56,9 @@ public:
 class BCB_API witness_profile final : public profile
 {
 public:
+    using ptr = std::shared_ptr<witness_profile>;
+    using list = std::vector<witness_profile::ptr>;
+
     witness_profile();
     ~witness_profile();
 
@@ -74,7 +77,14 @@ public:
         uint32_t missed_block_count;
     };
 
-    std::unordered_map<std::string, mining_stat> witness_mining_stat_map;
+    std::map<std::string, mining_stat> witness_mining_stat_map;
+
+    bool operator== (const witness_profile& other) const;
+
+    // serialization
+    uint64_t serialized_size() const;
+    bool from_data(reader& source);
+    data_chunk to_data() const;
 };
 
 } // namespace blockchain
