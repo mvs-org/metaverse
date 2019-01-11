@@ -128,19 +128,20 @@ console_result startmining::invoke(Json::Value& jv_output,
         throw argument_legality_exception{"wrong consensus of block version!"};
     }
 
-    if (!option_.symbol.empty()) {
-        auto cert = blockchain.get_asset_cert(option_.symbol, asset_cert_ns::mining);
-        if (!cert) {
-            throw argument_legality_exception{"asset " + option_.symbol + " can not be mined."};
-        }
+    miner.set_solo_mining(true);
 
-        miner.set_mining_asset_symbol(option_.symbol);
+    auto& symbol = option_.symbol;
+    if (!miner.set_mining_asset_symbol(symbol)) {
+        throw argument_legality_exception{"asset " + symbol + " can not be mined."};
     }
+
+    miner.set_miner_payment_address(addr);
 
     // start
     if (miner.start(addr, option_.number)){
         std::string prompt = "solo mining started at "
-            + str_addr + ", accept consensus " + option_.consensus;
+            + str_addr + ", accept consensus " + option_.consensus
+            + ", and also mining asset " + symbol;
         if (option_.number == 0) {
             jv_output = prompt;
         } else {

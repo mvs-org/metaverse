@@ -50,10 +50,8 @@ console_result setminingaccount::invoke(Json::Value& jv_output,
     }
 
     auto& symbol = option_.symbol;
-    if (!symbol.empty()) {
-        if (!miner.set_mining_asset_symbol(symbol)) {
-            throw argument_legality_exception{"asset " + symbol + " can not be mined."};
-        }
+    if (!miner.set_mining_asset_symbol(symbol)) {
+        throw argument_legality_exception{"asset " + symbol + " can not be mined."};
     }
 
     miner.set_miner_payment_address(wallet::payment_address(address));

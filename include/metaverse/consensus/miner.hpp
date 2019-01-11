@@ -123,9 +123,16 @@ public:
 
     bool is_witness() const;
     bool set_pub_and_pri_key(const std::string& pubkey, const std::string& prikey);
+    const data_chunk& get_public_key_data() const;
+    data_chunk& get_public_key_data();
 
     std::string get_mining_asset_symbol() const;
     bool set_mining_asset_symbol(const std::string& symbol);
+    std::shared_ptr<blockchain_asset> get_mining_asset() const;
+    std::shared_ptr<asset_cert> get_mining_cert() const;
+
+    bool is_solo_mining() const;
+    void set_solo_mining(bool b);
 
 private:
     void work(const wallet::payment_address& pay_address);
@@ -133,6 +140,9 @@ private:
     block_ptr create_new_block_pow(const wallet::payment_address& pay_address, const header& prev_header);
     block_ptr create_new_block_pos(const wallet::payment_address& pay_address, const header& prev_header);
     block_ptr create_new_block_dpos(const wallet::payment_address& pay_address, const header& prev_header);
+
+    const ec_secret& get_private_key() const;
+    ec_secret& get_private_key();
 
     uint32_t get_adjust_time(uint64_t height) const;
     bool get_transaction(uint64_t last_height, std::vector<transaction_ptr>&, previous_out_map_t&, tx_fee_map_t&) const;
@@ -175,14 +185,18 @@ private:
     uint16_t new_block_number_;
     uint16_t new_block_limit_;
     chain::block_version accept_block_version_;
-    std::shared_ptr<blockchain_asset> mining_asset_;
-    std::shared_ptr<asset_cert> mining_cert_;
-
     block_ptr new_block_;
-    wallet::payment_address pay_address_;
     const blockchain::settings& setting_;
-    data_chunk public_key_data_;
-    ec_secret private_key_;
+
+    struct mining_context {
+        std::shared_ptr<blockchain_asset> mining_asset_;
+        std::shared_ptr<asset_cert> mining_cert_;
+        wallet::payment_address pay_address_;
+        data_chunk public_key_data_;
+        ec_secret private_key_;
+    };
+    mining_context pool_context, solo_context;
+    bool is_solo_mining_;
 };
 
 }

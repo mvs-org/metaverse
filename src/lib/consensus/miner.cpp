@@ -98,6 +98,7 @@ miner::miner(p2p_node& node)
     , new_block_limit_(0)
     , accept_block_version_(chain::block_version_pow)
     , setting_(node_.chain_impl().chain_settings())
+    , is_solo_mining_(false)
 {
     if (setting_.use_testnet_rules) {
         HeaderAux::set_as_testnet();
@@ -758,7 +759,7 @@ miner::block_ptr miner::create_new_block_pow(
         }
     }
     else {
-        if (mining_asset_ != nullptr && mining_cert_ != nullptr) {
+        if (get_mining_asset() != nullptr && get_mining_cert() != nullptr) {
             add_coinbase_mst_output(*coinbase, pay_address, block_height, pblock->header.version);
         }
     }
@@ -816,7 +817,7 @@ miner::block_ptr miner::create_new_block_dpos(
         return nullptr;
     }
 
-    if (!witness::get().verify_signer(public_key_data_, block_height)) {
+    if (!witness::get().verify_signer(get_public_key_data(), block_height)) {
         // It is not my turn at current height.
         sleep_for_mseconds(500, true);
         return nullptr;
@@ -828,7 +829,7 @@ miner::block_ptr miner::create_new_block_dpos(
     // Fill in header
     pblock->header.version = chain::block_version_dpos;
     pblock->header.number = block_height;
-    pblock->header.nonce = witness::get().get_slot_num(witness::to_witness_id(public_key_data_));
+    pblock->header.nonce = witness::get().get_slot_num(witness::to_witness_id(get_public_key_data()));
     pblock->header.mixhash = 0;
     pblock->header.timestamp = std::max(block_time, prev_header.timestamp + 1);
     pblock->header.previous_block_hash = prev_header.hash();
@@ -843,7 +844,7 @@ miner::block_ptr miner::create_new_block_dpos(
         }
     }
     else {
-        if (mining_asset_ != nullptr && mining_cert_ != nullptr) {
+        if (get_mining_asset() != nullptr && get_mining_cert() != nullptr) {
             add_coinbase_mst_output(*coinbase, pay_address, block_height, pblock->header.version);
         }
     }
@@ -878,12 +879,12 @@ miner::block_ptr miner::create_new_block_dpos(
     pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
 
     // add witness's signature to the current block header
-    if (!sign(pblock->blocksig, private_key_, pblock->header.hash())) {
+    if (!sign(pblock->blocksig, get_private_key(), pblock->header.hash())) {
         log::error(LOG_HEADER) << "witness sign failed in create_new_block";
         return nullptr;
     }
 
-    pblock->public_key = wallet::ec_public(public_key_data_);
+    pblock->public_key = wallet::ec_public(get_public_key_data());
 
 #ifdef ENABLE_PILLAR
     log::info(LOG_HEADER)
@@ -947,7 +948,7 @@ miner::block_ptr miner::create_new_block_pos(
         }
     }
     else {
-        if (mining_asset_ != nullptr && mining_cert_ != nullptr) {
+        if (get_mining_asset() != nullptr && get_mining_cert() != nullptr) {
             add_coinbase_mst_output(*coinbase, pay_address, block_height, pblock->header.version);
         }
     }
@@ -956,7 +957,7 @@ miner::block_ptr miner::create_new_block_pos(
     transaction_ptr coinstake(nullptr);
     while (nullptr == coinstake && block_time < (start_time  + block_timespan_window / 2)) {
         pblock->header.timestamp = std::max(block_time, prev_header.timestamp + 1);
-        coinstake = create_coinstake_tx(private_key_, pay_address, pblock, *stake_outputs);
+        coinstake = create_coinstake_tx(get_private_key(), pay_address, pblock, *stake_outputs);
         if (coinstake) {
             break;
         }
@@ -1031,7 +1032,7 @@ miner::block_ptr miner::create_new_block_pos(
     pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
 
     // Sign block
-    if (!sign(pblock->blocksig, private_key_, pblock->header.hash())) {
+    if (!sign(pblock->blocksig, get_private_key(), pblock->header.hash())) {
         log::error(LOG_HEADER) << "PoS mining failed. cann't sign block.";
         return nullptr;
     }
@@ -1349,10 +1350,20 @@ bool miner::is_stop_miner(uint64_t block_height, block_ptr block) const
     return false;
 }
 
+bool miner::is_solo_mining() const
+{
+    return is_solo_mining_;
+}
+
+void miner::set_solo_mining(bool b)
+{
+    is_solo_mining_ = b;
+}
+
 bool miner::start(const wallet::payment_address& pay_address, uint16_t number)
 {
     if (get_accept_block_version() == chain::block_version_dpos) {
-        if (private_key_.empty() || public_key_data_.empty()) {
+        if (get_private_key().empty() || get_public_key_data().empty()) {
             return false;
         }
     }
@@ -1376,6 +1387,7 @@ bool miner::stop()
     state_ = state::init_;
     new_block_number_ = 0;
     new_block_limit_ = 0;
+    set_solo_mining(false);
     return true;
 }
 
@@ -1388,13 +1400,22 @@ uint64_t miner::get_height() const
 
 const wallet::payment_address& miner::get_miner_payment_address() const
 {
-    return pay_address_;
+    return is_solo_mining() ? solo_context.pay_address_ : pool_context.pay_address_;
 }
 
 bool miner::set_miner_payment_address(const wallet::payment_address& address)
 {
+    if (!address) {
+        log::debug(LOG_HEADER) << "set_miner_payment_address[" << address.encoded() << "] failed";
+        return false;
+    }
     log::debug(LOG_HEADER) << "set_miner_payment_address[" << address.encoded() << "] success";
-    pay_address_ = address;
+    if (is_solo_mining()) {
+        solo_context.pay_address_ = address;
+    }
+    else {
+        pool_context.pay_address_ = address;
+    }
     return true;
 }
 
@@ -1403,22 +1424,24 @@ miner::block_ptr miner::get_block(bool is_force_create_block)
     static std::mutex mtx;
     std::lock_guard<std::mutex> lock(mtx);
 
+    auto& pay_address = get_miner_payment_address();
+
     if (is_force_create_block) {
-        new_block_ = create_new_block(pay_address_);
+        new_block_ = create_new_block(pay_address);
         log::debug(LOG_HEADER) << "force create new block";
         return new_block_;
     }
 
     if (!new_block_) {
-        if (pay_address_) {
-            new_block_ = create_new_block(pay_address_);
+        if (pay_address) {
+            new_block_ = create_new_block(pay_address);
         } else {
             log::error(LOG_HEADER) << "get_block not set pay address";
         }
     }
     else {
         if (get_height() >= new_block_->header.number) {
-            new_block_ = create_new_block(pay_address_);
+            new_block_ = create_new_block(pay_address);
         }
     }
 
@@ -1484,7 +1507,7 @@ void miner::get_state(uint64_t &height, uint64_t &rate, std::string& difficulty,
     block_chain.get_last_height(height);
     block_chain.get_header(prev_header, height);
     difficulty = to_string((u256)prev_header.bits);
-    is_mining = thread_ ? true : false;
+    is_mining = is_solo_mining();
 }
 
 bool miner::get_block_header(chain::header& block_header, const std::string& para)
@@ -1525,48 +1548,80 @@ bool miner::get_block_header(chain::header& block_header, const std::string& par
 
 bool miner::is_witness() const
 {
-    if (public_key_data_.empty()) {
+    if (get_public_key_data().empty()) {
         return false;
     }
-    return witness::get().is_witness(witness::to_witness_id(public_key_data_));
+    return witness::get().is_witness(witness::to_witness_id(get_public_key_data()));
 }
 
 bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& prikey)
 {
     // set private key
-    if (!decode_base16(private_key_, prikey)
-        || !bc::verify(private_key_) || private_key_.empty()) {
+    ec_secret private_key;
+    if (!decode_base16(private_key, prikey)
+        || !bc::verify(private_key) || private_key.empty()) {
         log::error(LOG_HEADER) << "miner verify private key failed";
         return false;
     }
 
     // set public key, ref. signrawtx
-    wallet::ec_private ec_private_key(private_key_, 0u, true);
+    data_chunk public_key_data;
+    wallet::ec_private ec_private_key(private_key, 0u, true);
     auto&& public_key = ec_private_key.to_public();
-    public_key.to_data(public_key_data_);
+    public_key.to_data(public_key_data);
 
-    if (public_key_data_.empty()) {
+    if (public_key_data.empty()) {
         log::error(LOG_HEADER) << "miner set mining public key failed";
         return false;
     }
 
 #ifdef ENABLE_PILLAR
     log::info(LOG_HEADER)
-        << "miner set mining public key " << encode_base16(public_key_data_);
+        << "miner set mining public key " << encode_base16(public_key_data);
 #endif
+
+    get_public_key_data() = public_key_data;
+    get_private_key() = private_key;
 
     return true;
 }
 
+data_chunk& miner::get_public_key_data()
+{
+    return is_solo_mining() ? solo_context.public_key_data_ : pool_context.public_key_data_;
+}
+
+const data_chunk& miner::get_public_key_data() const
+{
+    return const_cast<miner*>(this)->get_public_key_data();
+}
+
+ec_secret& miner::get_private_key()
+{
+    return is_solo_mining() ? solo_context.private_key_ : pool_context.private_key_;
+}
+
+const ec_secret& miner::get_private_key() const
+{
+    return const_cast<miner*>(this)->get_private_key();
+}
+
 std::string miner::get_mining_asset_symbol() const
 {
-    return mining_cert_ ? mining_cert_->get_symbol() : "";
+    return get_mining_cert() ? get_mining_cert()->get_symbol() : "";
 }
 
 bool miner::set_mining_asset_symbol(const std::string& symbol)
 {
-    mining_asset_ = nullptr;
-    mining_cert_ = nullptr;
+    auto& mining_asset = is_solo_mining() ? solo_context.mining_asset_ : pool_context.mining_asset_;
+    auto& mining_cert = is_solo_mining() ? solo_context.mining_cert_ : pool_context.mining_cert_;
+
+    mining_asset = nullptr;
+    mining_cert = nullptr;
+
+    if (symbol.empty()) {
+        return true;
+    }
 
     auto& block_chain = const_cast<block_chain_impl&>(node_.chain_impl());
     auto asset = block_chain.get_issued_blockchain_asset(symbol);
@@ -1592,10 +1647,20 @@ bool miner::set_mining_asset_symbol(const std::string& symbol)
         return false;
     }
 
-    mining_asset_ = asset;
-    mining_cert_ = cert;
+    mining_asset = asset;
+    mining_cert = cert;
     log::info(LOG_HEADER) << "set mining asset " << symbol;
     return true;
+}
+
+std::shared_ptr<blockchain_asset> miner::get_mining_asset() const
+{
+    return is_solo_mining() ? solo_context.mining_asset_ : pool_context.mining_asset_;
+}
+
+std::shared_ptr<asset_cert> miner::get_mining_cert() const
+{
+    return is_solo_mining() ? solo_context.mining_cert_ : pool_context.mining_cert_;
 }
 
 bool miner::add_coinbase_mst_output(chain::transaction& coinbase_tx,
@@ -1605,17 +1670,20 @@ bool miner::add_coinbase_mst_output(chain::transaction& coinbase_tx,
         return false;
     }
 
-    if (!mining_cert_ || !mining_cert_->get_mining_subsidy_param()) {
+    auto mining_asset = get_mining_asset();
+    auto mining_cert = get_mining_cert();
+
+    if (!mining_cert || !mining_cert->get_mining_subsidy_param()) {
         return false;
     }
 
-    auto mst_value = calculate_mst_subsidy(*mining_asset_, *mining_cert_,
+    auto mst_value = calculate_mst_subsidy(*mining_asset, *mining_cert,
         block_height, setting_.use_testnet_rules, version);
     if (mst_value == 0) {
         return false;
     }
 
-    auto symbol = mining_cert_->get_symbol();
+    auto symbol = mining_cert->get_symbol();
     auto sp_mst_output = create_coinbase_mst_output(pay_address, symbol, mst_value);
     if (!sp_mst_output) {
         return false;
