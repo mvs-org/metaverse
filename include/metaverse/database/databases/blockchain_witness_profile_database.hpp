@@ -62,7 +62,7 @@ public:
     std::shared_ptr<std::map<uint64_t, witness_profile::ptr>>
     get(std::set<uint64_t> epoch_heights) const;
 
-    void store(const witness_profile& sp_profile);
+    void store(const witness_profile& profile);
 
     /// Delete from database.
     void remove(uint64_t epoch_height);

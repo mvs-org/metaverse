@@ -470,6 +470,8 @@ public:
         const std::string& symbol,
         uint64_t expiration = 0);
 
+    operation_result calc_and_store_witness_profile(uint64_t epoch_height);
+
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
 

@@ -158,9 +158,9 @@ void blockchain_witness_profile_database::store(const witness_profile& profile)
         return; // skip duplicate
     }
 
-    const auto sp_size = profile.serialized_size();
-    BITCOIN_ASSERT(sp_size <= max_size_t);
-    const auto value_size = static_cast<size_t>(sp_size);
+    const auto serialized_size = profile.serialized_size();
+    BITCOIN_ASSERT(serialized_size <= max_size_t);
+    const auto value_size = static_cast<size_t>(serialized_size);
 
     auto write = [&profile](memory_ptr data)
     {

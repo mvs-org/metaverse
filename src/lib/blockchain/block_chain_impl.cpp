@@ -2933,7 +2933,7 @@ std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_wit
         witness_profile::mining_stat mining_stat = {};
         if (epoch_height > witness::witness_enable_height) {
             auto height_range = std::make_pair(
-                epoch_height - witness::witness_enable_height, epoch_height - 1);
+                epoch_height - witness::witness_enable_height, epoch_height);
             profile_context context{profile_type::witness, *this, height_range, {pubkey}};
             auto sp_profile = get_profile(context);
             if (sp_profile) {
@@ -3367,6 +3367,36 @@ profile::ptr block_chain_impl::get_profile(const profile_context& context) const
             break;
     }
     return nullptr;
+}
+
+operation_result block_chain_impl::calc_and_store_witness_profile(uint64_t epoch_height)
+{
+    using witness = consensus::witness;
+    if (stopped()) {
+        return operation_result::failure;
+    }
+
+    if (!witness::is_begin_of_epoch(epoch_height)) {
+        return operation_result::invalid;
+    }
+
+    auto height_range = std::make_pair(epoch_height, epoch_height + witness::epoch_cycle_height);
+    profile_context context{profile_type::witness, *this, height_range, {}};
+    auto sp_profile = get_profile(context);
+    if (!sp_profile) {
+        return operation_result::invalid;
+    }
+
+    auto& profile = static_cast<witness_profile&>(*sp_profile.get());
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Critical Section.
+    unique_lock lock(mutex_);
+
+    database_.witness_profiles.store(profile);
+    database_.witness_profiles.sync();
+    ///////////////////////////////////////////////////////////////////////////
+    return operation_result::okay;
 }
 
 } // namespace blockchain

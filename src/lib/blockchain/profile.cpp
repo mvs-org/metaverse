@@ -102,11 +102,22 @@ profile::ptr witness_profile::get_profile(const profile_context& context)
 
     std::vector<mining_stat*> mining_stat_vec(witness_count, nullptr);
 
-    for (auto& pubkey : hex_public_keys) {
-        auto witness_slot_num = get_slot_num(pubkey);
-        auto* stat_ptr = &witness_mining_stat_map[pubkey];
-        stat_ptr->witness_slot_num = witness_slot_num; // witness_slot_num
-        if (witness_slot_num < witness_count) {
+    if (hex_public_keys.empty()) {
+        for (auto& pubkey : hex_public_keys) {
+            auto witness_slot_num = get_slot_num(pubkey);
+            auto* stat_ptr = &witness_mining_stat_map[pubkey];
+            stat_ptr->witness_slot_num = witness_slot_num; // witness_slot_num
+            if (witness_slot_num < witness_count) {
+                mining_stat_vec[witness_slot_num] = stat_ptr;
+            }
+        }
+    }
+    else {
+        // if no public key is specified, then get all witnesses' profile
+        for (size_t witness_slot_num = 0; witness_slot_num < witness_count; ++witness_slot_num) {
+            auto pubkey = witness::witness_to_string((*sp_witnesses)[witness_slot_num]);
+            auto* stat_ptr = &witness_mining_stat_map[pubkey];
+            stat_ptr->witness_slot_num = witness_slot_num; // witness_slot_num
             mining_stat_vec[witness_slot_num] = stat_ptr;
         }
     }
