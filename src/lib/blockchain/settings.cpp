@@ -47,8 +47,17 @@ settings::settings(bc::settings context)
     {
         case bc::settings::mainnet:
         {
-            checkpoints.reserve(1);
-            checkpoints.push_back({ "b81848ef9ae86e84c3da26564bc6ab3a79efc628239d11471ab5cd25c0684c2d", 0 });
+            // FIXEME.p2p-node.cpp, This is for header-first sync, attach_header_sync_session
+            basic_checkpoints.reserve(1);
+            basic_checkpoints.push_back({ "b81848ef9ae86e84c3da26564bc6ab3a79efc628239d11471ab5cd25c0684c2d", 0 });
+
+            // validate_block, This is for each singel node validate
+            checkpoints.reserve(4);
+            checkpoints.push_back({ "d4f84eb9acb52cbfb003bd4fb88f4b5cf1f6328f193097d42b9403d7030abb8e", 5000 });
+            checkpoints.push_back({ "d4f84eb9acb52cbfb003bd4fb88f4b5cf1f6328f193097d42b9403d7030abb8e", 3800 });
+            checkpoints.push_back({ "d120edf7e14d8f426b7390e94ae7bfd746f9fc247b28e336db052295177ac9d3", 410000 });
+            checkpoints.push_back({ "ed11a074ce80cbf82b5724bea0d74319dc6f180198fa1bbfb562bcbd50089e63", 1030000 });
+            checkpoints.push_back({ "a18a5aa5270835dd720a561c20230435e0508e8339ee30998da6dd79eee83b29", 1270000 });
             // fixme. header sync first has some problem.
             //checkpoints.push_back({ "250a083ddd62ea1d0907e29ff8d64e42c451f93560196f3f693fdc1bc6b84d61", 10000 });
             //checkpoints.push_back({ "e989e4b2d60ae2f8fbaa1cdb69d05afa63e7f1f99cf715589a93e4877c92fa8b", 100000 });
@@ -70,8 +79,10 @@ settings::settings(bc::settings context)
         {
             use_testnet_rules = true;
 
-            checkpoints.reserve(1);
-            checkpoints.push_back({ "b1076144f919c8efaf55e5ec267daa6d5dc0a12609c9c6fddf8157270ae6e7ca", 0 });
+            basic_checkpoints.reserve(1);
+            basic_checkpoints.push_back({ "b1076144f919c8efaf55e5ec267daa6d5dc0a12609c9c6fddf8157270ae6e7ca", 0 });
+            //checkpoints.reserve(1);
+            //checkpoints.push_back({ "b1076144f919c8efaf55e5ec267daa6d5dc0a12609c9c6fddf8157270ae6e7ca", 0 });
 
             bc::wallet::ec_private::mainnet_p2kh = 0x7f;
             bc::wallet::ec_public::mainnet_p2kh = 0x7f;

@@ -116,7 +116,7 @@ code organizer::verify(uint64_t fork_point,
     // Checks that are independent of the chain.
     auto ec = validate.check_block(chain_);
     if (error::success != ec.value()) {
-        log::debug(LOG_BLOCKCHAIN) << "organizer: check_block failed! error:"
+        log::warning(LOG_BLOCKCHAIN) << "organizer: check_block failed! error:"
             << std::to_string(ec.value()) << ", fork_point: "
             << std::to_string(fork_point) << ", orphan_index: " << std::to_string(orphan_index);
         return ec;
@@ -125,7 +125,7 @@ code organizer::verify(uint64_t fork_point,
     // Checks that are dependent on height and preceding blocks.
     ec = validate.accept_block();
     if (error::success != ec.value()) {
-        log::debug(LOG_BLOCKCHAIN) << "organizer: accept_block failed! error:"
+        log::warning(LOG_BLOCKCHAIN) << "organizer: accept_block failed! error:"
             << std::to_string(ec.value()) << ", fork_point: "
             << std::to_string(fork_point) << ", orphan_index: " << std::to_string(orphan_index);
         return ec;
