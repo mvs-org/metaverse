@@ -138,7 +138,7 @@ void initialize_logging(bc::ofstream& debug, bc::ofstream& error,
         log::debug("").set_output_function(std::bind(output_file,
             std::ref(debug), _1, _2, _3));
     }
-    else if (debug_log_level <log::level::info)
+    else if (debug_log_level < log::level::info)
     {
         log::trace("").set_output_function(std::bind(output_ignore,
             std::ref(debug), _1, _2, _3));
@@ -146,7 +146,7 @@ void initialize_logging(bc::ofstream& debug, bc::ofstream& error,
         log::debug("").set_output_function(std::bind(output_file,
             std::ref(debug), _1, _2, _3));
     }
-    else if (debug_log_level <log::level::warning)
+    else if (debug_log_level < log::level::warning)
     {
         // info => debug_log
         log::trace("").set_output_function(std::bind(output_ignore,
@@ -158,9 +158,10 @@ void initialize_logging(bc::ofstream& debug, bc::ofstream& error,
     // info => debug_log + console
     log::info("").set_output_function(std::bind(output_both,
         std::ref(debug), std::ref(output_stream), _1, _2, _3));
+
     // warning|error|fatal => error_log + console
-    log::warning("").set_output_function(std::bind(error_file,
-        std::ref(error), _1, _2, _3));
+    log::warning("").set_output_function(std::bind(error_both,
+        std::ref(error),std::ref(error_stream), _1, _2, _3));
     log::error("").set_output_function(std::bind(error_both,
         std::ref(error), std::ref(error_stream), _1, _2, _3));
     log::fatal("").set_output_function(std::bind(error_both,

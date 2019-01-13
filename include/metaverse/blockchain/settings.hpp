@@ -43,6 +43,7 @@ public:
     bool use_testnet_rules;
     bool collect_split_stake;
     config::checkpoint::list checkpoints;
+    config::checkpoint::list basic_checkpoints;
 };
 
 } // namespace blockchain
