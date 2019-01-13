@@ -28,7 +28,7 @@
 #include <metaverse/node/protocols/protocol_block_sync.hpp>
 #include <metaverse/node/protocols/protocol_version_quiet.hpp>
 #include <metaverse/node/settings.hpp>
-#include <metaverse/node/utility/header_queue.hpp>
+#include <metaverse/node/utility/check_list.hpp>
 #include <metaverse/node/utility/reservation.hpp>
 
 namespace libbitcoin {
@@ -45,11 +45,11 @@ using namespace std::placeholders;
 // The interval in which all-channel block download performance is tested.
 static const asio::seconds regulator_interval(5);
 
-session_block_sync::session_block_sync(p2p& network, header_queue& hashes,
+session_block_sync::session_block_sync(p2p& network, check_list& hashes,
     simple_chain& chain, const settings& settings)
   : session_batch(network, false),
     blockchain_(chain),
-    reservations_count_{0},
+    reservations_count_(0),
     settings_(settings),
     reservations_(hashes, chain, settings),
     CONSTRUCT_TRACK(session_block_sync)

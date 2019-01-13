@@ -73,6 +73,27 @@ public:
         maximum = bip130
     };
 
+    enum service: uint64_t
+    {
+        // The node exposes no services.
+        none = 0,
+
+        // The node is capable of serving the block chain (full node).
+        node_network = (1u << 0),
+
+        // Requires version.value >= level::bip64 (BIP64 is draft only).
+        // The node is capable of responding to the getutxo protocol request.
+        node_utxo = (1u << 1),
+
+        // Requires version.value >= level::bip111
+        // The node is capable and willing to handle bloom-filtered connections.
+        node_bloom = (1u << 2),
+
+        // Independent of network protocol level.
+        // The node is capable of responding to witness inventory requests.
+        node_witness = (1u << 3)
+    };
+
     static version factory_from_data(uint32_t version, const data_chunk& data);
     static version factory_from_data(uint32_t version, std::istream& stream);
     static version factory_from_data(uint32_t version, reader& source);

@@ -27,7 +27,7 @@
 #include <utility>
 #include <vector>
 #include <metaverse/bitcoin.hpp>
-#include <metaverse/node/utility/header_queue.hpp>
+#include <metaverse/node/utility/check_list.hpp>
 #include <metaverse/node/utility/performance.hpp>
 #include <metaverse/node/utility/reservation.hpp>
 
@@ -40,20 +40,36 @@ using namespace bc::chain;
 // The protocol maximum size of get data block requests.
 static constexpr size_t max_block_request = 50000;
 
-reservations::reservations(header_queue& hashes, simple_chain& chain,
+reservations::reservations(check_list& hashes, simple_chain& chain,
     const settings& settings)
   : hashes_(hashes),
     blockchain_(chain),
     max_request_(max_block_request),
     timeout_(settings.block_timeout_seconds)
 {
-    initialize(settings.download_connections);
+    initialize(std::min(3u, settings.download_connections));
+}
+
+bool reservations::start()
+{
+    // FIXME.chenhao
+    return true;
+    //return blockchain_.begin_insert();
 }
 
 bool reservations::import(block::ptr block, size_t height)
 {
-    // Thread safe.
+    //#########################################################################
+    // FIXME.chenhao.change as insert?
     return blockchain_.import(block, height);
+    //#########################################################################
+}
+
+bool reservations::stop()
+{
+    // FIXME.chenhao
+    return true;
+    //return blockchain_.end_insert();
 }
 
 // Rate methods.
@@ -139,20 +155,6 @@ void reservations::remove(reservation::ptr row)
 // Hash methods.
 //-----------------------------------------------------------------------------
 
-// Mark hashes for blocks we already have.
-void reservations::mark_existing()
-{
-    uint64_t gap;
-    auto start = hashes_.first_height();
-
-    // Not thread safe. Returns false when first is > count (last gap).
-    while (blockchain_.get_next_gap(gap, start))
-    {
-        hashes_.invalidate(start, gap - start);
-        start = gap + 1;
-    }
-}
-
 // No critical section because this is private to the constructor.
 // TODO: Optimize by modifying allocation loop to evenly dstribute gap
 // reservations so that re-population is not required. Alternatively
@@ -170,7 +172,6 @@ void reservations::initialize(size_t size)
     if (rows == 0)
         return;
 
-    mark_existing();
     table_.reserve(rows);
 
     // Allocate no more than 50k headers per row.
@@ -191,21 +192,13 @@ void reservations::initialize(size_t size)
         for (size_t row = 0; row < rows; ++row)
         {
             hashes_.dequeue(hash, height);
-
-            if (hashes_.valid(hash))
-            {
-                ++count;
-                table_[row]->insert(hash, height);
-            }
+            BITCOIN_ASSERT_MSG(result, "The checklist is empty.");
+            table_[row]->insert(std::move(hash), height);
         }
     }
 
-    // This is required as any rows left empty above will not populate or stop.
-    for (auto row: table_)
-        row->populate();
-
     log::debug(LOG_NODE)
-        << "Reserved " << count << " blocks to " << rows << " slots.";
+        << "Reserved " << allocation << " blocks to " << rows << " slots.";
 }
 
 // Call when minimal is empty.
@@ -264,9 +257,8 @@ bool reservations::reserve(reservation::ptr minimal)
     for (size_t block = 0; block < allocation; ++block)
     {
         hashes_.dequeue(hash, height);
-
-        if (hashes_.valid(hash))
-            minimal->insert(hash, height);
+        BITCOIN_ASSERT_MSG(result, "The checklist is empty.");
+        minimal->insert(std::move(hash), height);
     }
 
     // This may become empty between insert and this test, which is okay.

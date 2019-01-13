@@ -97,6 +97,8 @@ public:
      * Getter.
      * @return The block hash of the checkpoint.
      */
+    const hash_digest& rf_hash() const;
+    //FIXME.chenhao
     hash_digest hash() const;
 
     /**

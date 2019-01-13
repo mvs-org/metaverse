@@ -36,6 +36,12 @@ namespace blockchain {
 class BCB_API simple_chain
 {
 public:
+    typedef std::vector<size_t> heights;
+
+    /// Get the set of block gaps in the chain.
+    virtual bool get_gaps(
+        database::block_database::heights& out_gaps) const = 0;
+
     /// Return the first and last gaps in the blockchain, or false if none.
     virtual bool get_gap_range(uint64_t& out_first,
         uint64_t& out_last) const = 0;

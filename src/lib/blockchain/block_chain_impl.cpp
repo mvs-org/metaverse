@@ -259,6 +259,12 @@ chain::header::ptr block_chain_impl::get_last_block_header(const chain::header& 
 // simple_chain (no locks, not thread safe).
 // ----------------------------------------------------------------------------
 
+bool block_chain_impl::get_gaps(database::block_database::heights& out_gaps) const
+{
+    database_.blocks.gaps(out_gaps);
+    return true;
+}
+
 bool block_chain_impl::get_gap_range(uint64_t& out_first,
     uint64_t& out_last) const
 {

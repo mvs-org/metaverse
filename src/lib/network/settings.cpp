@@ -31,6 +31,10 @@ using namespace bc::message;
 settings::settings()
   : threads(16),
     protocol(version::level::maximum),
+    protocol_minimum(version::level::minimum),
+    services(version::service::none),
+    invalid_services(160),
+    validate_checksum(false),
     inbound_connections(32),
     outbound_connections(8),
     manual_attempt_limit(0),

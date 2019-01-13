@@ -50,7 +50,7 @@ settings::settings(bc::settings context)
             checkpoints.reserve(1);
             checkpoints.push_back({ "b81848ef9ae86e84c3da26564bc6ab3a79efc628239d11471ab5cd25c0684c2d", 0 });
             // fixme. header sync first has some problem.
-            //checkpoints.push_back({ "250a083ddd62ea1d0907e29ff8d64e42c451f93560196f3f693fdc1bc6b84d61", 10000 });
+            checkpoints.push_back({ "ebbc89b28eb43974efe35db0c4874616997dfd6fa5649d7e6eee292c72383039", 100});
             //checkpoints.push_back({ "e989e4b2d60ae2f8fbaa1cdb69d05afa63e7f1f99cf715589a93e4877c92fa8b", 100000 });
             //checkpoints.push_back({ "58986f8f9848d32aa1a210f3890e82312326657b6b84d2aa4bf00b41403dc191", 200000 });
             //checkpoints.push_back({ "b9ec93b181e5ca3825df23c8100188a503b98d6e7240c7b21cedc980304967ea", 300000 });

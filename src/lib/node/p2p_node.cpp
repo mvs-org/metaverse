@@ -42,7 +42,7 @@ using namespace std::placeholders;
 
 p2p_node::p2p_node(const configuration& configuration)
   : p2p(configuration.network),
-    hashes_(configuration.chain.checkpoints),
+    //hashes_(configuration.chain.checkpoints),
     blockchain_(thread_pool(), configuration.chain, configuration.database),
     settings_(configuration.node)
 {

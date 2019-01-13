@@ -29,6 +29,7 @@
 #include <memory>
 #include <vector>
 #include <metaverse/bitcoin/define.hpp>
+#include <metaverse/bitcoin/error.hpp>
 #include <metaverse/bitcoin/math/hash.hpp>
 #include <metaverse/bitcoin/utility/data.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
@@ -91,6 +92,10 @@ public:
     bool is_valid() const;
     void reset();
     uint64_t serialized_size(bool with_transaction_count = true) const;
+
+    // Check header
+    bool is_valid_timestamp() const;
+    code check(bool retarget=false) const;
 
     bool is_proof_of_stake() const;
     bool is_proof_of_work() const;

@@ -28,7 +28,7 @@
 #include <metaverse/network.hpp>
 #include <metaverse/node/define.hpp>
 #include <metaverse/node/settings.hpp>
-#include <metaverse/node/utility/header_queue.hpp>
+#include <metaverse/node/utility/check_list.hpp>
 #include <metaverse/node/utility/reservation.hpp>
 #include <metaverse/node/utility/reservations.hpp>
 
@@ -42,7 +42,7 @@ class BCN_API session_block_sync
 public:
     typedef std::shared_ptr<session_block_sync> ptr;
 
-    session_block_sync(network::p2p& network, header_queue& hashes,
+    session_block_sync(network::p2p& network, check_list& hashes,
         blockchain::simple_chain& chain, const settings& settings);
 
     virtual void start(result_handler handler) override;

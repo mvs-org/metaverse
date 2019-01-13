@@ -20,6 +20,7 @@
  */
 #include <metaverse/bitcoin/chain/header.hpp>
 
+#include <chrono>
 #include <utility>
 #include <boost/iostreams/stream.hpp>
 #include <metaverse/bitcoin/constants.hpp>
@@ -28,9 +29,13 @@
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
 #include <metaverse/consensus/libdevcore/FixedHash.h>
+//#include <metaverse/consensus/miner/MinerAux.h>
 
 namespace libbitcoin {
 namespace chain {
+
+// Use system clock because we require accurate time of day.
+using wall_clock = std::chrono::system_clock;
 
 uint64_t header::satoshi_fixed_size_without_transaction_count()
 {
@@ -278,6 +283,39 @@ std::string get_block_version(uint32_t version)
     default:;
     }
     return "Unknown";
+}
+
+// Validation helpers.
+//-----------------------------------------------------------------------------
+
+/// BUGBUG: bitcoin 32bit unix time: en.wikipedia.org/wiki/Year_2038_problem
+bool header::is_valid_timestamp() const
+{
+#if 0
+   return true;
+#else
+    using namespace std::chrono;
+    const auto time = wall_clock::from_time_t(timestamp);
+    const auto future = wall_clock::now() + seconds(35u);
+    return time <= future;
+#endif
+}
+
+// Validation.
+//-----------------------------------------------------------------------------
+
+code header::check(bool retarget) const
+{
+
+    if (!is_valid_timestamp())
+        return error::futuristic_timestamp;
+
+    //TODO.chenhao.verify PoW/PoS/DPoS
+    //if (!verify_work(*this, this->previous_block_hash))
+    //    return error::proof_of_work;
+
+    else
+        return error::success;
 }
 
 } // namspace chain

@@ -34,7 +34,7 @@
 #include <metaverse/node/sessions/session_inbound.hpp>
 #include <metaverse/node/sessions/session_manual.hpp>
 #include <metaverse/node/sessions/session_outbound.hpp>
-#include <metaverse/node/utility/header_queue.hpp>
+#include <metaverse/node/utility/check_list.hpp>
 #include <metaverse/node/utility/performance.hpp>
 #include <metaverse/node/utility/reservation.hpp>
 #include <metaverse/node/utility/reservations.hpp>

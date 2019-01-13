@@ -29,7 +29,7 @@
 #include <metaverse/node/define.hpp>
 #include <metaverse/node/sessions/session_block_sync.hpp>
 #include <metaverse/node/sessions/session_header_sync.hpp>
-#include <metaverse/node/utility/header_queue.hpp>
+#include <metaverse/node/utility/check_list.hpp>
 
 namespace libbitcoin {
 namespace node {
@@ -120,7 +120,7 @@ private:
     void handle_running(const code& ec, result_handler handler);
 
     // These are thread safe.
-    header_queue hashes_;
+    check_list hashes_; //header_queue hashes_;
     const settings& settings_;
 protected:
     // fix me, for explorer only.

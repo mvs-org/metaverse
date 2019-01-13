@@ -96,6 +96,9 @@ public:
     // simple_chain (NOT THREAD SAFE).
     // ------------------------------------------------------------------------
 
+    /// Get the set of block gaps in the chain.
+    bool get_gaps(database::block_database::heights& out_gaps) const override;
+
     /// Return the first and last gaps in the blockchain, or false if none.
     bool get_gap_range(uint64_t& out_first, uint64_t& out_last) const override;
 

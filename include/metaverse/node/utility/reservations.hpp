@@ -28,7 +28,7 @@
 #include <metaverse/blockchain.hpp>
 #include <metaverse/node/define.hpp>
 #include <metaverse/node/settings.hpp>
-#include <metaverse/node/utility/header_queue.hpp>
+#include <metaverse/node/utility/check_list.hpp>
 #include <metaverse/node/utility/reservation.hpp>
 
 namespace libbitcoin {
@@ -49,8 +49,14 @@ public:
 
     /// Construct a reservation table of reservations, allocating hashes evenly
     /// among the rows up to the limit of a single get headers p2p request.
-    reservations(header_queue& hashes, blockchain::simple_chain& chain,
+    reservations(check_list& hashes, blockchain::simple_chain& chain,
         const settings& settings);
+
+    /// Set the flush lock guard.
+    bool start();
+
+    /// Clear the flush lock guard.
+    bool stop();
 
     /// The average and standard deviation of block import rates.
     rate_statistics rates() const;
@@ -83,9 +89,6 @@ private:
     // Create the specified number of reservations and distribute hashes.
     void initialize(size_t size);
 
-    // Mark hashes for blocks we already have.
-    void mark_existing();
-
     // Find the reservation with the most hashes.
     reservation::ptr find_maximal();
 
@@ -96,7 +99,7 @@ private:
     bool reserve(reservation::ptr minimal);
 
     // Thread safe.
-    header_queue& hashes_;
+    check_list& hashes_;
     blockchain::simple_chain& blockchain_;
 
     // Protected by mutex.

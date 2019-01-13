@@ -39,6 +39,10 @@ public:
     /// Properties.
     uint32_t threads;
     uint32_t protocol;
+    uint32_t protocol_minimum;
+    uint64_t services;
+    uint64_t invalid_services;
+    bool validate_checksum;
     uint32_t identifier;
     uint16_t inbound_port;
     uint32_t inbound_connections;

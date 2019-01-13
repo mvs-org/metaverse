@@ -40,6 +40,7 @@ namespace database {
 class BCD_API block_database
 {
 public:
+    typedef std::vector<size_t> heights;
     static const file_offset empty;
 
     /// Construct the database.
@@ -70,6 +71,9 @@ public:
 
     /// Store a block in the database.
     void store(const chain::block& block);
+
+    /// The list of heights representing all chain gaps.
+    bool gaps(heights& out_gaps) const;
 
     /// Store a block in the database.
     void store(const chain::block& block, size_t height);
@@ -117,7 +121,10 @@ private:
     record_manager index_manager_;
 
     // Guard against concurrent update of a range of block indexes.
-    upgrade_mutex mutex_;
+    mutable upgrade_mutex mutex_;
+
+    // This provides atomicity for height.
+    mutable shared_mutex metadata_mutex_;
 };
 
 } // namespace database

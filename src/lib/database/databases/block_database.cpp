@@ -194,6 +194,17 @@ void block_database::store(const block& block, size_t height)
     write_position(position, height32);
 }
 
+bool block_database::gaps(heights& out_gaps) const
+{
+    const auto count = index_manager_.count();
+
+    for (size_t height = 0; height < count; ++height)
+        if (read_position(height) == empty)
+            out_gaps.push_back(height);
+
+    return true;
+}
+
 void block_database::unlink(size_t from_height)
 {
     if (index_manager_.count() > from_height)
