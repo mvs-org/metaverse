@@ -23,6 +23,7 @@
 #include <boost/filesystem.hpp>
 #include <metaverse/consensus/miner.hpp>
 #include <metaverse/bitcoin/constants.hpp>
+#include <metaverse/macros_define.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
@@ -61,6 +62,11 @@ settings::settings(bc::settings context)
             checkpoints.push_back({ "9a0efd7b41cfc1cbeb1bfbd2ab3cb7989314611608cc4236b80a540444fbfb36", 800000 });
             checkpoints.push_back({ "ed11a074ce80cbf82b5724bea0d74319dc6f180198fa1bbfb562bcbd50089e63", 1030000 }); //future time attack
             checkpoints.push_back({ "a18a5aa5270835dd720a561c20230435e0508e8339ee30998da6dd79eee83b29", 1270000 }); //super nova
+
+#ifdef PRIVATE_CHAIN
+            checkpoints.clear();
+            checkpoints.push_back({ "b81848ef9ae86e84c3da26564bc6ab3a79efc628239d11471ab5cd25c0684c2d", 0 });
+#endif
 
             bc::wallet::ec_private::mainnet_p2kh = 0x32;
             bc::wallet::ec_public::mainnet_p2kh = 0x32;

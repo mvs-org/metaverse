@@ -175,7 +175,7 @@ bool block_chain_impl::check_pos_utxo_capability(
     return is_utxo_spendable(tx, out_index, out_height, height);
 }
 
-bool block_chain_impl::pos_exist_before(const uint64_t& height)
+bool block_chain_impl::pos_exist_before(const uint64_t& height) const
 {
     auto pos = pos_enabled_height;
     while (pos++ < height) {
@@ -3127,63 +3127,40 @@ block_chain_impl::get_address_witness_certs(const std::string& address, uint64_t
     return sh_vec;
 }
 
-uint64_t block_chain_impl::get_not_dpos_height_before(uint64_t height) const
-{
-    const auto witness_enable_height = consensus::witness::witness_enable_height;
-    if (height < witness_enable_height) {
-        return 0;
-    }
-    chain::header header;
-    while (height-- >= witness_enable_height) {
-        if (!get_header(header, height)) {
-            return 0;
-        }
-        if (header.is_proof_of_dpos()) {
-            return 0;
-        }
-        if (header.is_proof_of_work() || header.is_proof_of_stake()) {
-            return height;
-        }
-    }
-
-    return height;
-}
-
-chain::header::ptr block_chain_impl::get_prev_block_header(uint64_t height, chain::block_version ver) const
+chain::header::ptr block_chain_impl::get_prev_block_header(
+    uint64_t height, chain::block_version ver, bool same_version) const
 {
     if (height < 2) {
         return nullptr;
     }
+
     chain::header header;
     while (--height > 0) {
+        if (same_version) {
+            if (ver == chain::block_version_pos && height < pos_enabled_height) {
+                return nullptr;
+            }
+            else if (ver == chain::block_version_dpos && height < consensus::witness::witness_enable_height) {
+                return nullptr;
+            }
+        }
+
         if (!get_header(header, height)) {
             return nullptr;
         }
-        switch (ver) {
-        case chain::block_version_pow:
-            if (header.is_proof_of_work()) {
+
+        if (same_version) {
+            if (header.version == ver) {
                 return std::make_shared<chain::header>(header);
             }
-            break;
-        case chain::block_version_pos:
-            if (header.is_proof_of_stake()) {
+        }
+        else {
+            if (header.version != ver) {
                 return std::make_shared<chain::header>(header);
             }
-            if (header.number < pos_enabled_height) {
-                return nullptr;
-            }
-            break;
-        case chain::block_version_dpos:
-            if (header.is_proof_of_dpos()) {
-                return std::make_shared<chain::header>(header);
-            }
-            if (header.number < consensus::witness::witness_enable_height) {
-                return nullptr;
-            }
-            break;
-        default:;
         }
     }
+
     return nullptr;
 }
 
@@ -3209,10 +3186,42 @@ bool block_chain_impl::can_use_dpos(uint64_t height) const
         }
     }
 
-    // a dpos must followed by a pow/pos.
-    uint64_t pow_height = get_not_dpos_height_before(height);
-    if (pow_height == 0) {
+    // a dpos must followed by non dpos.
+    chain::header header;
+    if (!get_header(header, height - 1) || header.is_proof_of_dpos()) {
         return false;
+    }
+
+    return true;
+}
+
+bool block_chain_impl::check_max_successive_height(uint64_t height, chain::block_version version) const
+{
+    if (!enable_max_successive_height) {
+        return true;
+    }
+
+    if (height <= pos_enabled_height) {
+        return true;
+    }
+
+    if (version == chain::block_version_pow) {
+        auto header = get_prev_block_header(height, version, false);
+        if (header && height - header->number > pow_max_successive_height) {
+            return false;
+        }
+    }
+    else if (version == chain::block_version_pos) {
+        auto header = get_prev_block_header(height, version, false);
+        if (header && height - header->number > pos_max_successive_height) {
+            return false;
+        }
+    }
+    else if (version == chain::block_version_dpos) {
+        if (height <= consensus::witness::witness_enable_height) {
+            return true;
+        }
+        // TODO
     }
 
     return true;

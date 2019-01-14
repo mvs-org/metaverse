@@ -60,7 +60,7 @@ public:
 
     /// Get witness profiles
     std::shared_ptr<std::map<uint64_t, witness_profile::ptr>>
-    get(std::set<uint64_t> epoch_heights) const;
+    get(const std::set<uint64_t>& epoch_heights) const;
 
     void store(const witness_profile& profile);
 

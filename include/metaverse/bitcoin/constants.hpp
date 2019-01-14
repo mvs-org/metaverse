@@ -100,6 +100,11 @@ extern const uint64_t future_blocktime_fork_height;
 // Relative PoS & DPoS constants.
 //-----------------------------------------------------------------------------
 extern uint64_t pos_enabled_height;
+
+extern const bool enable_max_successive_height;
+extern const uint32_t pow_max_successive_height;
+extern const uint32_t pos_max_successive_height;
+
 extern const uint32_t pos_coinstake_max_utxos;
 
 extern const uint64_t pos_lock_min_value;

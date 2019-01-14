@@ -279,7 +279,7 @@ public:
         bool strict=true
     );
 
-    bool pos_exist_before(const uint64_t& height);
+    bool pos_exist_before(const uint64_t& height) const;
 
     virtual chain::header::ptr get_last_block_header(const chain::header& parent_header, uint32_t version) const;
 
@@ -431,8 +431,9 @@ public:
         std::shared_ptr<std::vector<std::string>> excluded_addresses);
 
     bool can_use_dpos(uint64_t height) const;
-    uint64_t get_not_dpos_height_before(uint64_t height) const;
-    chain::header::ptr get_prev_block_header(uint64_t height, chain::block_version ver) const;
+    bool check_max_successive_height(uint64_t last_height, chain::block_version version) const;
+    chain::header::ptr get_prev_block_header(
+        uint64_t height, chain::block_version ver, bool same_version=true) const;
 
     uint32_t get_median_time_past(uint64_t height) const;
     bool is_utxo_spendable(const chain::transaction& tx, uint32_t index,

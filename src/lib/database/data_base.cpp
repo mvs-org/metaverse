@@ -885,7 +885,8 @@ void data_base::synchronize()
     address_mits.sync();
     mit_history.sync();
     blocks.sync();
-    witness_profiles.sync();
+    // TODO:FIXME
+    // witness_profiles.sync();
 }
 
 void data_base::synchronize_dids()
@@ -913,7 +914,8 @@ void data_base::synchronize_mits()
 
 void data_base::synchronize_witness_profiles()
 {
-    witness_profiles.sync();
+    // TODO:FIXME
+    // witness_profiles.sync();
 }
 
 void data_base::push(const block& block)
@@ -1372,4 +1374,3 @@ void data_base::push_mit(const asset_mit& mit, const short_hash& key,
 
 } // namespace data_base
 } // namespace libbitcoin
-

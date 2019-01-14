@@ -139,7 +139,7 @@ witness_profile::ptr blockchain_witness_profile_database::get(uint64_t epoch_hei
 }
 
 std::shared_ptr<std::map<uint64_t, witness_profile::ptr>>
-blockchain_witness_profile_database::get(std::set<uint64_t> epoch_heights) const
+blockchain_witness_profile_database::get(const std::set<uint64_t>& epoch_heights) const
 {
     auto sp_map = std::make_shared<std::map<uint64_t, witness_profile::ptr>>();
     for (auto epoch_height : epoch_heights) {

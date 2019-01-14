@@ -77,8 +77,9 @@ protected:
     bool transaction_exists(const hash_digest& tx_hash) const override;
 
     virtual bool can_use_dpos(uint64_t height) const override;
-    virtual uint64_t get_not_dpos_height_before(uint64_t height) const override;
-    virtual chain::header::ptr get_prev_block_header(uint64_t height, chain::block_version ver) const override;
+    virtual bool check_max_successive_height(uint64_t height, chain::block_version version) const override;
+    virtual chain::header::ptr get_prev_block_header(
+        uint64_t height, chain::block_version ver, bool same_version=true) const override;
 
 private:
     bool fetch_orphan_transaction(chain::transaction& tx,

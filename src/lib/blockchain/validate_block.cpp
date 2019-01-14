@@ -270,6 +270,10 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     RETURN_IF_STOPPED();
 
+    if (!check_max_successive_height(header.number, (chain::block_version)header.version)) {
+        return error::block_intermix_interval_error;
+    }
+
     //TO.FIX.CHENHAO.Reject
     const auto&& block_hash = header.hash();
     if (!testnet_ && !config::checkpoint::validate(block_hash, current_block_.header.number, checkpoints_)) {
@@ -297,11 +301,6 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
         if (!check_time_stamp(header.timestamp, time_stamp_window)) {
             return error::futuristic_timestamp;
         }
-    }
-
-    if (current_block_.is_proof_of_dpos() && prev_header.is_proof_of_dpos()) {
-        log::error(LOG_BLOCKCHAIN) << "DPoS block must follow a PoW or PoS block!";
-        return error::proof_of_stake;
     }
 
     RETURN_IF_STOPPED();

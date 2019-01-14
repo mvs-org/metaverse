@@ -51,6 +51,10 @@ const uint64_t future_blocktime_fork_height     = 1030000;
 const size_t relative_locktime_min_version      = 2;
 
 // POS
+const bool enable_max_successive_height         = false;
+const uint32_t pow_max_successive_height        = 24;
+const uint32_t pos_max_successive_height        = 24;
+
 const uint64_t pos_genesis_reward               = coin_price(6000000);
 const uint32_t pos_coinstake_max_utxos          = 10;
 const uint64_t pos_lock_min_value               = coin_price(1000);

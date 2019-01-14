@@ -716,6 +716,11 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
         return nullptr;
     }
 
+    if (!block_chain.check_max_successive_height(last_height + 1, get_accept_block_version())) {
+        sleep_for_mseconds(1000, true);
+        return nullptr;
+    }
+
     if (get_accept_block_version() == chain::block_version_pow) {
         return create_new_block_pow(pay_address, prev_header);
     }
