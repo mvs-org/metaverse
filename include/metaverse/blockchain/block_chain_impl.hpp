@@ -431,7 +431,7 @@ public:
         std::shared_ptr<std::vector<std::string>> excluded_addresses);
 
     bool can_use_dpos(uint64_t height) const;
-    uint64_t get_pow_height_before_dpos(uint64_t height) const;
+    uint64_t get_not_dpos_height_before(uint64_t height) const;
     chain::header::ptr get_prev_block_header(uint64_t height, chain::block_version ver) const;
 
     uint32_t get_median_time_past(uint64_t height) const;

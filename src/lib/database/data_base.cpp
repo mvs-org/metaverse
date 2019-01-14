@@ -180,7 +180,7 @@ bool data_base::upgrade_version_63(const path& prefix)
     data_base::db_metadata metadata;
     data_base::read_metadata(metadata_path, metadata);
     if (metadata.version_.empty()) {
-        return false; // no version before, initialize all intead of upgrade.
+        return false; // no version before, initialize all instead of upgrade.
     }
 
     if (!initialize_dids(prefix)) {
@@ -219,7 +219,7 @@ bool data_base::upgrade_version_64(const path& prefix)
     data_base::db_metadata metadata;
     data_base::read_metadata(metadata_path, metadata);
     if (metadata.version_.empty()) {
-        return false; // no version before, initialize all intead of upgrade.
+        return false; // no version before, initialize all instead of upgrade.
     }
 
     if (!initialize_witness_certs(prefix)) {

@@ -122,7 +122,7 @@ protected:
     static bool is_valid_coinbase_height(uint64_t height, const chain::block& block, uint64_t index);
 
     virtual bool can_use_dpos(uint64_t height) const = 0;
-    virtual uint64_t get_pow_height_before_dpos(uint64_t height) const = 0;
+    virtual uint64_t get_not_dpos_height_before(uint64_t height) const = 0;
     virtual chain::header::ptr get_prev_block_header(uint64_t height, chain::block_version ver) const = 0;
 
 private:

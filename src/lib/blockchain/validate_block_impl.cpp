@@ -554,7 +554,7 @@ bool validate_block_impl::can_use_dpos(uint64_t height) const
     }
 
     // a dpos must followed by a pow/pos.
-    uint64_t pow_height = get_pow_height_before_dpos(height);
+    uint64_t pow_height = get_not_dpos_height_before(height);
     if (pow_height == 0) {
         return false;
     }
@@ -562,7 +562,7 @@ bool validate_block_impl::can_use_dpos(uint64_t height) const
     return true;
 }
 
-uint64_t validate_block_impl::get_pow_height_before_dpos(uint64_t height) const
+uint64_t validate_block_impl::get_not_dpos_height_before(uint64_t height) const
 {
     const auto witness_enable_height = consensus::witness::witness_enable_height;
     if (height < witness_enable_height) {

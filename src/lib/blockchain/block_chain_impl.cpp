@@ -3091,7 +3091,7 @@ block_chain_impl::get_address_witness_certs(const std::string& address, uint64_t
             auto bc_cert = database_.witness_certs.get(key);
             if (!bc_cert
                 || bc_cert->get_height() + secondary_witness_cert_expiration <= epoch_height) {
-                continue
+                continue;
             }
         }
 
@@ -3101,7 +3101,7 @@ block_chain_impl::get_address_witness_certs(const std::string& address, uint64_t
     return sh_vec;
 }
 
-uint64_t block_chain_impl::get_pow_height_before_dpos(uint64_t height) const
+uint64_t block_chain_impl::get_not_dpos_height_before(uint64_t height) const
 {
     const auto witness_enable_height = consensus::witness::witness_enable_height;
     if (height < witness_enable_height) {
@@ -3184,7 +3184,7 @@ bool block_chain_impl::can_use_dpos(uint64_t height) const
     }
 
     // a dpos must followed by a pow/pos.
-    uint64_t pow_height = get_pow_height_before_dpos(height);
+    uint64_t pow_height = get_not_dpos_height_before(height);
     if (pow_height == 0) {
         return false;
     }
