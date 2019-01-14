@@ -62,6 +62,7 @@ const double   pos_stake_factor                 = 30;
 const uint32_t block_timespan_window            = 24;
 
 const std::string witness_cert_prefix("MVS.WITNESS.");
+const uint32_t witness_cert_mars_value          = 30;
 const uint32_t witness_cert_count               = 23;
 const uint32_t secondary_witness_cert_min       = 23;
 const uint32_t secondary_witness_cert_max       = 46;

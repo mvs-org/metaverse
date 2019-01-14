@@ -886,13 +886,11 @@ miner::block_ptr miner::create_new_block_dpos(
 
     pblock->public_key = wallet::ec_public(get_public_key_data());
 
-#ifdef ENABLE_PILLAR
     log::info(LOG_HEADER)
         << "create a DPoS block at height " << block_height
         << ", header hash is " << encode_hash(pblock->header.hash())
         << ", blocksig is " << encode_base16(pblock->blocksig)
         << ", public key is " << encode_base16(pblock->public_key);
-#endif
 
     return pblock;
 }
@@ -1037,11 +1035,9 @@ miner::block_ptr miner::create_new_block_pos(
         return nullptr;
     }
 
-#ifdef ENABLE_PILLAR
     log::info(LOG_HEADER)
         << "create a PoS block at height " << block_height
         << ", header hash is " << encode_hash(pblock->header.hash());
-#endif
     return pblock;
 }
 
@@ -1575,10 +1571,8 @@ bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& pr
         return false;
     }
 
-#ifdef ENABLE_PILLAR
     log::info(LOG_HEADER)
         << "miner set mining public key " << encode_base16(public_key_data);
-#endif
 
     get_public_key_data() = public_key_data;
     get_private_key() = private_key;

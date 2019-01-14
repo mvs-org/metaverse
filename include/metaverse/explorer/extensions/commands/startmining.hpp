@@ -91,13 +91,11 @@ public:
             value<std::string>(&option_.symbol),
             "Mine Asset with specified symbol. Defaults to empty."
         )
-#ifdef ENABLE_PILLAR
         (
             "consensus,c",
             value<std::string>(&option_.consensus)->default_value("pow"),
             "Accept block with the specified consensus, eg. pow, pos, dpos, defaults to pow."
         )
-#endif
         ;
 
         return options;

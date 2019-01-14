@@ -76,11 +76,11 @@ void witness::init(p2p_node& node)
     if (instance_->is_testnet()) {
         witness::witness_enable_height = 1000000;
         witness::witness_register_enable_height = witness::witness_enable_height;
-        witness::witness_number = 5;
-        witness::epoch_cycle_height = 1000;
+        witness::witness_number = 23;
+        witness::epoch_cycle_height = 2300;
         witness::register_witness_lock_height = 5000;
-        witness::witness_lock_threshold = coin_price(10); // ETP bits
-        witness::vote_maturity = 24;
+        witness::witness_lock_threshold = coin_price(1000); // ETP bits
+        witness::vote_maturity = 23;
     }
 
 #ifdef PRIVATE_CHAIN
@@ -302,7 +302,7 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height)
         }
     }
 
-    auto stakeholders = chain.get_witnesses_with_stake(height, inactive_addresses);
+    auto stakeholders = chain.get_witnesses_mars(height, inactive_addresses);
     if (stakeholders == nullptr || stakeholders->empty()) {
         return true;
     }

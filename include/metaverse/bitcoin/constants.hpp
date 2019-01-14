@@ -113,6 +113,7 @@ extern const uint32_t block_timespan_window;
 extern const uint64_t pos_genesis_reward;
 
 extern const std::string witness_cert_prefix;
+extern const uint32_t witness_cert_mars_value;
 extern const uint32_t witness_cert_count;
 extern const uint32_t secondary_witness_cert_min;
 extern const uint32_t secondary_witness_cert_max;

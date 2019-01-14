@@ -243,7 +243,7 @@ uint32_t block_chain_impl::select_utxo_for_staking(
         }
     }
 
-#ifdef ENABLE_PILLAR
+#ifdef MVS_DEBUG
     if (stake_utxos > 0) {
         log::info("blockchain") << "found " << stake_utxos << " stake utxos.";
     }
@@ -2910,7 +2910,7 @@ std::shared_ptr<std::vector<std::pair<std::string, data_chunk>>> block_chain_imp
 }
 
 /// stake holder is publickey and lockvalue pair
-std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_witnesses_with_stake(
+std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_witnesses_mars(
     uint64_t epoch_height,
     std::shared_ptr<std::vector<std::string>> excluded_addresses)
 {
@@ -2923,8 +2923,13 @@ std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_wit
     }
 
     for (auto addr_pubkey_pair : *addr_pubkey_vec) {
-        auto stake = get_address_witness_stake(addr_pubkey_pair.first, epoch_height);
-        if (stake == 0) {
+        auto mars = get_witness_stake_mars(addr_pubkey_pair.first, epoch_height);
+        if (mars == 0) {
+            continue;
+        }
+
+        mars += get_witness_cert_mars(addr_pubkey_pair.first, epoch_height);
+        if (mars == 0) {
             continue;
         }
 
@@ -2942,14 +2947,14 @@ std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_wit
             }
         }
 
-        auto item = std::make_shared<fts_stake_holder>(pubkey, stake);
+        auto item = std::make_shared<fts_stake_holder>(pubkey, mars);
         stakeholders->emplace_back(item);
     }
 
     return stakeholders;
 }
 
-uint64_t block_chain_impl::get_address_witness_stake(const std::string& address, uint64_t epoch_height)
+uint64_t block_chain_impl::get_witness_stake_mars(const std::string& address, uint64_t epoch_height)
 {
     auto locked_balance = get_locked_balance(epoch_height, address);
     if (locked_balance.first < consensus::witness::witness_lock_threshold) {
@@ -2958,6 +2963,27 @@ uint64_t block_chain_impl::get_address_witness_stake(const std::string& address,
 
     auto stake = (uint64_t)(std::log10(locked_balance.first) * 6.18);
     return stake;
+}
+
+uint64_t block_chain_impl::get_witness_cert_mars(
+    const std::string& address, uint64_t epoch_height)
+{
+    auto certs = get_address_witness_certs(address, epoch_height);
+    if (!certs || certs->empty()) {
+        return 0;
+    }
+
+    for (auto& cert : *certs) {
+        if (cert.is_secondary_witness()) {
+            return witness_cert_mars_value;
+        }
+        else if (cert.is_primary_witness()
+            && is_primary_witness_cert_actived(cert.get_symbol(), epoch_height)) {
+            return witness_cert_mars_value;
+        }
+    }
+
+    return 0;
 }
 
 std::shared_ptr<blockchain_cert::list> block_chain_impl::get_issued_witness_certs(

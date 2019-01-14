@@ -426,7 +426,7 @@ public:
         uint64_t epoch_height,
         std::shared_ptr<std::vector<std::string>> excluded_addresses);
 
-    std::shared_ptr<consensus::fts_stake_holder::ptr_list> get_witnesses_with_stake(
+    std::shared_ptr<consensus::fts_stake_holder::ptr_list> get_witnesses_mars(
         uint64_t epoch_height,
         std::shared_ptr<std::vector<std::string>> excluded_addresses);
 
@@ -444,7 +444,10 @@ public:
 
     profile::ptr get_profile(const profile_context&) const;
 
-    uint64_t get_address_witness_stake(
+    uint64_t get_witness_stake_mars(
+        const std::string& address, uint64_t epoch_height);
+
+    uint64_t get_witness_cert_mars(
         const std::string& address, uint64_t epoch_height);
 
     std::shared_ptr<asset_cert::list> get_address_witness_certs(
