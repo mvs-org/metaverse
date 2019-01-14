@@ -21,7 +21,7 @@
 #ifndef MVS_CONSENSUS_MINER_HPP
 #define MVS_CONSENSUS_MINER_HPP
 
-#include <vector>
+#include <array>
 #include <boost/thread.hpp>
 #include <metaverse/bitcoin.hpp>
 #include "metaverse/blockchain/transaction_pool.hpp"
@@ -45,9 +45,8 @@ namespace consensus {
 
 BC_CONSTEXPR uint32_t min_tx_fee_per_kb = 1000;
 
-extern int bucket_size;
-extern std::vector<uint64_t> lock_heights;
-extern std::vector<uint16_t> lock_cycles;
+extern std::array<uint64_t, 5> lock_heights;
+extern const std::array<uint16_t,5 > lock_cycles;
 
 class miner
 {

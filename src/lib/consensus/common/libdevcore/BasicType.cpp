@@ -190,9 +190,8 @@ u256 HeaderAux::calculate_difficulty_v1(
     bigint target(minimumDifficulty);
 
     // DO NOT MODIFY time_config in release
-    static uint32_t time_config{24};
     if (prev) {
-        if (current.timestamp >= prev->timestamp + time_config) {
+        if (current.timestamp >= prev->timestamp + 24u) { // approach to 24*1.4 seconds
             target = prev->bits - (prev->bits/1024);
         }
         else {
@@ -209,80 +208,57 @@ u256 HeaderAux::calculate_difficulty_v1(
     return u256(std::min<bigint>(result, std::numeric_limits<u256>::max()));
 }
 
-uint32_t HeaderAux::limit_timespan(uint32_t timespan)
-{
-    // Limit adjustment step
-    if (timespan < block_timespan_window / 10) {
-        return block_timespan_window / 10;
-    }
-
-    if (timespan > block_timespan_window * 2) {
-        return uint32_t(block_timespan_window * 1.5);
-    }
-
-    return timespan;
-}
-
-bigint HeaderAux::adjust_difficulty(uint32_t timespan, bigint & result)
-{
-    // Limit adjustment step
-    timespan = limit_timespan(timespan);
-
-    // Retarget
-    const uint32_t interval = 40;
-    result *= ((interval + 1) * block_timespan_window);
-    result /= ((interval - 1) * block_timespan_window + timespan * 2);
-    return result;
-}
-
 u256 HeaderAux::calculate_difficulty_v2(
     const chain::header& current,
     const chain::header::ptr prev,
     const chain::header::ptr pprev)
 {
-    auto minimumDifficulty = is_testnet ? bigint(300000) : bigint(1024 * 1024);
-    bool isPoW = (current.version == chain::block_version_pow);
+    bigint minimumDifficulty, result, interval;
 
+    if (current.version == chain::block_version_pow) {
+        //////////// PoW ///////////////
+        minimumDifficulty = is_testnet ? bigint(300000) : bigint(914572800);
 #ifdef PRIVATE_CHAIN
-    if (isPoW) {
         minimumDifficulty = bigint(300000);
-    }
-#endif
-
-    if (nullptr == prev || nullptr == pprev) {
-        return u256(minimumDifficulty);
-    }
-
-    BITCOIN_ASSERT(current.version == prev->version);
-    BITCOIN_ASSERT(current.version == pprev->version);
-
-    bigint prev_bits = prev->bits;
-    uint32_t prev_timespan = prev->timestamp - pprev->timestamp;
-    uint32_t curr_timespan = current.timestamp - prev->timestamp;
-    uint32_t timespan = isPoW ? curr_timespan : prev_timespan;
-
-    // Retarget
-    prev_bits = adjust_difficulty(timespan, prev_bits);
-
-    auto result = std::max<bigint>(prev_bits, minimumDifficulty);
-    result = std::min<bigint>(result, std::numeric_limits<u256>::max());
-
-#ifdef PRIVATE_CHAIN
-    if (isPoW) {
         if (current.number < 6000) {
-            result = bigint(10);
+            return u256(bigint(10));
         }
-    }
 #endif
 
-#ifdef MVS_DEBUG
+        if (nullptr == prev) {
+            return u256(minimumDifficulty);
+        }
+
+        BITCOIN_ASSERT(current.version == prev->version);
+        const bigint& parent_bits = prev->bits;
+        interval = current.timestamp - prev->timestamp;
+        const bigint adjustvalue = std::max<bigint>(2 - interval/10 ,-99); // approach to 20*1.4 seconds
+        const bigint&& target = parent_bits + parent_bits / 2048 * adjustvalue;
+        result = std::max<bigint>(target, minimumDifficulty);
+    }
+    else {
+        //////////// PoS ///////////////
+        BITCOIN_ASSERT(current.version == pprev->version);
+        minimumDifficulty = bigint(1000000);
+        if (nullptr == prev || nullptr == pprev) {
+            return u256(minimumDifficulty);
+        }
+
+        BITCOIN_ASSERT(current.version == prev->version);
+        const bigint& parent_bits = prev->bits;
+        interval = prev->timestamp - pprev->timestamp;;
+        const bigint adjustvalue = std::max<bigint>(18 - interval/10 ,-99); // approach to 180*1.4 seconds
+        const bigint&& target = parent_bits + parent_bits / 2048 * adjustvalue;
+        result = std::max<bigint>(target, minimumDifficulty);
+    }
+
     if (current.transaction_count > 0) {
         log::info("difficulty")
             << "last " << chain::get_block_version(current)
-            << " timespan: " << timespan << " s, current height: "
+            << " timespan: " << interval << " s, current height: "
             << current.number << ", bits: " << result;
     }
-#endif
 
-    return u256(result);
+    // Retarget
+    return u256(std::min<bigint>(result, std::numeric_limits<u256>::max()));
 }

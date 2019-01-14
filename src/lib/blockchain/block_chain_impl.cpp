@@ -2703,34 +2703,12 @@ void block_chain_impl::set_sync_disabled(bool b)
 
 uint64_t block_chain_impl::get_expiration_height(uint64_t from, uint64_t lock_height) const
 {
-    uint64_t to = from + lock_height;
-    const auto witness_enable_height = consensus::witness::witness_enable_height;
-    if (from >= witness_enable_height) {
-        to += lock_height;
-    }
-    else if (to > witness_enable_height) {
-        auto blocks_after_dpos_enabled = to - witness_enable_height;
-        to += blocks_after_dpos_enabled;
-    }
-    return to;
+    return from + lock_height;
 }
 
 uint64_t block_chain_impl::calc_number_of_blocks(uint64_t from, uint64_t to) const
 {
-    if (from >= to) {
-        return 0;
-    }
-
-    uint64_t number = to - from;
-    const auto witness_enable_height = consensus::witness::witness_enable_height;
-    if (from >= witness_enable_height) {
-        number /= 2;
-    }
-    else if (to > witness_enable_height) {
-        auto blocks_after_dpos_enabled = to - witness_enable_height;
-        number -= (blocks_after_dpos_enabled / 2);
-    }
-    return number;
+    return from < to ? to - from : 0;
 }
 
 /// @return pair of <locked_balance, locked_weight>

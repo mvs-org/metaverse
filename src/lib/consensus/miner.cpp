@@ -366,10 +366,10 @@ std::shared_ptr<chain::output> miner::create_coinbase_mst_output(const wallet::p
     return output;
 }
 
-int bucket_size = 500000;
-std::vector<uint16_t> lock_cycles = {7, 30, 90, 182, 365};
-std::vector<uint64_t> lock_heights = {25200, 108000, 331200, 655200, 1314000};
-std::vector<uint64_t> coinage_rewards = {95890, 666666, 3200000, 8000000, 20000000};
+static const uint32_t bucket_size = 500000; // attenuation cycletime blocks
+std::array<uint64_t, 5> lock_heights{25200, 108000, 331200, 655200, 1314000};
+const std::array<uint16_t, 5> lock_cycles{7, 30, 90, 182, 365};
+const std::array<uint64_t, 5> coinage_rewards{95890, 666666, 3200000, 8000000, 20000000};
 
 uint64_t miner::get_reward_lock_height(uint16_t lock_cycle)
 {
@@ -385,7 +385,7 @@ uint64_t miner::get_reward_lock_height(uint16_t lock_cycle)
 int miner::get_lock_heights_index(uint64_t height)
 {
     int ret = -1;
-    auto it = find(lock_heights.begin(), lock_heights.end(), height);
+    auto it = std::find(lock_heights.begin(), lock_heights.end(), height);
     if (it != lock_heights.end()) {
         ret = it - lock_heights.begin();
     }
@@ -411,24 +411,25 @@ uint64_t miner::calculate_block_subsidy(uint64_t block_height, bool is_testnet, 
 
 uint64_t miner::calculate_block_subsidy_pow(uint64_t block_height, bool is_testnet)
 {
-    auto rate = block_height / bucket_size;
-    if (block_height > pos_enabled_height) {
-        rate = pos_enabled_height / bucket_size;
-        auto period_left = pos_enabled_height % bucket_size;
-        auto period_right = (bucket_size - period_left) * 2;
-        auto period_end = pos_enabled_height + period_right;
+    auto attenuation = is_testnet ? bucket_size/10 : bucket_size;
+    uint32_t rate = block_height / attenuation;
 
-        if (block_height >= period_end) {
-            rate = rate + 1 + (block_height - period_end) / (2 * bucket_size);
-        }
+    if (block_height < pos_enabled_height) {
+        return static_cast<uint64_t>(3 * coin_price() * pow(0.95, rate));
     }
 
-    return uint64_t(3 * coin_price() * pow(0.95, rate));
+    // 是否需要精度补偿? 或者考虑直接用列表安全?
+    auto target_reward = std::trunc(3 * coin_price() * pow(0.95, rate));
+    return std::min<uint64_t>(target_reward, 3 * coin_price());
 }
 
 uint64_t miner::calculate_block_subsidy_pos(uint64_t block_height, bool is_testnet)
 {
-    return coin_price(0);
+    auto attenuation = is_testnet ? bucket_size/10 : bucket_size;
+    uint32_t rate = block_height / attenuation;
+
+    auto target_reward = std::trunc(0.3 * coin_price() * pow(0.95, rate));
+    return std::min<uint64_t>(target_reward, 0.3 * coin_price());
 }
 
 uint64_t miner::calculate_block_subsidy_dpos(uint64_t block_height, bool is_testnet)
