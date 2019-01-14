@@ -3084,6 +3084,17 @@ block_chain_impl::get_address_witness_certs(const std::string& address, uint64_t
             continue;
         }
 
+        // check activity
+        if (epoch_height != 0) {
+            auto&& key_str = asset_cert::get_witness_key(asset_cert.get_symbol());
+            const auto key = get_hash(key_str);
+            auto bc_cert = database_.witness_certs.get(key);
+            if (!bc_cert
+                || bc_cert->get_height() + secondary_witness_cert_expiration <= epoch_height) {
+                continue
+            }
+        }
+
         sh_vec->push_back(std::move(asset_cert));
     }
 
