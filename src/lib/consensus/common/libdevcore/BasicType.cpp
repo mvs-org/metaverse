@@ -217,47 +217,52 @@ u256 HeaderAux::calculate_difficulty_v2(
     const chain::header::ptr prev,
     const chain::header::ptr pprev)
 {
-
-    BITCOIN_ASSERT(current.version == prev->version);
-
-    const bigint& parent_bits = prev->bits;
-    bigint minimumDifficulty;
-    bigint result;
+    bigint minimumDifficulty, result;
+    int32_t interval;
 
     if (current.version == chain::block_version_pow) {
         //////////// PoW ///////////////
         minimumDifficulty = is_testnet ? bigint(300000) : bigint(914572800);
 #ifdef PRIVATE_CHAIN
-    	minimumDifficulty = bigint(300000);
+        minimumDifficulty = bigint(300000);
         if (current.number < 6000) {
-            return bigint(10);
+            return u256(bigint(10));
         }
 #endif
-        const bigint&& interval = current.timestamp - prev->timestamp;
-    	const bigint adjustvalue = std::max<bigint>(2 - interval/10 ,-99); // approach to 20*1.4 seconds
-    	const bigint&& target = parent_bits + parent_bits / 2048 * adjustvalue;
-        result = std::max<bigint>(target, minimumDifficulty);
 
-    } else {
+        if (nullptr == prev) {
+            return u256(minimumDifficulty);
+        }
+
+        BITCOIN_ASSERT(current.version == prev->version);
+        const bigint& parent_bits = prev->bits;
+        interval = current.timestamp - prev->timestamp;
+        const bigint adjustvalue = bigint(std::max<int32_t>(2 - interval/10, -99)); // approach to 20*1.4 seconds
+        const bigint&& target = parent_bits + parent_bits / 2048 * adjustvalue;
+        result = std::max<bigint>(target, minimumDifficulty);
+    }
+    else {
         //////////// PoS ///////////////
-        BITCOIN_ASSERT(current.version == pprev->version);
-        minimumDifficulty = is_testnet ? bigint(10000) : bigint(1000000);
-        const bigint&& interval = prev->timestamp - pprev->timestamp;;
-    	const bigint adjustvalue = std::max<bigint>(18 - interval/10 ,-99); // approach to 180*1.4 seconds
-    	const bigint&& target = parent_bits + parent_bits / 2048 * adjustvalue;
-        result = std::max<bigint>(target, minimumDifficulty);
+        minimumDifficulty = bigint(1000000);
+        if (nullptr == prev || nullptr == pprev) {
+            return u256(minimumDifficulty);
+        }
 
+        BITCOIN_ASSERT(current.version == prev->version);
+        const bigint& parent_bits = prev->bits;
+        interval = prev->timestamp - pprev->timestamp;;
+        const bigint adjustvalue = bigint(std::max<int32_t>(18 - interval/10 ,-99)); // approach to 180*1.4 seconds
+        const bigint&& target = parent_bits + parent_bits / 2048 * adjustvalue;
+        result = std::max<bigint>(target, minimumDifficulty);
+    }
+
+    if (current.transaction_count > 0) {
         log::info("difficulty")
             << "last " << chain::get_block_version(current)
             << " timespan: " << interval << " s, current height: "
             << current.number << ", bits: " << result;
     }
 
-    if (nullptr == prev || nullptr == pprev) {
-        return u256(minimumDifficulty);
-    }
-
     // Retarget
     return u256(std::min<bigint>(result, std::numeric_limits<u256>::max()));
-
 }
