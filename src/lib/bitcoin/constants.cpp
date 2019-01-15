@@ -55,7 +55,7 @@ const bool enable_max_successive_height         = false;
 const uint32_t pow_max_successive_height        = 24;
 const uint32_t pos_max_successive_height        = 24;
 
-const uint64_t pos_genesis_reward               = coin_price(6000000);
+const uint64_t pos_genesis_reward               = coin_price(0X1076F8E);
 const uint32_t pos_coinstake_max_utxos          = 10;
 const uint64_t pos_lock_min_value               = coin_price(1000);
 const uint64_t pos_lock_min_height              = 100000;
@@ -63,7 +63,7 @@ const uint64_t pos_lock_gap_height              = 10000;
 const uint64_t pos_stake_min_value              = coin_price(1000);
 const uint64_t pos_stake_min_height             = 1000;
 const double   pos_stake_factor                 = 30;
-const uint32_t block_timespan_window            = 24;
+const uint32_t block_timespan_window            = 38;
 
 const std::string witness_cert_prefix("MVS.WITNESS.");
 const uint32_t witness_cert_mars_value          = 30;
