@@ -417,8 +417,8 @@ uint64_t miner::calculate_block_subsidy_pow(uint64_t block_height, bool is_testn
         return static_cast<uint64_t>(3 * coin_price() * pow(0.95, rate));
     }
 
-    // 是否需要精度补偿? 或者考虑直接用列表安全?
-    auto target_reward = std::trunc(3 * coin_price() * pow(0.95, rate));
+    double base = rate > 4 ? 2.5 : 3.0;
+    auto target_reward = std::trunc(base * coin_price() * pow(0.95, rate));
     return std::min<uint64_t>(target_reward, 3 * coin_price());
 }
 
