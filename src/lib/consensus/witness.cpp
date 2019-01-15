@@ -30,8 +30,8 @@
 namespace libbitcoin {
 namespace consensus {
 
-uint64_t witness::witness_enable_height = 2000000;
-uint64_t witness::witness_register_enable_height = 2000000;
+uint64_t witness::witness_enable_height = max_uint64;
+uint64_t witness::witness_register_enable_height = max_uint64;
 uint32_t witness::witness_number = 23;
 uint32_t witness::epoch_cycle_height = 10000;
 uint32_t witness::register_witness_lock_height = 20000; // it should larger than epoch_cycle_height
@@ -74,7 +74,7 @@ void witness::init(p2p_node& node)
     instance_ = &s_instance;
 
     if (instance_->is_testnet()) {
-        witness::witness_enable_height = 1000000;
+        witness::witness_enable_height = max_uint64;
         witness::witness_register_enable_height = witness::witness_enable_height;
         witness::witness_number = 5;
         witness::epoch_cycle_height = 1000;
@@ -687,7 +687,7 @@ bool witness::is_dpos_enabled()
 #endif
 
     if (instance_->is_testnet()) {
-        return true;
+        return false;
     }
     else {
         return false;
