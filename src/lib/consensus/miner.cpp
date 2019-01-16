@@ -337,7 +337,7 @@ miner::transaction_ptr miner::create_coinbase_tx(
     transaction_ptr ptransaction = std::make_shared<message::transaction_message>();
 
     ptransaction->inputs.resize(1);
-    ptransaction->version = transaction_version::first;
+    ptransaction->version = chain::transaction_version::first;
     ptransaction->inputs[0].previous_output = output_point(null_hash, max_uint32);
     script_number number(block_height);
     ptransaction->inputs[0].script.operations.push_back({ chain::opcode::special, number.data() });
@@ -1165,7 +1165,7 @@ miner::transaction_ptr miner::create_coinstake_tx(
 {
     block_chain_impl& block_chain = node_.chain_impl();
     transaction_ptr coinstake = std::make_shared<message::transaction_message>();
-    coinstake->version = transaction_version::first;
+    coinstake->version = chain::transaction_version::first;
     bool enable_collect_split = setting_.collect_split_stake;
 
     uint64_t nCredit = 0;

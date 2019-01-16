@@ -44,8 +44,7 @@ constexpr int  JSON_FORMAT_VERSION = 3;
 
 namespace mgbubble {
 using namespace bc;
-using namespace libbitcoin;
-using payment_address = wallet::payment_address;
+using namespace bc::chain;
 
 explorer::config::json_helper get_json_helper()
 {
@@ -53,17 +52,18 @@ explorer::config::json_helper get_json_helper()
 }
 
 void WsPushServ::run() {
+    using namespace std::placeholders;
     log::info(NAME) << "Websocket Service listen on " << node_.server_settings().websocket_listen;
 
     node_.subscribe_stop([this](const libbitcoin::code & ec) { stop(); });
 
     node_.subscribe_transaction_pool(
         std::bind(&WsPushServ::handle_transaction_pool,
-                  this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                  this, _1, _2, _3));
 
     node_.subscribe_blockchain(
         std::bind(&WsPushServ::handle_blockchain_reorganization,
-                  this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+                  this, _1, _2, _3, _4));
 
     base::run();
 
@@ -295,7 +295,7 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
 
     string_vector tx_addrs;
     for (const auto& input : tx.inputs) {
-        const auto address = payment_address::extract(input.script);
+        const auto address = wallet::payment_address::extract(input.script);
         if (address) {
             auto addr_hash = address.encoded();
             if (tx_addrs.end() == std::find(tx_addrs.begin(), tx_addrs.end(), addr_hash)) {
@@ -305,7 +305,7 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
     }
 
     for (const auto& output : tx.outputs) {
-        const auto address = payment_address::extract(output.script);
+        const auto address = wallet::payment_address::extract(output.script);
         if (address) {
             auto addr_hash = address.encoded();
             if (tx_addrs.end() == std::find(tx_addrs.begin(), tx_addrs.end(), addr_hash)) {
@@ -463,7 +463,7 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
             std::vector<std::string> addresses;
             if (root["address"].isString()) {
                 auto short_addr = root["address"].asString();
-                auto pay_addr = payment_address(short_addr);
+                auto pay_addr = wallet::payment_address(short_addr);
                 if (!short_addr.empty() && !pay_addr) {
                     send_bad_response(nc, "invalid address.");
                     return;
@@ -482,7 +482,7 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
                     }
 
                     auto short_addr = item.asString();
-                    auto pay_addr = payment_address(short_addr);
+                    auto pay_addr = wallet::payment_address(short_addr);
                     if (!short_addr.empty() && !pay_addr) {
                         send_bad_response(nc, "invalid address.");
                         return;

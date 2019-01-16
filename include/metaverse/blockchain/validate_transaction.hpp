@@ -81,21 +81,21 @@ public:
         const chain::transaction& tx, uint64_t value_in, uint64_t& fees, bool is_coinstake = false);
     static bool check_special_fees(bool is_testnet, const chain::transaction& tx, uint64_t fees);
 
-    bool check_asset_amount(const transaction& tx) const;
-    bool check_asset_symbol(const transaction& tx) const;
-    bool check_asset_certs(const transaction& tx) const;
-    bool check_asset_mit(const transaction& tx) const;
+    bool check_asset_amount(const chain::transaction& tx) const;
+    bool check_asset_symbol(const chain::transaction& tx) const;
+    bool check_asset_certs(const chain::transaction& tx) const;
+    bool check_asset_mit(const chain::transaction& tx) const;
     bool check_address_registered_did(const std::string& address) const;
 
     //check input did match output did
-    bool check_did_symbol_match(const transaction& tx) const;
+    bool check_did_symbol_match(const chain::transaction& tx) const;
 
     static bool is_nova_feature_activated(block_chain_impl& chain);
 
     bool get_previous_tx(chain::transaction& prev_tx, uint64_t& prev_height, const chain::input&) const;
 
-    transaction& get_tx();
-    const transaction& get_tx() const;
+    chain::transaction& get_tx();
+    const chain::transaction& get_tx() const;
     block_chain_impl& get_blockchain();
     const block_chain_impl& get_blockchain() const;
     const validate_block* get_validate_block() const;

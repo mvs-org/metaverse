@@ -28,6 +28,7 @@
 using namespace bc::client;
 using namespace bc::config;
 using namespace bc::wallet;
+using namespace bc::chain;
 
 namespace libbitcoin {
 namespace explorer {

@@ -334,7 +334,7 @@ std::string validate_block_impl::get_did_from_address_consider_orphan_chain(
             // iter inputs
             for (const auto& input : orphan_tx.inputs) {
                 uint64_t previous_height;
-                transaction previous_tx;
+                chain::transaction previous_tx;
                 const auto& previous_output = input.previous_output;
 
                 // This searches the blockchain and then the orphan pool up to and

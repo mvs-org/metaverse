@@ -119,7 +119,4 @@ private:
 } // namespace chain
 } // namespace libbitcoin
 
-using transaction = libbitcoin::chain::transaction;
-using transaction_version = libbitcoin::chain::transaction_version;
-
 #endif

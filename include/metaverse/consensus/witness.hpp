@@ -44,10 +44,6 @@ namespace consensus {
 class witness
 {
 public:
-    using p2p_node = libbitcoin::node::p2p_node;
-    using settings = blockchain::settings;
-    using validate_block = blockchain::validate_block;
-
     using public_key_t = data_chunk;
     using witness_id = data_chunk; // hex encoded
     using list = std::vector<witness_id>;
@@ -70,7 +66,7 @@ public:
     ~witness();
 
     // singleton
-    static witness& create(p2p_node& node);
+    static witness& create(node::p2p_node& node);
     static witness& get();
 
     const witness_id& get_witness(uint32_t slot) const;
@@ -125,16 +121,16 @@ public:
 
     static u256 calc_mixhash(const list& witness_list);
 
-    void set_validate_block(const validate_block*);
+    void set_validate_block(const blockchain::validate_block*);
     bool get_header(chain::header& out_header, uint64_t height) const;
 
     static std::string get_miner_address(const chain::block& block);
 
     bool is_testnet();
 private:
-    witness(p2p_node& node);
+    witness(node::p2p_node& node);
 
-    static void init(p2p_node& node);
+    static void init(node::p2p_node& node);
     static bool exists(const list&, const witness_id&);
     static const_iterator finds(const list&, const witness_id&);
     static iterator finds(list&, const witness_id&);
@@ -143,18 +139,17 @@ private:
 
 private:
     static witness* instance_;
-    p2p_node& node_;
-    const settings& setting_;
+    node::p2p_node& node_;
+    const blockchain::settings& setting_;
     list witness_list_;
-    const validate_block* validate_block_;
+    const blockchain::validate_block* validate_block_;
     mutable upgrade_mutex mutex_;
 };
 
 struct witness_with_validate_block_context
 {
-    using validate_block = blockchain::validate_block;
     witness& witness_;
-    witness_with_validate_block_context(witness& w, const validate_block* v);
+    witness_with_validate_block_context(witness& w, const blockchain::validate_block* v);
     ~witness_with_validate_block_context();
 };
 
