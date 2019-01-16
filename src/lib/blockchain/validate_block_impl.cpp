@@ -537,7 +537,7 @@ bool validate_block_impl::check_max_successive_height(uint64_t height, chain::bl
         return true;
     }
 
-    if (height <= pos_enabled_height) {
+    if (height <= pos_enabled_height + 10000) {
         return true;
     }
 
