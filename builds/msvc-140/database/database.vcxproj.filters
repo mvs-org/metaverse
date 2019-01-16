@@ -170,6 +170,12 @@
     <ClInclude Include="..\..\..\include\metaverse\database\databases\mit_history_database.hpp">
       <Filter>Header Files\databases</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\blockchain_witness_profile_database.hpp">
+      <Filter>Header Files\databases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\blockchain_witness_cert_database.hpp">
+      <Filter>Header Files\databases</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\include\metaverse\database\impl\hash_table_header.ipp">
@@ -298,6 +304,12 @@
       <Filter>Source Files\databases</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\database\databases\mit_history_database.cpp">
+      <Filter>Source Files\databases</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\databases\blockchain_witness_profile_database.cpp">
+      <Filter>Source Files\databases</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\databases\blockchain_witness_cert_database.cpp">
       <Filter>Source Files\databases</Filter>
     </ClCompile>
   </ItemGroup>
