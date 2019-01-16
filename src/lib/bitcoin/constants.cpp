@@ -51,7 +51,7 @@ const uint64_t future_blocktime_fork_height     = 1030000;
 const size_t relative_locktime_min_version      = 2;
 
 // POS
-const bool enable_max_successive_height         = false;
+const bool enable_max_successive_height         = true;
 const uint32_t pow_max_successive_height        = 60;
 const uint32_t pos_max_successive_height        = 24;
 

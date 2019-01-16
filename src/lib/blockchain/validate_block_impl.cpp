@@ -556,12 +556,16 @@ bool validate_block_impl::check_max_successive_height(uint64_t height, chain::bl
 
         auto header = get_prev_block_header(height, version, false);
         if (header && height - header->number > pow_max_successive_height) {
+            log::info("validate_block") << " >>> .pow_max_successive_height";
             return false;
         }
     }
     else if (version == chain::block_version_pos) {
+        log::info("validate_block") << " >>> check pos_max_successive_height";
+
         auto header = get_prev_block_header(height, version, false);
         if (header && height - header->number > pos_max_successive_height) {
+            log::info("validate_block") << " >>> .pos_max_successive_height: " << (height - header->number);
             return false;
         }
     }
