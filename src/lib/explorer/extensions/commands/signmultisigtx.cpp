@@ -103,7 +103,7 @@ console_result signmultisigtx::invoke(
         }
 
         // signed, nothing to do (2 == zero + encoded-script)
-        account_multisig acc_multisig_first = *(multisig_vec->begin());
+        chain::account_multisig acc_multisig_first = *(multisig_vec->begin());
         if (input_script.operations.size() >= acc_multisig_first.get_m() + 2) {
             continue;
         }

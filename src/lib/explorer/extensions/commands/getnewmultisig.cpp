@@ -29,7 +29,7 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
-using payment_address = wallet::payment_address;
+using namespace bc::chain;
 
 console_result getnewmultisig::invoke(
     Json::Value& jv_output,
@@ -125,7 +125,7 @@ console_result getnewmultisig::invoke(
     account->set_type(account_type::multisignature);
 
     // create account address
-    auto account_address = std::make_shared<bc::chain::account_address>();
+    auto account_address = std::make_shared<chain::account_address>();
     account_address->set_name(auth_.name);
     account_address->set_prv_key(self_prvkey, auth_.auth);
 
@@ -136,7 +136,7 @@ console_result getnewmultisig::invoke(
     if (chain::script_pattern::pay_multisig != payment_script.pattern())
         throw multisig_script_exception{ std::string("invalid multisig script : ") + multisig_script };
 
-    payment_address address(payment_script, payment_address::mainnet_p2sh);
+    wallet::payment_address address(payment_script, wallet::payment_address::mainnet_p2sh);
     auto hash_address = address.encoded();
 
     // update account and multisig account

@@ -59,7 +59,7 @@ console_result deletemultisig::invoke(Json::Value& jv_output,
 
     // change account type
     if (acc->get_multisig_vec().empty()) {
-        acc->set_type(account_type::common);
+        acc->set_type(chain::account_type::common);
     }
 
     // flush to db

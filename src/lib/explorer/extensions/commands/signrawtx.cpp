@@ -67,7 +67,7 @@ console_result signrawtx::invoke(Json::Value& jv_output,
     }
 
     auto &blockchain = node.chain_impl();
-    std::shared_ptr<account> acc(nullptr);
+    std::shared_ptr<chain::account> acc(nullptr);
     std::vector<std::string> private_keys;
     if (option_.private_keys.empty()) {
         acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);

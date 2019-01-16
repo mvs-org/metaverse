@@ -73,7 +73,7 @@ console_result transfercert::invoke (Json::Value& jv_output,
     }
 
     auto from_address = cert->get_address();
-    account_multisig acc_multisig;
+    chain::account_multisig acc_multisig;
     bool is_multisig_address = blockchain.is_script_address(from_address);
     if (is_multisig_address) {
         auto multisig_vec = acc->get_multisig(from_address);

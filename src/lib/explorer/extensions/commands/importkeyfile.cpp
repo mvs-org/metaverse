@@ -182,7 +182,7 @@ console_result importkeyfile::invoke(Json::Value& jv_output,
         return console_result::okay;
     }
     else {
-        account_info all_info(blockchain, auth_.auth);
+        chain::account_info all_info(blockchain, auth_.auth);
         std::stringstream ss(file_content);
         // decrypt account info file first
         ss >> all_info;

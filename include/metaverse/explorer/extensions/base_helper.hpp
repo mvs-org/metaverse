@@ -254,7 +254,7 @@ void sync_fetch_asset_cert_balance(const std::string& address, const std::string
     bc::blockchain::block_chain_impl& blockchain,
     std::shared_ptr<asset_cert::list> sh_vec, asset_cert_type cert_type=chain::asset_cert_ns::none);
 
-std::string get_random_payment_address(std::shared_ptr<std::vector<account_address>>,
+std::string get_random_payment_address(std::shared_ptr<std::vector<chain::account_address>>,
     bc::blockchain::block_chain_impl& blockchain);
 
 std::string get_address(const std::string& did_or_address,
@@ -433,7 +433,7 @@ public:
         std::string&& name, std::string&& passwd,
         std::string&& from, receiver_record::list&& receiver_list,
         uint64_t fee, std::string&& symbol,
-        account_multisig&& multisig_from, uint32_t locktime = 0)
+        chain::account_multisig&& multisig_from, uint32_t locktime = 0)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list),
             fee, std::move(symbol), "", locktime)
@@ -451,7 +451,7 @@ public:
 
 protected:
     // for multisig address
-    account_multisig multisig_;
+    chain::account_multisig multisig_;
 };
 
 class BCX_API base_transaction_constructor : public base_transfer_common
@@ -571,7 +571,7 @@ public:
     sending_multisig_tx(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, receiver_record::list&& receiver_list, uint64_t fee,
-        account_multisig& multisig, std::string&& symbol = std::string(""),
+        chain::account_multisig& multisig, std::string&& symbol = std::string(""),
         uint32_t locktime = 0)
         : base_multisig_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee, std::move(symbol),
@@ -691,7 +691,7 @@ public:
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol, receiver_record::list&& receiver_list,
         uint64_t fee, uint32_t fee_percentage_to_miner,
-        account_multisig&& multisig, uint32_t locktime = 0)
+        chain::account_multisig&& multisig, uint32_t locktime = 0)
         : base_multisig_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee, std::move(symbol),
             std::move(multisig), locktime)
@@ -719,7 +719,7 @@ public:
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& feefrom, std::string&& symbol,
         receiver_record::list&& receiver_list, uint64_t fee,
-        account_multisig&& multisig, account_multisig&& multisigto,
+        chain::account_multisig&& multisig, chain::account_multisig&& multisigto,
         uint32_t locktime = 0)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list),
@@ -748,8 +748,8 @@ public:
 
 private:
     std::string fromfee;
-    account_multisig multisig_from_;
-    account_multisig multisig_to_;
+    chain::account_multisig multisig_from_;
+    chain::account_multisig multisig_to_;
 };
 
 class BCX_API sending_did : public base_transfer_helper
@@ -789,7 +789,7 @@ public:
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol,
         receiver_record::list&& receiver_list, uint64_t fee,
-        account_multisig&& multisig_from, uint32_t locktime = 0)
+        chain::account_multisig&& multisig_from, uint32_t locktime = 0)
         : base_multisig_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee, std::move(symbol),
             std::move(multisig_from), locktime)
@@ -862,7 +862,7 @@ public:
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol,
         receiver_record::list&& receiver_list, uint64_t fee,
-        account_multisig&& multisig_from, uint32_t locktime = 0)
+        chain::account_multisig&& multisig_from, uint32_t locktime = 0)
         : base_multisig_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list),
             fee, std::move(symbol),

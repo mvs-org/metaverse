@@ -289,14 +289,14 @@ public:
     std::shared_ptr<chain::transaction>  get_spends_output(const input_point& input);
 
     // account related api
-    std::shared_ptr<account> is_account_passwd_valid(const std::string& name, const std::string& passwd);
-    std::string is_account_lastwd_valid(const account& acc, std::string& auth, const std::string& lastwd);
+    std::shared_ptr<chain::account> is_account_passwd_valid(const std::string& name, const std::string& passwd);
+    std::string is_account_lastwd_valid(const chain::account& acc, std::string& auth, const std::string& lastwd);
     void set_account_passwd(const std::string& name, const std::string& passwd);
     bool is_account_exist(const std::string& name);
     bool is_admin_account(const std::string& name);
-    operation_result store_account(std::shared_ptr<account> acc);
-    std::shared_ptr<account> get_account(const std::string& name);
-    std::shared_ptr<std::vector<account>> get_accounts();
+    operation_result store_account(std::shared_ptr<chain::account> acc);
+    std::shared_ptr<chain::account> get_account(const std::string& name);
+    std::shared_ptr<std::vector<chain::account>> get_accounts();
     operation_result delete_account(const std::string& name);
     operation_result delete_account_address(const std::string& name);
 
@@ -382,15 +382,15 @@ public:
     std::shared_ptr<business_record::list> get_address_business_record(
         const std::string& address, const std::string& symbol, size_t start_height, size_t end_height,
         uint64_t limit, uint64_t page_number) const;
-    std::shared_ptr<account_address::list> get_addresses();
+    std::shared_ptr<chain::account_address::list> get_addresses();
 
     // account message api
     std::shared_ptr<business_address_message::list> get_account_messages(const std::string& name);
 
     // account adress related api
-    operation_result store_account_address(std::shared_ptr<account_address> address);
-    std::shared_ptr<account_address> get_account_address(const std::string& name, const std::string& address);
-    std::shared_ptr<account_address::list> get_account_addresses(const std::string& name);
+    operation_result store_account_address(std::shared_ptr<chain::account_address> address);
+    std::shared_ptr<chain::account_address> get_account_address(const std::string& name, const std::string& address);
+    std::shared_ptr<chain::account_address::list> get_account_addresses(const std::string& name);
     void uppercase_symbol(std::string& symbol);
 
     static bool is_valid_address(const std::string& address);
@@ -408,7 +408,7 @@ public:
     code validate_transaction(const chain::transaction& tx);
     code broadcast_transaction(const chain::transaction& tx);
     bool get_tx_inputs_etp_value (chain::transaction& tx, uint64_t& etp_val);
-    void safe_store_account(account& acc, std::vector<std::shared_ptr<account_address>>& addresses);
+    void safe_store_account(chain::account& acc, std::vector<std::shared_ptr<chain::account_address>>& addresses);
 
     shared_mutex& get_mutex();
     bool is_sync_disabled() const;

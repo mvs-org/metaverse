@@ -78,7 +78,7 @@ console_result registerdid::invoke(Json::Value &jv_output,
     if (blockchain.is_address_registered_did(argument_.address))
         throw did_symbol_existed_exception{"address is already binded with some did on the blockchain"};
 
-    account_multisig acc_multisig;
+    chain::account_multisig acc_multisig;
     bool is_multisig_address = blockchain.is_script_address(argument_.address);
     if (is_multisig_address) {
         auto multisig_vec = acc->get_multisig(argument_.address);

@@ -50,11 +50,11 @@ public:
     void set_admin(const std::string& name, const std::string& passwd);
     /// get account info by symbol hash
     account_result get_account_result(const hash_digest& hash) const;
-    std::shared_ptr<std::vector<account>> get_accounts() const;
+    std::shared_ptr<std::vector<chain::account>> get_accounts() const;
 
     /// Store a account in the database. Returns a unique index
     /// which can be used to reference the account.
-    void store(const account& account);
+    void store(const chain::account& account);
 };
 
 } // namespace database

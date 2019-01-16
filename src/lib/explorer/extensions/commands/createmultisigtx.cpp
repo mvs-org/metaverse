@@ -55,7 +55,7 @@ console_result createmultisigtx::invoke(
         throw multisig_notfound_exception{"multisig of from address not found."};
     }
 
-    account_multisig acc_multisig = *(multisig_vec->begin());
+    auto acc_multisig = *(multisig_vec->begin());
 
     // check to address
     if (!blockchain.is_valid_address(argument_.to)) {

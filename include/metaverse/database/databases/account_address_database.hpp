@@ -71,18 +71,18 @@ public:
     bool close();
 
     /// store account address into database
-    void store(const short_hash& key, const account_address& account_address);
+    void store(const short_hash& key, const chain::account_address& account_address);
 
     /// get account address vector by key
-    account_address::list get(const short_hash& key) const;
+    chain::account_address::list get(const short_hash& key) const;
 
     /// get account address according by key and address
-    std::shared_ptr<account_address> get(const short_hash& key, const std::string& address) const;
+    std::shared_ptr<chain::account_address> get(const short_hash& key, const std::string& address) const;
 
     /// Delete the last row that was added to key.
     void delete_last_row(const short_hash& key);
 
-    void safe_store(const short_hash& key, const account_address& address);
+    void safe_store(const short_hash& key, const chain::account_address& address);
 
     /// Synchonise with disk.
     void sync();

@@ -56,7 +56,7 @@ console_result transfermit::invoke (Json::Value& jv_output,
     std::string from_address(mit.get_address());
     bool is_multisig_address = blockchain.is_script_address(from_address);
 
-    account_multisig acc_multisig;
+    chain::account_multisig acc_multisig;
     if (is_multisig_address) {
         auto multisig_vec = acc->get_multisig(from_address);
         if (!multisig_vec || multisig_vec->empty()) {
