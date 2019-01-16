@@ -48,6 +48,8 @@ console_result startmining::invoke(Json::Value& jv_output,
         throw setting_required_exception{"Currently mining, please use command <stopmining> to stop the running mining."};
     }
 
+    miner.set_solo_mining(true);
+
     boost::to_lower(option_.consensus);
     const auto is_use_pow = (option_.consensus == "pow");
     const auto is_use_pos = (option_.consensus == "pos");
@@ -128,8 +130,6 @@ console_result startmining::invoke(Json::Value& jv_output,
     else {
         throw argument_legality_exception{"wrong consensus of block version!"};
     }
-
-    miner.set_solo_mining(true);
 
     auto& symbol = option_.symbol;
     if (!miner.set_mining_asset_symbol(symbol)) {

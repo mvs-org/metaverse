@@ -1513,7 +1513,7 @@ void miner::get_state(uint64_t &height, uint64_t &rate, std::string& difficulty,
     block_chain.get_last_height(height);
     block_chain.get_header(prev_header, height);
     difficulty = to_string((u256)prev_header.bits);
-    is_mining = is_solo_mining();
+    is_mining = thread_ ? true : false;
 }
 
 bool miner::get_block_header(chain::header& block_header, const std::string& para)
