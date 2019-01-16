@@ -141,11 +141,15 @@ console_result startmining::invoke(Json::Value& jv_output,
     // start
     if (miner.start(addr, option_.number)){
         std::string prompt = "solo mining started at "
-            + str_addr + ", accept consensus " + option_.consensus
-            + ", and also mining asset " + symbol;
+            + str_addr + ", accept consensus " + option_.consensus;
+        if (!symbol.empty()) {
+            prompt = prompt + ", and also mining asset " + symbol;
+        }
+
         if (option_.number == 0) {
             jv_output = prompt;
-        } else {
+        }
+        else {
             jv_output = prompt + ", try to mine " + std::to_string(option_.number) + " block(s).";
         }
     }
@@ -157,8 +161,6 @@ console_result startmining::invoke(Json::Value& jv_output,
 }
 
 
-
 } // namespace commands
 } // namespace explorer
 } // namespace libbitcoin
-

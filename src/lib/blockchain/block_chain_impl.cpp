@@ -3179,7 +3179,7 @@ bool block_chain_impl::check_max_successive_height(uint64_t height, chain::block
         return true;
     }
 
-    if (height <= pos_enabled_height) {
+    if (height <= pos_enabled_height + 10000) {
         return true;
     }
 
