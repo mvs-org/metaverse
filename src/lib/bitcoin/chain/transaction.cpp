@@ -258,23 +258,46 @@ bool transaction::is_coinbase() const
 
 bool transaction::is_pos_genesis_tx(bool is_testnet) const
 {
-    if (!is_coinbase() || outputs.size() != 1) {
+    if (!is_coinbase() || outputs.size() != (1 + witness_cert_count)) {
         return false;
     }
 
+    // check etp reward
     const auto & out = outputs[0];
     if (!out.is_etp() || out.value != pos_genesis_reward) {
         return false;
     }
 
-    const auto actual = out.script.to_data(false);
-
     chain::script script;
-    wallet::payment_address pay_address(get_foundation_address(is_testnet));
+    std::string foundation_address = get_foundation_address(is_testnet);
+    wallet::payment_address pay_address(foundation_address);
     script.operations = chain::operation::to_pay_key_hash_pattern(pay_address.hash());
     const auto expected = script.to_data(false);
 
-    return std::equal(expected.begin(), expected.end(), actual.begin());
+    const auto actual = out.script.to_data(false);
+    if (!std::equal(expected.begin(), expected.end(), actual.begin())) {
+        return false;
+    }
+
+    // check witness cert
+    for (uint32_t i = 0; i < witness_cert_count; ++i) {
+        const auto& out = outputs[i + 1];
+        if (!out.is_asset_cert_autoissue()) {
+            return false;
+        }
+
+        const auto cert = out.get_asset_cert();
+        if (cert.get_address() != foundation_address || !cert.is_primary_witness()) {
+            return false;
+        }
+
+        const auto actual = out.script.to_data(false);
+        if (!std::equal(expected.begin(), expected.end(), actual.begin())) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool transaction::is_coinstake() const
@@ -284,7 +307,6 @@ bool transaction::is_coinstake() const
         && (outputs.size() >= 2)
         && (outputs[0].is_null()) //the coin stake transaction is marked with the first output empty
         && (inputs[0].get_script_address() == outputs[1].get_script_address());
-
 }
 
 bool transaction::all_inputs_final() const

@@ -89,13 +89,22 @@ BC_CONSTEXPR uint32_t relative_locktime_mask = 0x000fffff;
  * 5 bits. */
 BC_CONSTEXPR size_t relative_locktime_seconds_shift = 5;
 
+BC_API bool is_relative_locktime_time_locked(uint32_t raw_value);
+BC_API uint32_t get_relative_locktime_locked_heights(uint32_t raw_value);
+BC_API uint32_t get_relative_locktime_locked_seconds(uint32_t raw_value);
+
 // Future blocktime fork constants.
 //-----------------------------------------------------------------------------
 extern const uint64_t future_blocktime_fork_height;
 
-// Relative PoS constants.
+// Relative PoS & DPoS constants.
 //-----------------------------------------------------------------------------
 extern uint64_t pos_enabled_height;
+
+extern const bool enable_max_successive_height;
+extern const uint32_t pow_max_successive_height;
+extern const uint32_t pos_max_successive_height;
+
 extern const uint32_t pos_coinstake_max_utxos;
 
 extern const uint64_t pos_lock_min_value;
@@ -107,6 +116,13 @@ extern const uint64_t pos_stake_min_height;
 extern const double   pos_stake_factor;
 extern const uint32_t block_timespan_window;
 extern const uint64_t pos_genesis_reward;
+
+extern const std::string witness_cert_prefix;
+extern const uint32_t witness_cert_mars_value;
+extern const uint32_t witness_cert_count;
+extern const uint32_t secondary_witness_cert_min;
+extern const uint32_t secondary_witness_cert_max;
+extern const uint32_t secondary_witness_cert_expiration;
 
 // price
 //-----------------------------------------------------------------------------

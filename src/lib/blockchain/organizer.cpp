@@ -196,6 +196,7 @@ void organizer::filter_orphans(message::get_data::ptr message)
 
 void organizer::process(block_detail::ptr process_block)
 {
+    using witness = consensus::witness;
     BITCOIN_ASSERT(process_block);
 
     std::vector<block_detail::ptr> blocks;
@@ -217,14 +218,14 @@ void organizer::process(block_detail::ptr process_block)
         if (chain_.get_height(fork_index, hash))
         {
             bool replace_chain_done = false;
-            if (consensus::witness::is_dpos_enabled()) {
+            if (witness::is_dpos_enabled()) {
                 uint64_t current_block_height = 0;
                 DEBUG_ONLY(auto ok =) chain_.get_last_height(current_block_height);
                 BITCOIN_ASSERT(ok);
-                if (consensus::witness::is_witness_enabled(current_block_height)) {
-                    auto witness_list = consensus::witness::get().get_witness_list();
-                    if (!consensus::witness::is_in_same_epoch(fork_index, current_block_height)) {
-                        consensus::witness::get().update_witness_list(fork_index);
+                if (witness::is_witness_enabled(current_block_height)) {
+                    auto witness_list = witness::get().get_witness_list();
+                    if (!witness::is_in_same_epoch(fork_index, current_block_height)) {
+                        witness::get().update_witness_list(fork_index);
                     }
 
                     auto ret = replace_chain(fork_index, orphan_chain);
@@ -235,12 +236,12 @@ void organizer::process(block_detail::ptr process_block)
                     const auto need_recovery = num_of_poped_blocks == 0 && num_of_pushed_blocks == 0;
                     const auto need_reupdate = num_of_poped_blocks != 0 && num_of_pushed_blocks == 0;
                     if (need_recovery) {
-                        consensus::witness::get().swap_witness_list(witness_list);
+                        witness::get().swap_witness_list(witness_list);
                     }
                     else if (need_reupdate) {
                         const auto& new_block_height = std::get<2>(ret);
-                        if (!consensus::witness::is_in_same_epoch(fork_index, new_block_height)) {
-                            consensus::witness::get().update_witness_list(new_block_height);
+                        if (!witness::is_in_same_epoch(fork_index, new_block_height)) {
+                            witness::get().update_witness_list(new_block_height);
                         }
                     }
                 }
@@ -258,6 +259,13 @@ void organizer::process(block_detail::ptr process_block)
                 {
                     blocks.push_back(block);
                     log::warning(LOG_BLOCKCHAIN) << "pop pendingblock hash:" << encode_hash(hash) << " process_block hash:" << encode_hash(block->actual()->header.hash());
+
+                    auto block_height = block->actual()->header.number;
+                    if (witness::is_begin_of_epoch(block_height) &&
+                        block_height >= witness::witness_enable_height + 2*witness::epoch_cycle_height) {
+                        auto epoch_height = block_height - 2*witness::epoch_cycle_height;
+                        chain_.calc_and_store_witness_profile(epoch_height);
+                    }
                 }
             }
         }

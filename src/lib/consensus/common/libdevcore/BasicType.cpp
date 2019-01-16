@@ -169,15 +169,11 @@ u256 HeaderAux::calculate_difficulty(
     const chain::header::ptr prev,
     const chain::header::ptr pprev)
 {
-#ifdef ENABLE_PILLAR
     if (current.number < pos_enabled_height) {
         return calculate_difficulty_v1(current, prev, pprev);
     }
 
     return calculate_difficulty_v2(current, prev, pprev);
-#else
-    return calculate_difficulty_v1(current, prev, pprev);
-#endif
 }
 
 // Do not modify this function! It's for backward compatibility.

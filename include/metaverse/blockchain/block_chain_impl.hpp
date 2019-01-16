@@ -36,6 +36,7 @@
 #include <metaverse/blockchain/transaction_pool.hpp>
 #include <metaverse/bitcoin/chain/header.hpp>
 #include <metaverse/consensus/fts.hpp>
+#include <metaverse/blockchain/profile.hpp>
 
 #define  LOG_BLOCK_CHAIN_IMPL  "block_chain_impl"
 
@@ -108,10 +109,11 @@ public:
     /// Get the header of the block at the given height.
     bool get_header(chain::header& out_header, uint64_t height) const override;
     uint64_t get_transaction_count(uint64_t block_height) const;
+    uint32_t get_block_timestamp(uint64_t height) const;
 
     bool get_signature(ec_signature& blocksig, uint64_t height) const override;
-    bool get_publick_key(ec_compressed& public_key, uint64_t height) const override;
-    bool get_signature_and_publick_key(ec_signature& blocksig, ec_compressed& public_key, uint64_t height) const override;
+    bool get_public_key(ec_compressed& public_key, uint64_t height) const override;
+    bool get_signature_and_public_key(ec_signature& blocksig, ec_compressed& public_key, uint64_t height) const override;
 
     /// Get the height of the block with the given hash.
     bool get_height(uint64_t& out_height, const hash_digest& block_hash) const override;
@@ -255,10 +257,10 @@ public:
         const wallet::payment_address& pay_addres) override;
 
     /// select pos utxo. target value
-    virtual bool select_utxo_for_staking(
+    virtual uint32_t select_utxo_for_staking(
         uint64_t best_height,
         const wallet::payment_address& pay_addres,
-        chain::output_info::list& stake_outputs,
+        std::shared_ptr<chain::output_info::list> stake_outputs = nullptr,
         uint32_t max_count = max_uint32) override;
 
     inline bool check_pos_utxo_height_and_value(
@@ -277,7 +279,7 @@ public:
         bool strict=true
     );
 
-    bool pos_exist_before(const uint64_t& height);
+    bool pos_exist_before(const uint64_t& height) const;
 
     virtual chain::header::ptr get_last_block_header(const chain::header& parent_header, uint32_t version) const;
 
@@ -336,8 +338,9 @@ public:
     // cert api
     std::shared_ptr<asset_cert> get_asset_cert(const std::string& symbol, asset_cert_type cert_type) const;
     bool is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_type);
-    uint64_t get_asset_cert_height(const std::string& cert_symbol,const asset_cert_type& cert_type);
-    std::shared_ptr<asset_cert::list> get_issued_asset_certs(const std::string& address = "");
+    uint64_t get_asset_cert_height(const std::string& cert_symbol, asset_cert_type cert_type);
+    std::shared_ptr<asset_cert::list> get_issued_asset_certs(
+        const std::string& address = "", asset_cert_type cert_type = asset_cert_ns::none);
     std::shared_ptr<asset_cert> get_account_asset_cert(
         const std::string& account, const std::string& symbol, asset_cert_type cert_type);
     std::shared_ptr<business_address_asset_cert::list> get_account_asset_certs(
@@ -411,27 +414,67 @@ public:
     bool is_sync_disabled() const;
     void set_sync_disabled(bool b);
 
+    uint64_t get_height();
     uint64_t calc_number_of_blocks(uint64_t from, uint64_t to) const;
     uint64_t get_expiration_height(uint64_t from, uint64_t lock_height) const;
 
     std::pair<uint64_t, uint64_t> get_locked_balance(
-        const std::string& address, uint64_t epoch_height=0, const std::string& asset_symbol="") const;
+        uint64_t epoch_height, const std::string& address);
 
-    // std::vector<std::pair<std::string, data_chunk>> get_register_witnesses(
-    //     uint64_t start_height, uint64_t end_height=0, uint64_t limit=0, uint64_t page_number=0) const;
-
-    std::shared_ptr<consensus::fts_stake_holder::ptr_list> get_witnesses_with_stake(
+    std::shared_ptr<std::vector<std::pair<std::string, data_chunk>>> get_witnesses_addr_pubkey(
+        block_chain_impl& chain,
         uint64_t epoch_height,
-        std::shared_ptr<std::vector<std::string>> excluded_addresses,
-        uint64_t limit=0, uint64_t page_number=0) const;
+        std::shared_ptr<std::vector<std::string>> excluded_addresses);
+
+    std::shared_ptr<consensus::fts_stake_holder::ptr_list> get_witnesses_mars(
+        uint64_t epoch_height,
+        std::shared_ptr<std::vector<std::string>> excluded_addresses);
 
     bool can_use_dpos(uint64_t height) const;
-    uint64_t get_pow_height_before_dpos(uint64_t height) const;
-    chain::header::ptr get_prev_block_header(uint64_t height, chain::block_version ver) const;
+    bool check_max_successive_height(uint64_t last_height, chain::block_version version) const;
+    chain::header::ptr get_prev_block_header(
+        uint64_t height, chain::block_version ver, bool same_version=true) const;
 
     uint32_t get_median_time_past(uint64_t height) const;
     bool is_utxo_spendable(const chain::transaction& tx, uint32_t index,
                            uint64_t tx_height, uint64_t latest_height) const;
+
+    static bool is_valid_symbol(const std::string& symbol, uint32_t tx_version);
+    static bool is_valid_did_symbol(const std::string& symbol,  bool check_sensitive = false);
+    static bool is_valid_mit_symbol(const std::string& symbol,  bool check_sensitive = false);
+
+    profile::ptr get_profile(const profile_context&) const;
+
+    uint64_t get_witness_stake_mars(
+        const std::string& address, uint64_t epoch_height);
+
+    uint64_t get_witness_cert_mars(
+        const std::string& address, uint64_t epoch_height);
+
+    std::shared_ptr<asset_cert::list> get_address_witness_certs(
+        const std::string& address, uint64_t epoch_height);
+
+    // use witness_cert database
+    bool is_primary_witness_cert_actived(
+        const std::string& symbol, uint64_t epoch_height);
+
+    // use witness_cert database
+    std::shared_ptr<blockchain_cert::list> get_issued_witness_certs(
+        const std::string& symbol = "",
+        const std::string& address = "",
+        uint64_t epoch_height = 0);
+
+    // use witness_cert database
+    std::shared_ptr<blockchain_cert::list> get_issued_secondary_witness_certs(
+        const std::string& primary_symbol = "",
+        uint64_t epoch_height = 0);
+
+    // use witness_cert database
+    bool is_secondary_witness_cert_exists(
+        const std::string& symbol,
+        uint64_t expiration = 0);
+
+    operation_result calc_and_store_witness_profile(uint64_t epoch_height);
 
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;

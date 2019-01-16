@@ -122,6 +122,7 @@ namespace asset_cert_ns {
     const asset_cert_type domain        = 2;
     const asset_cert_type naming        = 3;
     const asset_cert_type mining        = 0x60000000 + 4;
+    const asset_cert_type witness       = 5;
 
     const asset_cert_type custom        = 0x80000000;
     const asset_cert_type custom_max    = 0x800fffff;
@@ -180,9 +181,6 @@ public:
     void set_content(const std::string& content);
     const std::string& get_content() const;
 
-    asset_cert_type get_certs() const;
-    void set_certs(asset_cert_type certs);
-
     asset_cert_type get_type() const;
     void set_type(asset_cert_type cert_type);
     std::string get_type_name() const;
@@ -197,7 +195,8 @@ public:
 
     static std::string get_domain(const std::string& symbol);
     static bool is_valid_domain(const std::string& domain);
-    static std::string get_key(const std::string&symbol, const asset_cert_type& bit);
+    static std::string get_key(const std::string& symbol, const asset_cert_type& bit);
+    static std::string get_witness_key(const std::string& symbol);
 
     static bool has_content(asset_cert_type cert_type);
     bool has_content() const;
@@ -206,6 +205,19 @@ public:
 
     static std::vector<std::string> get_mining_subsidy_param_keys();
     static mining_subsidy_param_ptr parse_mining_subsidy_param(const std::string& param);
+
+    bool is_primary_witness() const;
+    bool is_secondary_witness() const;
+
+    static std::string get_primary_witness_symbol(const std::string& symbol);
+    static bool is_valid_primary_witness(const std::string& symbol);
+    static bool is_valid_secondary_witness(const std::string& symbol);
+
+    // witness cert index start at 1.
+    static uint32_t get_primary_witness_index(const std::string& symbol);
+
+private:
+    static bool parse_uint32(const std::string& param, uint32_t& value);
 
 private:
     // NOTICE: ref CAssetCert in transaction.h

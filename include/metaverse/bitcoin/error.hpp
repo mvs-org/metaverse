@@ -195,6 +195,7 @@ enum error_code_t
     mst_coinbase_too_large,         // 105
     mst_coinbase_invalid,
     invalid_output_script_lock_sequence,
+    block_intermix_interval_error,
 };
 
 enum error_condition_t

@@ -52,11 +52,13 @@
 #include <metaverse/database/databases/account_asset_database.hpp>
 #include <metaverse/bitcoin/chain/attachment/did/did.hpp>
 #include <metaverse/database/databases/blockchain_asset_cert_database.hpp>
+#include <metaverse/database/databases/blockchain_witness_cert_database.hpp>
 #include <metaverse/database/databases/blockchain_did_database.hpp>
 #include <metaverse/database/databases/address_did_database.hpp>
 #include <metaverse/database/databases/blockchain_mit_database.hpp>
 #include <metaverse/database/databases/address_mit_database.hpp>
 #include <metaverse/database/databases/mit_history_database.hpp>
+#include <metaverse/database/databases/blockchain_witness_profile_database.hpp>
 
 namespace libbitcoin {
 namespace database {
@@ -77,8 +79,12 @@ public:
         bool dids_exist() const;
         bool touch_certs() const;
         bool certs_exist() const;
+        bool touch_witness_certs() const;
+        bool witness_certs_exist() const;
         bool touch_mits() const;
         bool mits_exist() const;
+        bool touch_witness_profiles() const;
+        bool witness_profiles_exist() const;
 
         path database_lock;
         path blocks_lookup;
@@ -92,6 +98,7 @@ public:
         path accounts_lookup;
         path assets_lookup;
         path certs_lookup;
+        path witness_certs_lookup;
         path address_assets_lookup;
         path address_assets_rows;
         path account_assets_lookup;
@@ -107,6 +114,7 @@ public:
         path address_mits_rows;
         path mit_history_lookup;
         path mit_history_rows;
+        path witness_profiles_lookup;
     };
 
     class db_metadata
@@ -136,8 +144,12 @@ public:
 
     /// Create a new database file with a given path prefix and default paths.
     static bool initialize(const path& prefix, const chain::block& genesis);
+
     /// If database exists then upgrades to version 63.
     static bool upgrade_version_63(const path& prefix);
+
+    /// If database exists then upgrades to version 64.
+    static bool upgrade_version_64(const path& prefix);
 
     static bool touch_file(const path& file_path);
     static void write_metadata(const path& metadata_path, data_base::db_metadata& metadata);
@@ -154,7 +166,9 @@ public:
     bool create();
     bool create_dids();
     bool create_certs();
+    bool create_witness_certs();
     bool create_mits();
+    bool create_witness_profiles();
 
     /// Start all databases.
     bool start();
@@ -312,7 +326,9 @@ private:
 
     static bool initialize_dids(const path& prefix);
     static bool initialize_certs(const path& prefix);
+    static bool initialize_witness_certs(const path& prefix);
     static bool initialize_mits(const path& prefix);
+    static bool initialize_witness_profiles(const path& prefix);
 
     static void uninitialize_lock(const path& lock);
     static file_lock initialize_lock(const path& lock);
@@ -320,7 +336,9 @@ private:
     void synchronize();
     void synchronize_dids();
     void synchronize_certs();
+    void synchronize_witness_certs();
     void synchronize_mits();
+    void synchronize_witness_profiles();
 
     void push_inputs(const hash_digest& tx_hash, size_t height,
         const inputs& inputs);
@@ -361,6 +379,7 @@ public:
     address_asset_database address_assets;
     account_asset_database account_assets;
     blockchain_asset_cert_database certs;
+    blockchain_witness_cert_database witness_certs;
     blockchain_did_database dids;
     address_did_database address_dids;
     account_address_database account_addresses;
@@ -368,6 +387,7 @@ public:
     blockchain_mit_database mits;
     address_mit_database address_mits;
     mit_history_database mit_history;
+    blockchain_witness_profile_database witness_profiles;
 };
 
 } // namespace database

@@ -133,6 +133,8 @@ code validate_block::check_coinbase(const chain::header& prev_header, bool check
             return error::first_not_coinbase;
         }
 
+        const auto is_pos_genesis = check_genesis_tx && index == 2;
+
         if (index == 0) {
             if (is_begin_of_epoch) {
                 // <first:  coinbase reward>     (required)
@@ -155,6 +157,11 @@ code validate_block::check_coinbase(const chain::header& prev_header, bool check
                 }
             }
         }
+        else if (is_pos_genesis) {
+            if (!tx.is_pos_genesis_tx(testnet_)) {
+                return error::check_pos_genesis_error;
+            }
+        }
         else {
             if (tx.outputs.size() != 1) {
                 return error::illegal_coinstake;
@@ -162,14 +169,9 @@ code validate_block::check_coinbase(const chain::header& prev_header, bool check
         }
 
         if (is_active(script_context::bip34_enabled)) {
-            //check pos genesis tx
-            if (check_genesis_tx && index == 2) {
-                if (!tx.is_pos_genesis_tx(testnet_)) {
-                    return error::check_pos_genesis_error;
-                }
-            }
             // Enforce rule that the coinbase starts with serialized height.
-            else if (!is_valid_coinbase_height(height_, current_block_, index)) {
+            if (!is_pos_genesis &&
+                !is_valid_coinbase_height(height_, current_block_, index)) {
                 return error::coinbase_height_mismatch;
             }
         }
@@ -268,6 +270,10 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     RETURN_IF_STOPPED();
 
+    if (!check_max_successive_height(header.number, (chain::block_version)header.version)) {
+        return error::block_intermix_interval_error;
+    }
+
     //TO.FIX.CHENHAO.Reject
     const auto&& block_hash = header.hash();
     if (!testnet_ && !config::checkpoint::validate(block_hash, current_block_.header.number, checkpoints_)) {
@@ -295,11 +301,6 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
         if (!check_time_stamp(header.timestamp, time_stamp_window)) {
             return error::futuristic_timestamp;
         }
-    }
-
-    if (current_block_.is_proof_of_dpos() && prev_header.is_proof_of_dpos()) {
-        log::error(LOG_BLOCKCHAIN) << "DPoS block must follow a PoW or PoS block!";
-        return error::proof_of_stake;
     }
 
     RETURN_IF_STOPPED();

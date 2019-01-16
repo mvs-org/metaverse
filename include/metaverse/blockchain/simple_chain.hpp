@@ -53,8 +53,8 @@ public:
         uint64_t height) const = 0;
 
     virtual bool get_signature(ec_signature& blocksig, uint64_t height) const = 0;
-    virtual bool get_publick_key(ec_compressed& public_key, uint64_t height) const = 0;
-    virtual bool get_signature_and_publick_key(ec_signature& blocksig, ec_compressed& public_key, uint64_t height) const = 0;
+    virtual bool get_public_key(ec_compressed& public_key, uint64_t height) const = 0;
+    virtual bool get_signature_and_public_key(ec_signature& blocksig, ec_compressed& public_key, uint64_t height) const = 0;
 
     /// Get the height of the block with the given hash.
     virtual bool get_height(uint64_t& out_height,

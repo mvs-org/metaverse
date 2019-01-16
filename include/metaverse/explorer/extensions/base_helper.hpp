@@ -55,10 +55,10 @@ namespace commands{
 /// for example :
 /// utxo_attach_type::asset_issue    --> attachment_asset of asset_detail
 ///     auto asset_detail = asset(ASSET_DETAIL_TYPE, asset_detail);
-///     attachment(ASSET_TYPE, attach_version, asset_detail);
+///     attachment(ASSET_TYPE, ATTACH_INIT_VERSION, asset_detail);
 /// utxo_attach_type::asset_transfer --> attachment_asset of asset_transfer
 ///     auto asset_transfer = asset(ASSET_TRANSFERABLE_TYPE, asset_transfer);
-///     attachment(ASSET_TYPE, attach_version, asset_transfer);
+///     attachment(ASSET_TYPE, ATTACH_INIT_VERSION, asset_transfer);
 /// NOTICE: createrawtx / createmultisigtx --type option is using these values.
 /// DO NOT CHANGE EXIST ITEMS!!!
 enum class utxo_attach_type : uint32_t
@@ -184,6 +184,8 @@ struct locked_balance {
     uint64_t locked_value;
     uint64_t locked_height;
     uint64_t expiration_height;
+    uint64_t lock_at_height;
+    bool is_time_locked;
 
     bool operator< (const locked_balance& other) const {
         return expiration_height < other.expiration_height;
@@ -321,7 +323,6 @@ public:
     static const uint64_t maximum_fee{10000000000};
     static const uint64_t minimum_fee{10000};
     static const uint64_t tx_limit{677};
-    static const uint64_t attach_version{1};
 
     virtual bool get_spendable_output(chain::output&, const chain::history&, uint64_t height) const;
     virtual chain::operation::stack get_script_operations(const receiver_record& record) const;

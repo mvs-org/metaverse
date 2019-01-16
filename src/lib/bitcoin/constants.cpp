@@ -29,17 +29,17 @@ namespace libbitcoin {
 
 #ifdef PRIVATE_CHAIN
 
-uint32_t coinbase_maturity                  = 10;
-uint64_t pos_enabled_height                 = 5000;
+uint32_t coinbase_maturity                      = 10;
+uint64_t pos_enabled_height                     = 5000;
 
-const uint64_t future_blocktime_fork_height = 0;
+const uint64_t future_blocktime_fork_height     = 0;
 
 #else //PRIVATE_CHAIN
 
-uint32_t coinbase_maturity                  = 1000;
-uint64_t pos_enabled_height                 = 1924000; // hard-fork-of-MPC1
+uint32_t coinbase_maturity                      = 1000;
+uint64_t pos_enabled_height                     = 1924000; // hard-fork-of-MPC1
 
-const uint64_t future_blocktime_fork_height = 1030000;
+const uint64_t future_blocktime_fork_height     = 1030000;
 
 #endif //PRIVATE_CHAIN
 
@@ -48,23 +48,55 @@ const uint64_t future_blocktime_fork_height = 1030000;
 // constants
 //==============================================================================
 
-const size_t relative_locktime_min_version  = 2;
+const size_t relative_locktime_min_version      = 2;
 
 // POS
-const uint64_t pos_genesis_reward        = coin_price(0X1076F8E);
-const uint32_t pos_coinstake_max_utxos   = 10;
-const uint64_t pos_lock_min_value        = coin_price(1000);
-const uint64_t pos_lock_min_height       = 100000;
-const uint64_t pos_lock_gap_height       = 10000;
-const uint64_t pos_stake_min_value       = coin_price(1000);
-const uint64_t pos_stake_min_height      = 1000;
-const double   pos_stake_factor          = 100;
-const uint32_t block_timespan_window     = 38;
+const bool enable_max_successive_height         = true;
+const uint32_t pow_max_successive_height        = 60;
+const uint32_t pos_max_successive_height        = 24;
+
+const uint64_t pos_genesis_reward               = coin_price(0X1076F8E);
+const uint32_t pos_coinstake_max_utxos          = 10;
+const uint64_t pos_lock_min_value               = coin_price(1000);
+const uint64_t pos_lock_min_height              = 100000;
+const uint64_t pos_lock_gap_height              = 10000;
+const uint64_t pos_stake_min_value              = coin_price(1000);
+const uint64_t pos_stake_min_height             = 1000;
+const double   pos_stake_factor                 = 30;
+const uint32_t block_timespan_window            = 38;
+
+const std::string witness_cert_prefix("MVS.WITNESS.");
+const uint32_t witness_cert_mars_value          = 30;
+const uint32_t witness_cert_count               = 23;
+const uint32_t secondary_witness_cert_min       = 23;
+const uint32_t secondary_witness_cert_max       = 46;
+const uint32_t secondary_witness_cert_expiration    = 2000000;
 
 
 //==============================================================================
 // functions
 //==============================================================================
+
+bool is_relative_locktime_time_locked(uint32_t raw_value)
+{
+    return (raw_value & relative_locktime_time_locked) != 0;
+}
+
+uint32_t get_relative_locktime_locked_heights(uint32_t raw_value)
+{
+    if (is_relative_locktime_time_locked(raw_value)) {
+        return 0;
+    }
+    return raw_value & relative_locktime_mask;
+}
+
+uint32_t get_relative_locktime_locked_seconds(uint32_t raw_value)
+{
+    if (!is_relative_locktime_time_locked(raw_value)) {
+        return 0;
+    }
+    return (raw_value & relative_locktime_mask) << relative_locktime_seconds_shift;
+}
 
 std::string get_genesis_address(bool is_testnet)
 {

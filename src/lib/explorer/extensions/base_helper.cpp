@@ -123,7 +123,7 @@ bool is_ETH_Address(const string& address)
 
 void check_did_symbol(const std::string& symbol, bool check_sensitive)
 {
-    if (!chain::output::is_valid_did_symbol(symbol, check_sensitive)) {
+    if (!bc::blockchain::block_chain_impl::is_valid_did_symbol(symbol, check_sensitive)) {
         throw did_symbol_name_exception{"Did symbol " + symbol + " is not valid."};
     }
 
@@ -143,6 +143,18 @@ void check_asset_symbol(const std::string& symbol, bool check_sensitive)
     if (symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE) {
         throw asset_symbol_length_exception{"Asset symbol length must be less than "
             + std::to_string(ASSET_DETAIL_SYMBOL_FIX_SIZE) + "."};
+    }
+
+    // char check
+    for (const auto& i : symbol) {
+        if (!(std::isalnum(i) || i=='.')) {
+            throw asset_symbol_name_exception{"Asset symbol " + symbol + " contains invalid character."};
+        }
+    }
+
+    // upper char check
+    if (symbol != boost::to_upper_copy(symbol)) {
+        throw asset_symbol_name_exception{"Asset symbol " + symbol + " must be uppercase."};
     }
 
     if (check_sensitive) {
@@ -167,7 +179,7 @@ void check_mit_symbol(const std::string& symbol, bool check_sensitive)
     for (const auto& i : symbol) {
         if (!(std::isalnum(i) || i == '.'|| i == '@' || i == '_' || i == '-'))
             throw asset_symbol_name_exception(
-                "MIT symbol " + symbol + " has invalid character.");
+                "MIT symbol " + symbol + " contains invalid character.");
     }
 
     if (check_sensitive) {
@@ -213,6 +225,7 @@ asset_cert_type check_cert_type_name(const string& cert_name, bool all)
     auto certs_create = asset_cert_ns::none;
     std::map <std::string, asset_cert_type> cert_map = {
         {"naming",      asset_cert_ns::naming},
+        {"witness",     asset_cert_ns::witness},
         {"marriage",    asset_cert_ns::marriage},
         {"kyc",         asset_cert_ns::kyc}
     };
@@ -290,8 +303,6 @@ asset_cert_type check_issue_cert(bc::blockchain::block_chain_impl& blockchain,
     }
 
     else if (certs_create == asset_cert_ns::mining) {
-        log::info("base_helper") << " check_issue_cert mining: " << cert_name;
-
         // check asset exist.
         if (!blockchain.is_asset_exist(symbol, false)) {
             throw asset_symbol_existed_exception(
@@ -477,9 +488,8 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
                 }
                 else if (asset_amount
                     && chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-                    auto lock_sequence = output.get_lock_sequence();
-                    // use any kind of blocks
-                    if (row.output_height + lock_sequence > height) {
+                    auto is_spendable = blockchain.is_utxo_spendable(tx_temp, row.output.index, tx_height, height);
+                    if (!is_spendable) {
                         // utxo already in block but is locked with sequence and not mature
                         locked_amount = asset_amount;
                     }
@@ -537,21 +547,39 @@ void sync_fetch_locked_balance(const std::string& address,
                 continue;
             }
 
-            auto lock_sequence = output.get_lock_sequence();
-            // use any kind of blocks
-            if ((tx_height + lock_sequence <= height) ||
-                (expiration > height && tx_height + lock_sequence <= expiration)) {
-                continue;
-            }
-
             uint64_t locked_value = is_asset ? output.get_asset_amount() : row.value;
             if (locked_value == 0) {
                 continue;
             }
 
-            uint64_t locked_height = lock_sequence;
-            uint64_t expiration_height = tx_height + lock_sequence;
-            locked_balance locked{address, locked_value, locked_height, expiration_height};
+            uint64_t locked_height = 0;
+            uint64_t expiration_height = 0;
+
+            auto raw_value = output.get_lock_sequence();
+            auto is_time_locked = is_relative_locktime_time_locked(raw_value);
+            if (is_time_locked) {
+                auto locked_seconds = get_relative_locktime_locked_seconds(raw_value);
+                auto prev_timestamp = blockchain.get_block_timestamp(tx_height);
+                auto curr_timestamp = blockchain.get_block_timestamp(height);
+                if ((prev_timestamp + locked_seconds <= curr_timestamp) ||
+                    (expiration > curr_timestamp && prev_timestamp + locked_seconds <= expiration)) {
+                    continue;
+                }
+                locked_height = locked_seconds;
+                expiration_height = prev_timestamp + locked_seconds;
+            }
+            else {
+                auto locked_heights = get_relative_locktime_locked_heights(raw_value);
+                // use any kind of blocks
+                if ((tx_height + locked_heights <= height) ||
+                    (expiration > height && tx_height + locked_heights <= expiration)) {
+                    continue;
+                }
+                locked_height = locked_heights;
+                expiration_height = tx_height + locked_heights;
+            }
+
+            locked_balance locked{address, locked_value, locked_height, expiration_height, tx_height, is_time_locked};
             sh_vec->emplace_back(locked);
         }
     }
@@ -783,9 +811,8 @@ auto sync_fetch_asset_view(const std::string& symbol,
                 }
                 else if (asset_amount
                     && chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-                    auto lock_sequence = output.get_lock_sequence();
-                    // use any kind of blocks
-                    if (tx_height + lock_sequence > height) {
+                    auto is_spendable = blockchain.is_utxo_spendable(tx_temp, out.index, tx_height, height);
+                    if (!is_spendable) {
                         // utxo already in block but is locked with sequence and not mature
                         locked_amount = asset_amount;
                     }
@@ -901,28 +928,9 @@ void sync_fetchbalance(wallet::payment_address& address,
                 continue;
             }
 
-            if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
-                // deposit utxo in block
-                uint64_t lock_height = chain::operation::
-                    get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-                if (lock_height > blockchain.calc_number_of_blocks(row.output_height, height)) {
-                    // utxo already in block but deposit not expire
-                    frozen_balance += row.value;
-                }
-            }
-            else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-                auto lock_sequence = output.get_lock_sequence();
-                // use any kind of blocks
-                if (row.output_height + lock_sequence > height) {
-                    // utxo already in block but is locked with sequence and not mature
-                    frozen_balance += row.value;
-                }
-            }
-            else if (tx_temp.is_coinbase()) { // coin base etp maturity etp check
-                // add not coinbase_maturity etp into frozen
-                if (coinbase_maturity > blockchain.calc_number_of_blocks(row.output_height, height)) {
-                    frozen_balance += row.value;
-                }
+            auto is_spendable = blockchain.is_utxo_spendable(tx_temp, row.output.index, tx_height, height);
+            if (!is_spendable) {
+                frozen_balance += row.value;
             }
 
             unspent_balance += row.value;
@@ -975,28 +983,9 @@ void sync_fetchbalance(wallet::payment_address& address,
             continue;
         }
 
-        if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
-            // deposit utxo in block
-            uint64_t lock_height = chain::operation::
-                get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-            if (lock_height > blockchain.calc_number_of_blocks(row.output_height, height)) {
-                // utxo already in block but deposit not expire
-                frozen_balance += row.value;
-            }
-        }
-        else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-            auto lock_sequence = output.get_lock_sequence();
-            // use any kind of blocks
-            if (row.output_height + lock_sequence > height) {
-                // utxo already in block but is locked with sequence and not mature
-                frozen_balance += row.value;
-            }
-        }
-        else if (tx_temp.is_coinbase()) { // coin base etp maturity etp check
-            // add not coinbase_maturity etp into frozen
-            if (coinbase_maturity > blockchain.calc_number_of_blocks(row.output_height, height)) {
-                frozen_balance += row.value;
-            }
+        auto is_spendable = blockchain.is_utxo_spendable(tx_temp, row.output.index, tx_height, height);
+        if (!is_spendable) {
+            frozen_balance += row.value;
         }
 
         unspent_balance += row.value;
@@ -1143,6 +1132,11 @@ void base_transfer_common::sync_fetchutxo(
             if (cert_type == asset_cert_ns::domain) {
                 auto&& domain = asset_cert::get_domain(symbol_);
                 if (domain != asset_symbol)
+                    continue;
+            }
+            else if (cert_type == asset_cert_ns::witness) {
+                auto&& primary = asset_cert::get_primary_witness_symbol(symbol_);
+                if (primary != asset_symbol)
                     continue;
             }
             else {
@@ -1626,11 +1620,11 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         || (record.type == utxo_attach_type::deposit)
         || ((record.type == utxo_attach_type::asset_transfer)
             && ((record.amount > 0) && (!record.asset_amount)))) { // etp
-        return attachment(ETP_TYPE, attach_version, chain::etp(record.amount));
+        return attachment(ETP_TYPE, ATTACH_INIT_VERSION, chain::etp(record.amount));
     }
     else if (record.type == utxo_attach_type::asset_issue
         || record.type == utxo_attach_type::asset_secondaryissue) {
-        return attachment(ASSET_TYPE, attach_version, asset(/*set on subclass*/));
+        return attachment(ASSET_TYPE, ATTACH_INIT_VERSION, asset(/*set on subclass*/));
     }
     else if (record.type == utxo_attach_type::asset_transfer
             || record.type == utxo_attach_type::asset_locked_transfer
@@ -1640,7 +1634,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!ass.is_valid()) {
             throw tx_attachment_value_exception{"invalid asset transfer attachment"};
         }
-        return attachment(ASSET_TYPE, attach_version, ass);
+        return attachment(ASSET_TYPE, ATTACH_INIT_VERSION, ass);
     }
     else if (record.type == utxo_attach_type::message) {
         auto msg = boost::get<blockchain_message>(record.attach_elem.get_attach());
@@ -1650,7 +1644,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!msg.is_valid()) {
             throw tx_attachment_value_exception{"invalid message attachment"};
         }
-        return attachment(MESSAGE_TYPE, attach_version, msg);
+        return attachment(MESSAGE_TYPE, ATTACH_INIT_VERSION, msg);
     }
     else if (record.type == utxo_attach_type::did_register) {
         did_detail diddetail(symbol_, record.target);
@@ -1658,7 +1652,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!ass.is_valid()) {
             throw tx_attachment_value_exception{"invalid did register attachment"};
         }
-        return attachment(DID_TYPE, attach_version, ass);
+        return attachment(DID_TYPE, ATTACH_INIT_VERSION, ass);
     }
     else if (record.type == utxo_attach_type::did_transfer) {
         auto sh_did = blockchain_.get_registered_did(symbol_);
@@ -1670,7 +1664,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!ass.is_valid()) {
             throw tx_attachment_value_exception{"invalid did transfer attachment"};
         }
-        return attachment(DID_TYPE, attach_version, ass);
+        return attachment(DID_TYPE, ATTACH_INIT_VERSION, ass);
     }
     else if (record.type == utxo_attach_type::asset_cert
         || record.type == utxo_attach_type::asset_cert_autoissue
@@ -1700,11 +1694,11 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!cert_info.is_valid()) {
             throw tx_attachment_value_exception{"invalid cert attachment"};
         }
-        return attachment(ASSET_CERT_TYPE, attach_version, cert_info);
+        return attachment(ASSET_CERT_TYPE, ATTACH_INIT_VERSION, cert_info);
     }
     else if (record.type == utxo_attach_type::asset_mit
         || record.type == utxo_attach_type::asset_mit_transfer) {
-        return attachment(ASSET_MIT_TYPE, attach_version, asset_mit(/*set on subclass*/));
+        return attachment(ASSET_MIT_TYPE, ATTACH_INIT_VERSION, asset_mit(/*set on subclass*/));
     }
 
     throw tx_attachment_value_exception{
@@ -2226,6 +2220,10 @@ void issuing_asset_cert::sum_payment_amount()
 
         payment_asset_cert_.clear();
         payment_asset_cert_.push_back(asset_cert_ns::domain);
+    }
+    else if (asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::witness)) {
+        payment_asset_cert_.clear();
+        payment_asset_cert_.push_back(asset_cert_ns::witness);
     }
     else {
         payment_asset_cert_.clear();

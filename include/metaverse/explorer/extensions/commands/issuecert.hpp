@@ -136,6 +136,10 @@ public:
         std::string description;
     } option_;
 
+private:
+    std::string get_available_primary_witness_cert(
+        bc::blockchain::block_chain_impl& blockchain) const;
+
 };
 
 

@@ -99,7 +99,7 @@ public:
     static bool is_vote_result_output(const chain::output&);
 
     uint32_t get_slot_num(const witness_id& id) const;
-    uint32_t calc_slot_num(uint64_t height) const;
+    std::pair<uint32_t, uint32_t> calc_slot_num(uint64_t height) const;
     size_t get_witness_number() const;
 
     static public_key_t witness_to_public_key(const witness_id& id);

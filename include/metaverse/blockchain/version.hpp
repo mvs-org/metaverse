@@ -10,12 +10,18 @@
 /**
  * The semantic version of this repository as: [major].[minor].[patch]
  * For interpretation of the versioning scheme see: http://semver.org
- * 0.6.1 for blocktime attack fix
+ */
+/*
+ * 2018.3.17 betachen modify to 0.6.1
+ * 1. for future blocktime attack fix
+ *
+ * 2019.1.8 jowenshaw modify to 0.6.2
+ * 1. add profile function
  */
 
-#define MVS_BLOCKCHAIN_VERSION "0.6.1"
+#define MVS_BLOCKCHAIN_VERSION "0.6.2"
 #define MVS_BLOCKCHAIN_MAJOR_VERSION 0
 #define MVS_BLOCKCHAIN_MINOR_VERSION 6
-#define MVS_BLOCKCHAIN_PATCH_VERSION 1
+#define MVS_BLOCKCHAIN_PATCH_VERSION 2
 
 #endif

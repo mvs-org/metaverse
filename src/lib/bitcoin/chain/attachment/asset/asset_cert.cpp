@@ -94,9 +94,14 @@ bool asset_cert::is_valid_domain(const std::string& domain)
     return !domain.empty();
 }
 
-std::string asset_cert::get_key(const std::string&symbol, const asset_cert_type& bit)
+std::string asset_cert::get_key(const std::string& symbol, const asset_cert_type& bit)
 {
     return std::string(symbol + ":^#`@:" + std::to_string(bit));
+}
+
+std::string asset_cert::get_witness_key(const std::string& symbol)
+{
+    return std::string(symbol + ":^#`@:" + std::to_string(asset_cert_ns::witness));
 }
 
 std::string asset_cert::asset_cert::get_key() const
@@ -123,7 +128,6 @@ bool asset_cert::from_data_t(reader& source)
 
     return result;
 }
-
 
 void asset_cert::to_data_t(writer& sink) const
 {
@@ -243,16 +247,6 @@ void asset_cert::set_type(asset_cert_type cert_type)
     cert_type_ = cert_type;
 }
 
-asset_cert_type asset_cert::get_certs() const
-{
-    return cert_type_;
-}
-
-void asset_cert::set_certs(asset_cert_type cert_type)
-{
-    cert_type_ = cert_type;
-}
-
 std::string asset_cert::get_type_name() const
 {
     return get_type_name(cert_type_);
@@ -265,6 +259,7 @@ const std::map<asset_cert_type, std::string>& asset_cert::get_type_name_map()
         {asset_cert_ns::domain, "domain"},
         {asset_cert_ns::naming, "naming"},
         {asset_cert_ns::mining, "mining"},
+        {asset_cert_ns::witness, "witness"},
 
         {asset_cert_ns::marriage,   "marriage"},
         {asset_cert_ns::kyc,        "KYC"},
@@ -414,6 +409,107 @@ asset_cert::mining_subsidy_param_ptr asset_cert::parse_mining_subsidy_param(cons
     }
 
     return nullptr;
+}
+
+bool asset_cert::parse_uint32(const std::string& param, uint32_t& value)
+{
+    for (auto& i : param){
+        if (!std::isalnum(i)) {
+            return false;
+        }
+    }
+
+    value = std::stoi(param);
+    return true;
+}
+
+std::string asset_cert::get_primary_witness_symbol(const std::string& symbol)
+{
+    if (symbol.empty() || symbol.find(witness_cert_prefix) != 0) {
+        return "";
+    }
+
+    auto offset = witness_cert_prefix.size();
+    auto index_str = symbol.substr(offset);
+
+    std::vector<std::string> items = bc::split(index_str, ".");
+    if (items.size() < 1) {
+        return "";
+    }
+
+    auto fmt = boost::format("%1%%2%") % witness_cert_prefix % items[0];
+    return fmt.str();
+}
+
+bool asset_cert::is_valid_primary_witness(const std::string& symbol)
+{
+    if (symbol.empty() || symbol.find(witness_cert_prefix) != 0) {
+        return false;
+    }
+
+    auto offset = witness_cert_prefix.size();
+    auto index_str = symbol.substr(offset);
+
+    uint32_t pri_index = 0;
+    if (!parse_uint32(index_str, pri_index)) {
+        return false;
+    }
+
+    return (pri_index >= 1 && pri_index <= witness_cert_count);
+}
+
+bool asset_cert::is_valid_secondary_witness(const std::string& symbol)
+{
+    if (symbol.empty() || symbol.find(witness_cert_prefix) != 0) {
+        return false;
+    }
+
+    auto offset = witness_cert_prefix.size();
+    auto index_str = symbol.substr(offset);
+
+    std::vector<std::string> items = bc::split(index_str, ".");
+    if (items.size() < 2 || items[1].empty()) {
+        return false;
+    }
+
+    uint32_t pri_index = 0;
+    if (!parse_uint32(items[0], pri_index)) {
+        return false;
+    }
+
+    return (pri_index >= 1 && pri_index <= witness_cert_count);
+}
+
+uint32_t asset_cert::get_primary_witness_index(const std::string& symbol)
+{
+    if (symbol.empty() || symbol.find(witness_cert_prefix) != 0) {
+        return 0;
+    }
+
+    auto offset = witness_cert_prefix.size();
+    auto index_str = symbol.substr(offset);
+
+    std::vector<std::string> items = bc::split(index_str, ".");
+    if (items.size() < 1) {
+        return 0;
+    }
+
+    uint32_t pri_index = 0;
+    if (!parse_uint32(items[0], pri_index)) {
+        return 0;
+    }
+
+    return pri_index;
+}
+
+bool asset_cert::is_primary_witness() const
+{
+    return (cert_type_ == asset_cert_ns::witness && is_valid_primary_witness(symbol_));
+}
+
+bool asset_cert::is_secondary_witness() const
+{
+    return (cert_type_ == asset_cert_ns::witness && is_valid_secondary_witness(symbol_));
 }
 
 } // namspace chain

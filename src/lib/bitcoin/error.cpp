@@ -156,6 +156,8 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "block version rejected at current height";
         case error::coinbase_height_mismatch:
             return "block height mismatch in coinbase";
+        case error::block_intermix_interval_error:
+            return "block intermix interval dismatch";
 
         // connect_block()
         case error::duplicate_or_spent:
