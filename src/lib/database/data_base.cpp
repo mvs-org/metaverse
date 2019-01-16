@@ -703,7 +703,8 @@ bool data_base::start()
         /* end database for account, asset, address_asset relationship */
         mits.start() &&
         address_mits.start() &&
-        mit_history.start()
+        mit_history.start() &&
+        witness_profiles.start()
         ;
     const auto end_exclusive = end_write();
 
@@ -734,6 +735,7 @@ bool data_base::stop()
     const auto mits_stop = mits.stop();
     const auto address_mits_stop = address_mits.stop();
     const auto mit_history_stop = mit_history.stop();
+    const auto witness_profiles_stop = witness_profiles.stop();
     const auto end_exclusive = end_write();
 
     // This should remove the lock file. This is not important for locking
@@ -763,6 +765,7 @@ bool data_base::stop()
         mits_stop &&
         address_mits_stop &&
         mit_history_stop &&
+        witness_profiles_stop &&
         end_exclusive;
 }
 
@@ -788,6 +791,7 @@ bool data_base::close()
     const auto mits_close = mits.close();
     const auto address_mits_close = address_mits.close();
     const auto mit_history_close = mit_history.close();
+    const auto witness_profiles_close = witness_profiles.close();
 
     // Return the cumulative result of the database closes.
     return
@@ -809,7 +813,8 @@ bool data_base::close()
         /* end database for account, asset, address_asset relationship */
         mits_close &&
         address_mits_close &&
-        mit_history_close
+        mit_history_close &&
+        witness_profiles_close
         ;
 }
 
@@ -885,8 +890,7 @@ void data_base::synchronize()
     address_mits.sync();
     mit_history.sync();
     blocks.sync();
-    // TODO:FIXME
-    // witness_profiles.sync();
+    witness_profiles.sync();
 }
 
 void data_base::synchronize_dids()
@@ -914,8 +918,7 @@ void data_base::synchronize_mits()
 
 void data_base::synchronize_witness_profiles()
 {
-    // TODO:FIXME
-    // witness_profiles.sync();
+    witness_profiles.sync();
 }
 
 void data_base::push(const block& block)
