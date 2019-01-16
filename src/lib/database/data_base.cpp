@@ -228,11 +228,11 @@ bool data_base::upgrade_version_64(const path& prefix)
         return false;
     }
 
-    if (!initialize_witness_profiles(prefix)) {
-        log::error(LOG_DATABASE)
-            << "Failed to upgrade witness profile database.";
-        return false;
-    }
+    // if (!initialize_witness_profiles(prefix)) {
+    //     log::error(LOG_DATABASE)
+    //         << "Failed to upgrade witness profile database.";
+    //     return false;
+    // }
 
     if (metadata.version_ != db_metadata::current_version) {
         // write new db version to metadata
@@ -627,8 +627,8 @@ bool data_base::create()
         /* end database for account, asset, address_asset relationship */
         mits.create() &&
         address_mits.create() &&
-        mit_history.create() &&
-        witness_profiles.create()
+        mit_history.create()
+        // && witness_profiles.create()
         ;
 }
 

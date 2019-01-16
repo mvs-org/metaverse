@@ -307,7 +307,6 @@ bool transaction::is_coinstake() const
         && (outputs.size() >= 2)
         && (outputs[0].is_null()) //the coin stake transaction is marked with the first output empty
         && (inputs[0].get_script_address() == outputs[1].get_script_address());
-
 }
 
 bool transaction::all_inputs_final() const

@@ -36,13 +36,8 @@ const uint64_t future_blocktime_fork_height     = 0;
 
 #else //PRIVATE_CHAIN
 
-<<<<<<< HEAD
 uint32_t coinbase_maturity                      = 1000;
 uint64_t pos_enabled_height                     = 1924000; // hard-fork-of-MPC1
-=======
-uint32_t coinbase_maturity                  = 1000;
-uint64_t pos_enabled_height                 = 1924000; // hard-fork-of-MPC1
->>>>>>> origin/0.9.0
 
 const uint64_t future_blocktime_fork_height     = 1030000;
 
@@ -57,7 +52,7 @@ const size_t relative_locktime_min_version      = 2;
 
 // POS
 const bool enable_max_successive_height         = false;
-const uint32_t pow_max_successive_height        = 24;
+const uint32_t pow_max_successive_height        = 60;
 const uint32_t pos_max_successive_height        = 24;
 
 const uint64_t pos_genesis_reward               = coin_price(0X1076F8E);

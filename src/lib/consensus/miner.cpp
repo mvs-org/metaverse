@@ -487,7 +487,8 @@ uint64_t miner::calculate_mst_subsidy_pow(
     double base = (*params)[asset_cert::key_base];
     uint64_t mst_bucket_size = (*params)[asset_cert::key_interval];
     auto rate = (block_height - asset.get_height()) / mst_bucket_size;
-    return uint64_t(initial_subsidy * pow(base, rate));
+    auto target_reward = uint64_t(initial_subsidy * pow(base, rate));
+    return std::min<uint64_t>(target_reward, max_uint64);
 }
 
 uint64_t miner::calculate_mst_subsidy_pos(

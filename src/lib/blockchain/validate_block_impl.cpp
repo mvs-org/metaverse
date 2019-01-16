@@ -542,14 +542,16 @@ bool validate_block_impl::check_max_successive_height(uint64_t height, chain::bl
     }
 
     if (version == chain::block_version_pow) {
-        // consider the beginning of dpos epoch
         using namespace consensus;
-        uint64_t height_in_epoch = witness::get_height_in_epoch(height);
-        if (height_in_epoch <= witness::vote_maturity) {
-            return true;
-        }
-        if (height_in_epoch > witness::epoch_cycle_height - witness::vote_maturity) {
-            return true;
+        if (height >= witness::witness_enable_height) {
+            // consider the beginning of dpos epoch
+            uint64_t height_in_epoch = witness::get_height_in_epoch(height);
+            if (height_in_epoch <= witness::vote_maturity) {
+                return true;
+            }
+            if (height_in_epoch > witness::epoch_cycle_height - witness::vote_maturity) {
+                return true;
+            }
         }
 
         auto header = get_prev_block_header(height, version, false);
@@ -618,6 +620,11 @@ chain::header::ptr validate_block_impl::get_prev_block_header(
                 return nullptr;
             }
             else if (ver == chain::block_version_dpos && height < consensus::witness::witness_enable_height) {
+                return nullptr;
+            }
+        }
+        else {
+            if (ver == chain::block_version_pow && height < pos_enabled_height) {
                 return nullptr;
             }
         }
