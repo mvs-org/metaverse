@@ -1259,9 +1259,12 @@ void miner::work(const wallet::payment_address& pay_address)
     while (state_ != state::exit_) {
         block_ptr block = create_new_block(pay_address);
         if (block) {
+            auto is_exit = [this, block]() {
+                return is_stop_miner(block->header.number, block);
+            };
             bool can_store = (get_accept_block_version() == chain::block_version_pos)
                 || block->header.version == chain::block_version_dpos
-                || MinerAux::search(block->header, std::bind(&miner::is_stop_miner, this, block->header.number, block));
+                || MinerAux::search(block->header, is_exit);
             if (can_store) {
                 boost::uint64_t height = store_block(block);
                 if (height == 0) {
