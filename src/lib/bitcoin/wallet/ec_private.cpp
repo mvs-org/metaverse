@@ -37,7 +37,6 @@ namespace wallet {
 const uint8_t ec_private::wif = 0x80;
 //chenhao bad modify
 uint8_t ec_private::mainnet_p2kh = 0x32;
-const uint16_t ec_private::mainnet = uint8_t(wif) << 8 | mainnet_p2kh;
 const uint8_t ec_private::compressed_sentinel = 0x01;
 
 ec_private::ec_private()
@@ -67,7 +66,7 @@ ec_private::ec_private(const wif_uncompressed& wif, uint8_t address_version)
 }
 
 ec_private::ec_private(const ec_secret& secret, uint16_t version, bool compress)
-  : valid_(true), compress_(compress), version_(version), secret_(secret)
+  : valid_(true), compress_(compress), version_(to_version(version, wif)), secret_(secret)
 {
 }
 
