@@ -20,6 +20,7 @@
 
 #include <metaverse/explorer/extensions/commands/startmining.hpp>
 #include <metaverse/macros_define.hpp>
+#include <metaverse/consensus/witness.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -50,7 +51,7 @@ console_result startmining::invoke(Json::Value& jv_output,
     boost::to_lower(option_.consensus);
     const auto is_use_pow = (option_.consensus == "pow");
     const auto is_use_pos = (option_.consensus == "pos");
-    const auto is_use_dpos = (option_.consensus == "dpos");
+    const auto is_use_dpos = (option_.consensus == "dpos" && consensus::witness::is_dpos_enabled()) ;
 
     std::string str_addr;
     if (!option_.address.empty()) {

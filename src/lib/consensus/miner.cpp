@@ -1250,6 +1250,10 @@ chain::block_version miner::get_accept_block_version() const
 
 void miner::set_accept_block_version(chain::block_version v)
 {
+    if (!witness::is_dpos_enabled() && v == chain::block_version_dpos) {
+        return;
+    }
+
     accept_block_version_ = v;
 }
 

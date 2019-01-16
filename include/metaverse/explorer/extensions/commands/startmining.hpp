@@ -94,7 +94,7 @@ public:
         (
             "consensus,c",
             value<std::string>(&option_.consensus)->default_value("pow"),
-            "Accept block with the specified consensus, eg. pow, pos, dpos, defaults to pow."
+            "Accept block with the specified consensus, eg. pow, pos, defaults to pow."
         )
         ;
 

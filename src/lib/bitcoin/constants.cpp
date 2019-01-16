@@ -36,8 +36,13 @@ const uint64_t future_blocktime_fork_height     = 0;
 
 #else //PRIVATE_CHAIN
 
+<<<<<<< HEAD
 uint32_t coinbase_maturity                      = 1000;
 uint64_t pos_enabled_height                     = 1924000; // hard-fork-of-MPC1
+=======
+uint32_t coinbase_maturity                  = 1000;
+uint64_t pos_enabled_height                 = 1924000; // hard-fork-of-MPC1
+>>>>>>> origin/0.9.0
 
 const uint64_t future_blocktime_fork_height     = 1030000;
 
