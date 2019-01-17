@@ -46,7 +46,7 @@ console_result listassets::invoke(Json::Value& jv_output,
     if (option_.is_cert || !option_.cert_type.empty()) { // only get asset certs
         json_key = "assetcerts";
 
-        asset_cert_type cert_type = asset_cert_ns::none;
+        chain::asset_cert_type cert_type = asset_cert_ns::none;
         if (!option_.cert_type.empty()) {
             cert_type = check_cert_type_name(option_.cert_type, true);
         }
