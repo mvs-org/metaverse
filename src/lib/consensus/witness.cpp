@@ -619,13 +619,8 @@ bool witness::is_testnet()
 
 std::string witness::witness_to_address(const witness_id& witness)
 {
-    uint32_t payment_version = wallet::payment_address::mainnet_p2kh;
-    if (witness::get().is_testnet()) {
-        payment_version = 127;  // testnet
-    }
-
     wallet::ec_public ep = wallet::ec_public(witness_to_string(witness));
-    wallet::payment_address pay_address(ep, payment_version);
+    wallet::payment_address pay_address(ep);
     return pay_address.encoded();
 }
 
