@@ -918,7 +918,7 @@ miner::block_ptr miner::create_new_block_pos(
 
     // Check deposited stake
     if (!block_chain.check_pos_capability(last_height, pay_address)) {
-        log::error(LOG_HEADER) << "no enough pos stake is deposited at address " << pay_address;
+        log::error(LOG_HEADER) << "no enough pos stake is locked at address " << pay_address;
         sleep_for_mseconds(10 * 1000);
         return nullptr;
     }

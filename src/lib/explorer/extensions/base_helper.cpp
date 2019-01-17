@@ -233,6 +233,7 @@ asset_cert_type check_cert_type_name(const string& cert_name, bool all)
     if (all) {
         cert_map["issue"] = asset_cert_ns::issue;
         cert_map["domain"] = asset_cert_ns::domain;
+        cert_map["mining"] = asset_cert_ns::mining;
     }
 
     auto iter = cert_map.find(cert_name);

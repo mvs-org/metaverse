@@ -239,7 +239,7 @@ u256 HeaderAux::calculate_difficulty_v2(
     }
     else {
         //////////// PoS ///////////////
-        minimumDifficulty = bigint(1000000);
+        minimumDifficulty = is_testnet ? bigint(1000000) : bigint(100000000);
         if (nullptr == prev || nullptr == pprev) {
             return u256(minimumDifficulty);
         }

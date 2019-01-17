@@ -40,18 +40,32 @@ console_result listassets::invoke(Json::Value& jv_output,
 
     std::string json_key;
     Json::Value json_value;
-    
+
     auto json_helper = config::json_helper(get_api_version());
 
-    if (option_.is_cert) { // only get asset certs
+    if (option_.is_cert || !option_.cert_type.empty()) { // only get asset certs
         json_key = "assetcerts";
 
+        asset_cert_type cert_type = asset_cert_ns::none;
+        if (!option_.cert_type.empty()) {
+            cert_type = check_cert_type_name(option_.cert_type, true);
+        }
+
         if (auth_.name.empty()) { // no account -- list whole asset certs in blockchain
-            auto result_vec = blockchain.get_issued_asset_certs();
-            std::sort(result_vec->begin(), result_vec->end());
-            for (auto& elem : *result_vec) {
-                Json::Value asset_data = json_helper.prop_list(elem);
-                json_value.append(asset_data);
+            if (cert_type == asset_cert_ns::witness) {
+                auto bus_vec = blockchain.get_issued_witness_certs();
+                for (auto& bus_cert : *bus_vec) {
+                    Json::Value asset_data = json_helper.prop_list(bus_cert.get_cert());
+                    json_value.append(asset_data);
+                }
+            }
+            else {
+                auto result_vec = blockchain.get_issued_asset_certs("", cert_type);
+                std::sort(result_vec->begin(), result_vec->end());
+                for (auto& elem : *result_vec) {
+                    Json::Value asset_data = json_helper.prop_list(elem);
+                    json_value.append(asset_data);
+                }
             }
         }
         else { // list asset certs owned by account
@@ -62,7 +76,7 @@ console_result listassets::invoke(Json::Value& jv_output,
 
             auto sh_vec = std::make_shared<asset_cert::list>();
             for (auto& each : *pvaddr) {
-                sync_fetch_asset_cert_balance(each.get_address(), "", blockchain, sh_vec);
+                sync_fetch_asset_cert_balance(each.get_address(), "", blockchain, sh_vec, cert_type);
             }
 
             std::sort(sh_vec->begin(), sh_vec->end());
@@ -129,8 +143,8 @@ console_result listassets::invoke(Json::Value& jv_output,
     }
     else {
         if(json_value.isNull())
-            json_value.resize(0);  
-            
+            json_value.resize(0);
+
         jv_output = json_value;
     }
 
