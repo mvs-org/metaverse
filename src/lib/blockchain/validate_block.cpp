@@ -688,31 +688,39 @@ bool validate_block::check_block_signature(blockchain::block_chain_impl& chain) 
         return true;
     }
 
-    if (is_proof_of_stake && !is_coin_stake(current_block_)){
+    if (is_proof_of_stake && !is_coin_stake(current_block_)) {
+        log::error(LOG_BLOCKCHAIN) << "Invalid coinstake tx!";
         return false;
     }
 
     const auto& blocksig = current_block_.blocksig;
     if (blocksig.empty()) {
+        log::error(LOG_BLOCKCHAIN) << "Miss "
+            << (is_proof_of_stake ? "PoS" : "DPoS") << " blocksig!";
         return false;
     }
 
+    bool result = true;
     if (is_proof_of_stake) {
         BITCOIN_ASSERT(current_block_.transactions.size() > 1);
         const auto& coinstake_tx = current_block_.transactions[1];
         const auto& pubkey_data = coinstake_tx.inputs[0].script.operations.back().data;
-        return verify_signature(pubkey_data, header.hash(), blocksig);
+        auto address = coinstake_tx.inputs[0].get_script_address();
+        log::info(LOG_BLOCKCHAIN) << "public_key: " << encode_base16(pubkey_data);
+        log::info(LOG_BLOCKCHAIN) << "address: " << address;
+        result = verify_signature(pubkey_data, header.hash(), blocksig);
     }
 
     if (is_proof_of_dpos) {
         const auto& ec_pubkey = current_block_.public_key;
         if (ec_pubkey.empty()) {
+            log::error(LOG_BLOCKCHAIN) << "Miss DPoS public_key";
             return false;
         }
-        return verify_signature(ec_pubkey, header.hash(), blocksig);
+        result = verify_signature(ec_pubkey, header.hash(), blocksig);
     }
 
-    return false;
+    return result;
 }
 
 bool validate_block::is_spent_duplicate(const transaction& tx) const

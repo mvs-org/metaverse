@@ -89,7 +89,10 @@ settings::settings(bc::settings context)
 
             libbitcoin::consensus::lock_heights = {10, 20, 30, 40, 50};
             libbitcoin::coinbase_maturity       = 1;
+
+#ifndef PRIVATE_CHAIN
             libbitcoin::pos_enabled_height      = 990000;
+#endif
             break;
         }
 
