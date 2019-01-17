@@ -52,18 +52,22 @@ console_result getaccountasset::invoke(Json::Value& jv_output,
     Json::Value json_value;
     auto json_helper = config::json_helper(get_api_version());
 
-    if (option_.is_cert) { // only get asset certs
+    if (option_.is_cert || !option_.cert_type.empty()) { // only get asset certs
         json_key = "assetcerts";
-        auto sh_vec = std::make_shared<chain::asset_cert::list>();
+
+        asset_cert_type cert_type = asset_cert_ns::none;
+        if (!option_.cert_type.empty()) {
+            cert_type = check_cert_type_name(option_.cert_type, true);
+        }
+
+        auto sh_vec = std::make_shared<asset_cert::list>();
         for (auto& each : *pvaddr){
-            sync_fetch_asset_cert_balance(each.get_address(), argument_.symbol, blockchain, sh_vec);
+            sync_fetch_asset_cert_balance(
+                each.get_address(), argument_.symbol, blockchain, sh_vec, cert_type);
         }
 
         std::sort(sh_vec->begin(), sh_vec->end());
         for (auto& elem: *sh_vec) {
-            if (!argument_.symbol.empty() && argument_.symbol != elem.get_symbol())
-                continue;
-
             Json::Value asset_cert = json_helper.prop_list(elem);
             json_value.append(asset_cert);
         }

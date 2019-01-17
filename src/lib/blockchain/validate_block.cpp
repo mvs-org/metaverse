@@ -705,9 +705,6 @@ bool validate_block::check_block_signature(blockchain::block_chain_impl& chain) 
         BITCOIN_ASSERT(current_block_.transactions.size() > 1);
         const auto& coinstake_tx = current_block_.transactions[1];
         const auto& pubkey_data = coinstake_tx.inputs[0].script.operations.back().data;
-        auto address = coinstake_tx.inputs[0].get_script_address();
-        log::info(LOG_BLOCKCHAIN) << "public_key: " << encode_base16(pubkey_data);
-        log::info(LOG_BLOCKCHAIN) << "address: " << address;
         result = verify_signature(pubkey_data, header.hash(), blocksig);
     }
 
