@@ -37,6 +37,7 @@
 #include <metaverse/explorer/extensions/commands/getaddressetp.hpp>
 #include <metaverse/explorer/extensions/commands/addnode.hpp>
 #include <metaverse/explorer/extensions/commands/getmininginfo.hpp>
+#include <metaverse/explorer/extensions/commands/getstakeinfo.hpp>
 #include <metaverse/explorer/extensions/commands/getblockheader.hpp>
 #include <metaverse/explorer/extensions/commands/fetchheaderext.hpp>
 #include <metaverse/explorer/extensions/commands/gettx.hpp>
@@ -138,6 +139,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<startmining>());
     func(make_shared<stopmining>());
     func(make_shared<getmininginfo>());
+    func(make_shared<getstakeinfo>());
     func(make_shared<setminingaccount>());
     func(make_shared<getwork>());
     func(make_shared<submitwork>());
@@ -265,6 +267,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<setminingaccount>();
     if (symbol == getmininginfo::symbol())
         return make_shared<getmininginfo>();
+    if (symbol == getstakeinfo::symbol())
+        return make_shared<getstakeinfo>();
     if ((symbol == getwork::symbol()) || (symbol == "eth_getWork"))
         return make_shared<getwork>();
     if ((symbol == submitwork::symbol()) || ( symbol == "eth_submitWork"))
