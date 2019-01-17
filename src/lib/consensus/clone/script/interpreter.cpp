@@ -390,7 +390,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
 
                     valtype& vcModelParam = stacktop(-2);
                     //valtype& vcInputPoint = stacktop(-1);
-                    if (!attenuation_model::check_model_param_format(vcModelParam))
+                    if (!bc::chain::attenuation_model::check_model_param_format(vcModelParam))
                         return set_error(serror, SCRIPT_ERR_INVALID_MODEL_PARAM);
 
                     popstack(stack);

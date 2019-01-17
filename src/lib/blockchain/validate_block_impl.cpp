@@ -428,7 +428,7 @@ bool validate_block_impl::is_asset_in_orphan_chain(const std::string& symbol) co
     return false;
 }
 
-bool validate_block_impl::is_asset_cert_in_orphan_chain(const std::string& symbol, asset_cert_type cert_type) const
+bool validate_block_impl::is_asset_cert_in_orphan_chain(const std::string& symbol, chain::asset_cert_type cert_type) const
 {
     BITCOIN_ASSERT(!symbol.empty());
 

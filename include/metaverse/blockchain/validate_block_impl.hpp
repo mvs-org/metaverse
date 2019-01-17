@@ -55,7 +55,7 @@ public:
     virtual bool is_did_match_address_in_orphan_chain(const std::string& symbol, const std::string& address) const override;
     virtual bool is_did_in_orphan_chain(const std::string& symbol) const override;
     virtual bool is_asset_in_orphan_chain(const std::string& symbol) const override;
-    virtual bool is_asset_cert_in_orphan_chain(const std::string& symbol, asset_cert_type cert_type) const override;
+    virtual bool is_asset_cert_in_orphan_chain(const std::string& symbol, chain::asset_cert_type cert_type) const override;
     virtual bool is_asset_mit_in_orphan_chain(const std::string& symbol) const override;
 
     virtual uint64_t get_fork_index() const override { return fork_index_; }

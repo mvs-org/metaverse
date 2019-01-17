@@ -102,8 +102,4 @@ struct BC_API output_info
 } // namespace chain
 } // namespace libbitcoin
 
-using output_point = libbitcoin::chain::output_point;
-using output_point_info = libbitcoin::chain::output_point_info;
-using output_info = libbitcoin::chain::output_info;
-
 #endif

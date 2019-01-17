@@ -58,7 +58,7 @@ console_result issuecert::invoke (Json::Value& jv_output,
     std::string cert_symbol = argument_.symbol;
     std::string primary_symbol;
 
-    if (certs_create == asset_cert_ns::witness) {
+    if (certs_create == chain::asset_cert_ns::witness) {
         primary_symbol = get_available_primary_witness_cert(blockchain);
 
         auto fmt = boost::format("%1%.%2%") % primary_symbol % argument_.symbol;
@@ -74,24 +74,24 @@ console_result issuecert::invoke (Json::Value& jv_output,
         {
             to_address, cert_symbol, 0, 0,
             certs_create, utxo_attach_type::asset_cert_issue,
-            attachment("", to_did)
+            chain::attachment("", to_did)
         }
     };
 
     // append cert required
-    if (certs_create == asset_cert_ns::naming) {
-        auto&& domain = asset_cert::get_domain(cert_symbol);
+    if (certs_create == chain::asset_cert_ns::naming) {
+        auto&& domain = chain::asset_cert::get_domain(cert_symbol);
         receiver.push_back({
             to_address, domain, 0, 0,
-            asset_cert_ns::domain, utxo_attach_type::asset_cert,
-            attachment("", to_did)
+            chain::asset_cert_ns::domain, utxo_attach_type::asset_cert,
+            chain::attachment("", to_did)
         });
     }
-    else if (certs_create == asset_cert_ns::witness) {
+    else if (certs_create == chain::asset_cert_ns::witness) {
         receiver.push_back({
             to_address, primary_symbol, 0, 0,
-            asset_cert_ns::witness, utxo_attach_type::asset_cert,
-            attachment("", to_did)
+            chain::asset_cert_ns::witness, utxo_attach_type::asset_cert,
+            chain::attachment("", to_did)
         });
     }
 
@@ -101,7 +101,7 @@ console_result issuecert::invoke (Json::Value& jv_output,
 
         receiver.push_back({
             to_address, "", 0, 0, utxo_attach_type::message,
-            attachment(0, 0, chain::blockchain_message(option_.memo))
+            chain::attachment(0, 0, chain::blockchain_message(option_.memo))
         });
     }
 
@@ -124,7 +124,7 @@ std::string issuecert::get_available_primary_witness_cert(
     bc::blockchain::block_chain_impl& blockchain) const
 {
     // get owned primary witness cert
-    auto account_certs = blockchain.get_account_asset_certs(auth_.name, "", asset_cert_ns::witness);
+    auto account_certs = blockchain.get_account_asset_certs(auth_.name, "", chain::asset_cert_ns::witness);
     std::vector<std::string> pri_symbols;
     for (auto& bus_cert : *account_certs) {
         auto& cert = bus_cert.certs;

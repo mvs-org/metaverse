@@ -43,7 +43,7 @@ console_result deposit::invoke(Json::Value& jv_output,
         throw fatal_exception{"deposit is not supported after block " + std::to_string(pos_enabled_height)};
     }
 
-    attachment attach;
+    chain::attachment attach;
     std::string addr;
 
     if (argument_.address.empty()) {

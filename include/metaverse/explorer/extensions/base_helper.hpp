@@ -91,9 +91,9 @@ struct address_asset_record
     uint64_t    amount{0}; // spendable etp amount
     std::string symbol;
     uint64_t    asset_amount{0}; // spendable asset amount
-    asset_cert_type asset_cert{chain::asset_cert_ns::none};
+    chain::asset_cert_type asset_cert{chain::asset_cert_ns::none};
     utxo_attach_type type{utxo_attach_type::invalid};
-    output_point output;
+    chain::output_point output;
     chain::script script;
     uint32_t hd_index{0}; // only used for multisig tx
     uint32_t sequence{max_input_sequence};
@@ -107,10 +107,10 @@ struct receiver_record
     std::string symbol;
     uint64_t    amount{0}; // etp value
     uint64_t    asset_amount{0};
-    asset_cert_type asset_cert{chain::asset_cert_ns::none};
+    chain::asset_cert_type asset_cert{chain::asset_cert_ns::none};
 
     utxo_attach_type type{utxo_attach_type::invalid};
-    attachment attach_elem;  // used for MESSAGE_TYPE, used for information transfer etc.
+    chain::attachment attach_elem;  // used for MESSAGE_TYPE, used for information transfer etc.
     chain::input_point input_point{null_hash, max_uint32};
     bool is_lock_seq_{false};
 
@@ -128,7 +128,7 @@ struct receiver_record
 
     receiver_record(const std::string& target_, const std::string& symbol_,
         uint64_t amount_, uint64_t asset_amount_,
-        utxo_attach_type type_, const attachment& attach_elem_, bool is_lock_seq)
+        utxo_attach_type type_, const chain::attachment& attach_elem_, bool is_lock_seq)
         : receiver_record(target_, symbol_, amount_, asset_amount_,
             chain::asset_cert_ns::none, type_, attach_elem_,
             chain::input_point(null_hash, max_uint32), is_lock_seq)
@@ -136,7 +136,7 @@ struct receiver_record
 
     receiver_record(const std::string& target_, const std::string& symbol_,
         uint64_t amount_, uint64_t asset_amount_,
-        utxo_attach_type type_, const attachment& attach_elem_ = attachment(),
+        utxo_attach_type type_, const chain::attachment& attach_elem_ = chain::attachment(),
         const chain::input_point& input_point_ = {null_hash, max_uint32},
         bool is_lock_seq = false)
         : receiver_record(target_, symbol_, amount_, asset_amount_,
@@ -144,8 +144,8 @@ struct receiver_record
     {}
 
     receiver_record(const std::string& target_, const std::string& symbol_,
-        uint64_t amount_, uint64_t asset_amount_, asset_cert_type asset_cert_,
-        utxo_attach_type type_, const attachment& attach_elem_ = attachment(),
+        uint64_t amount_, uint64_t asset_amount_, chain::asset_cert_type asset_cert_,
+        utxo_attach_type type_, const chain::attachment& attach_elem_ = chain::attachment(),
         const chain::input_point& input_point_ = {null_hash, max_uint32},
         bool is_lock_seq = false)
         : target(target_)
@@ -231,16 +231,16 @@ void sync_fetch_deposited_balance(wallet::payment_address& address,
 
 void sync_fetch_asset_balance(const std::string& address, bool sum_all,
     bc::blockchain::block_chain_impl& blockchain,
-    std::shared_ptr<asset_balances::list> sh_asset_vec);
+    std::shared_ptr<chain::asset_balances::list> sh_asset_vec);
 
 void sync_fetch_asset_deposited_balance(const std::string& address,
     bc::blockchain::block_chain_impl& blockchain,
-    std::shared_ptr<asset_deposited_balance::list> sh_asset_vec);
+    std::shared_ptr<chain::asset_deposited_balance::list> sh_asset_vec);
 
-std::shared_ptr<asset_balances::list> sync_fetch_asset_view(const std::string& symbol,
+std::shared_ptr<chain::asset_balances::list> sync_fetch_asset_view(const std::string& symbol,
     bc::blockchain::block_chain_impl& blockchain);
 
-std::shared_ptr<asset_deposited_balance::list> sync_fetch_asset_deposited_view(
+std::shared_ptr<chain::asset_deposited_balance::list> sync_fetch_asset_deposited_view(
     const std::string& symbol,
     bc::blockchain::block_chain_impl& blockchain);
 
@@ -252,7 +252,8 @@ void sync_fetch_locked_balance(const std::string& address,
 
 void sync_fetch_asset_cert_balance(const std::string& address, const std::string& symbol,
     bc::blockchain::block_chain_impl& blockchain,
-    std::shared_ptr<asset_cert::list> sh_vec, asset_cert_type cert_type=chain::asset_cert_ns::none);
+    std::shared_ptr<chain::asset_cert::list> sh_vec,
+    chain::asset_cert_type cert_type=chain::asset_cert_ns::none);
 
 std::string get_random_payment_address(std::shared_ptr<std::vector<chain::account_address>>,
     bc::blockchain::block_chain_impl& blockchain);
@@ -261,7 +262,7 @@ std::string get_address(const std::string& did_or_address,
     bc::blockchain::block_chain_impl& blockchain);
 
 std::string get_address(const std::string& did_or_address,
-    attachment& attach, bool is_from,
+    chain::attachment& attach, bool is_from,
     bc::blockchain::block_chain_impl& blockchain);
 
 std::string get_address_from_did(const std::string& did,
@@ -275,9 +276,9 @@ void check_mit_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_did_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_message(const std::string& message, bool check_sensitive=false);
 void check_mining_subsidy_param(const std::string& param);
-asset_cert_type check_issue_cert(bc::blockchain::block_chain_impl& blockchain,
+chain::asset_cert_type check_issue_cert(bc::blockchain::block_chain_impl& blockchain,
     const std::string& account, const std::string& symbol, const std::string& cert_name);
-asset_cert_type check_cert_type_name(const std::string& cert_type_name, bool all=false);
+chain::asset_cert_type check_cert_type_name(const std::string& cert_type_name, bool all=false);
 
 class BCX_API base_transfer_common
 {
@@ -327,8 +328,8 @@ public:
     virtual bool get_spendable_output(chain::output&, const chain::history&, uint64_t height) const;
     virtual chain::operation::stack get_script_operations(const receiver_record& record) const;
     virtual void sync_fetchutxo(
-            const std::string& prikey, const std::string& addr, filter filter = FILTER_ALL, const history::list& spec_rows={});
-    virtual attachment populate_output_attachment(const receiver_record& record);
+            const std::string& prikey, const std::string& addr, filter filter = FILTER_ALL, const chain::history::list& spec_rows={});
+    virtual chain::attachment populate_output_attachment(const receiver_record& record);
     virtual void sum_payments();
     virtual void sum_payment_amount();
     virtual void populate_change();
@@ -369,7 +370,7 @@ public:
 
     virtual std::string get_sign_tx_multisig_script(const address_asset_record& from) const;
 
-    void set_did_verify_attachment(const receiver_record& record, attachment& attach);
+    void set_did_verify_attachment(const receiver_record& record, chain::attachment& attach);
 
 protected:
     bc::blockchain::block_chain_impl& blockchain_;
@@ -382,8 +383,8 @@ protected:
     uint64_t                          payment_asset_{0};
     uint64_t                          unspent_etp_{0};
     uint64_t                          unspent_asset_{0};
-    std::vector<asset_cert_type>      payment_asset_cert_;
-    std::vector<asset_cert_type>      unspent_asset_cert_;
+    std::vector<chain::asset_cert_type>      payment_asset_cert_;
+    std::vector<chain::asset_cert_type>      unspent_asset_cert_;
     uint8_t                           payment_did_{0};
     uint8_t                           unspent_did_{0};
     uint8_t                           payment_mit_{0};
@@ -605,11 +606,11 @@ public:
 
     void sum_payments() override;
     void sum_payment_amount() override;
-    attachment populate_output_attachment(const receiver_record& record) override;
+    chain::attachment populate_output_attachment(const receiver_record& record) override;
     chain::operation::stack get_script_operations(const receiver_record& record) const override;
 
 private:
-    std::shared_ptr<asset_detail> unissued_asset_;
+    std::shared_ptr<chain::asset_detail> unissued_asset_;
     std::string domain_cert_address_;
     std::string attenuation_model_param_;
     std::string mining_sussidy_param_;
@@ -636,7 +637,7 @@ public:
 
     void sum_payment_amount() override;
     void populate_change() override;
-    attachment populate_output_attachment(const receiver_record& record) override;
+    chain::attachment populate_output_attachment(const receiver_record& record) override;
     chain::operation::stack get_script_operations(const receiver_record& record) const override;
 
     uint64_t get_volume() { return volume_; };
@@ -650,7 +651,7 @@ public:
 
 private:
     uint64_t volume_{0};
-    std::shared_ptr<asset_detail> issued_asset_;
+    std::shared_ptr<chain::asset_detail> issued_asset_;
     std::string target_address_;
     std::string attenuation_model_param_;
 };
@@ -849,7 +850,7 @@ public:
         tx_.locktime = locktime_;
     };
 
-    attachment populate_output_attachment(const receiver_record& record) override;
+    chain::attachment populate_output_attachment(const receiver_record& record) override;
 
 private:
     std::map<std::string, std::string> mit_map_;
@@ -877,7 +878,7 @@ public:
         tx_.locktime = locktime_;
     };
 
-    attachment populate_output_attachment(const receiver_record& record) override;
+    chain::attachment populate_output_attachment(const receiver_record& record) override;
 };
 
 

@@ -38,12 +38,11 @@ namespace chain {
 class asset;
 }
 }
-using asset = libbitcoin::chain::asset;
 
-#define ASSET_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<asset::asset_status>::type>(kd))
+#define ASSET_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<bc::chain::asset::asset_status>::type>(kd))
 
-#define ASSET_DETAIL_TYPE ASSET_STATUS2UINT32(asset::asset_status::asset_locked)
-#define ASSET_TRANSFERABLE_TYPE ASSET_STATUS2UINT32(asset::asset_status::asset_transferable)
+#define ASSET_DETAIL_TYPE ASSET_STATUS2UINT32(bc::chain::asset::asset_status::asset_locked)
+#define ASSET_TRANSFERABLE_TYPE ASSET_STATUS2UINT32(bc::chain::asset::asset_status::asset_transferable)
 
 namespace libbitcoin {
 namespace chain {

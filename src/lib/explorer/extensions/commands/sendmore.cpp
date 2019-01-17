@@ -45,7 +45,7 @@ console_result sendmore::invoke (Json::Value& jv_output,
     for (auto& each : argument_.receivers) {
         colon_delimited2_item<std::string, uint64_t> item(each);
 
-        attachment attach;
+        chain::attachment attach;
         std::string address = get_address(item.first(), attach, false, blockchain);
         if (item.second() <= 0) {
             throw argument_legality_exception("invalid amount parameter for " + item.first());
@@ -70,7 +70,7 @@ console_result sendmore::invoke (Json::Value& jv_output,
         }
 
         receiver.push_back({msg_address, "", 0, 0, utxo_attach_type::message,
-            attachment(0, 0, chain::blockchain_message(option_.memo))});
+            chain::attachment(0, 0, chain::blockchain_message(option_.memo))});
     }
 
     auto send_helper = sending_etp(*this, blockchain,

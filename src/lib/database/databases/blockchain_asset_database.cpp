@@ -112,14 +112,14 @@ void blockchain_asset_database::sync()
     lookup_manager_.sync();
 }
 
-std::shared_ptr<blockchain_asset> blockchain_asset_database::get(const hash_digest& hash) const
+std::shared_ptr<chain::blockchain_asset> blockchain_asset_database::get(const hash_digest& hash) const
 {
-    std::shared_ptr<blockchain_asset> detail(nullptr);
+    std::shared_ptr<chain::blockchain_asset> detail(nullptr);
 
     const auto raw_memory = lookup_map_.rfind(hash);
     if(raw_memory) {
         const auto memory = REMAP_ADDRESS(raw_memory);
-        detail = std::make_shared<blockchain_asset>();
+        detail = std::make_shared<chain::blockchain_asset>();
         auto deserial = make_deserializer_unsafe(memory);
         detail->from_data(deserial);
     }
@@ -136,7 +136,7 @@ uint64_t blockchain_asset_database::get_asset_volume(const std::string& name) co
     {
         const auto memory = REMAP_ADDRESS(elem);
         auto deserial = make_deserializer_unsafe(memory);
-        auto& asset = blockchain_asset::factory_from_data(deserial).get_asset();
+        auto& asset = chain::blockchain_asset::factory_from_data(deserial).get_asset();
         volume += asset.get_maximum_supply();
     };
     std::for_each(memo.begin(), memo.end(), action);
@@ -145,13 +145,13 @@ uint64_t blockchain_asset_database::get_asset_volume(const std::string& name) co
 }
 
 ///
-std::shared_ptr<std::vector<blockchain_asset>> blockchain_asset_database::get_blockchain_assets(const std::string& asset_symbol) const
+std::shared_ptr<std::vector<chain::blockchain_asset>> blockchain_asset_database::get_blockchain_assets(const std::string& asset_symbol) const
 {
     if (!asset_symbol.empty()) {
         return get_asset_history(asset_symbol);
     }
 
-    auto vec_acc = std::make_shared<std::vector<blockchain_asset>>();
+    auto vec_acc = std::make_shared<std::vector<chain::blockchain_asset>>();
     uint64_t i = 0;
     for( i = 0; i < number_buckets; i++ ) {
         auto memo = lookup_map_.find(i);
@@ -161,7 +161,7 @@ std::shared_ptr<std::vector<blockchain_asset>> blockchain_asset_database::get_bl
             {
                 const auto memory = REMAP_ADDRESS(elem);
                 auto deserial = make_deserializer_unsafe(memory);
-                vec_acc->push_back(blockchain_asset::factory_from_data(deserial));
+                vec_acc->push_back(chain::blockchain_asset::factory_from_data(deserial));
             };
             std::for_each(memo->begin(), memo->end(), action);
         }
@@ -169,10 +169,10 @@ std::shared_ptr<std::vector<blockchain_asset>> blockchain_asset_database::get_bl
     return vec_acc;
 }
 
-/// 
-std::shared_ptr<blockchain_asset::list> blockchain_asset_database::get_asset_history(const std::string & asset_symbol) const
+///
+std::shared_ptr<chain::blockchain_asset::list> blockchain_asset_database::get_asset_history(const std::string & asset_symbol) const
 {
-    std::shared_ptr<blockchain_asset::list> blockchain_asset_ = std::make_shared<blockchain_asset::list>();
+    std::shared_ptr<chain::blockchain_asset::list> blockchain_asset_ = std::make_shared<chain::blockchain_asset::list>();
     data_chunk data(asset_symbol.begin(), asset_symbol.end());
     auto key = sha256_hash(data);
 
@@ -181,25 +181,25 @@ std::shared_ptr<blockchain_asset::list> blockchain_asset_database::get_asset_his
         if(memo)
         {
             const auto memory = REMAP_ADDRESS(memo);
-            auto deserial = make_deserializer_unsafe(memory);        
-            blockchain_asset_->emplace_back(blockchain_asset::factory_from_data(deserial));
+            auto deserial = make_deserializer_unsafe(memory);
+            blockchain_asset_->emplace_back(chain::blockchain_asset::factory_from_data(deserial));
         }
     }
 
     return blockchain_asset_;
 }
 
-/// 
-std::shared_ptr<blockchain_asset> blockchain_asset_database::get_register_history(const std::string & asset_symbol) const
+///
+std::shared_ptr<chain::blockchain_asset> blockchain_asset_database::get_register_history(const std::string & asset_symbol) const
 {
-    std::shared_ptr<blockchain_asset> blockchain_asset_ = nullptr;
+    std::shared_ptr<chain::blockchain_asset> blockchain_asset_ = nullptr;
     data_chunk data(asset_symbol.begin(), asset_symbol.end());
     auto key = sha256_hash(data);
 
     auto memo = lookup_map_.rfind(key);
     if(memo)
     {
-        blockchain_asset_ = std::make_shared<blockchain_asset>();
+        blockchain_asset_ = std::make_shared<chain::blockchain_asset>();
         const auto memory = REMAP_ADDRESS(memo);
         auto deserial = make_deserializer_unsafe(memory);
         blockchain_asset_->from_data(deserial);
@@ -211,13 +211,13 @@ std::shared_ptr<blockchain_asset> blockchain_asset_database::get_register_histor
 ///
 uint64_t blockchain_asset_database::get_register_height(const std::string & asset_symbol) const
 {
-    std::shared_ptr<blockchain_asset> blockchain_asset_ = get_register_history(asset_symbol);
+    std::shared_ptr<chain::blockchain_asset> blockchain_asset_ = get_register_history(asset_symbol);
     if(blockchain_asset_)
         return blockchain_asset_->get_height();
     return max_uint64;
 }
 
-void blockchain_asset_database::store(const hash_digest& hash, const blockchain_asset& sp_detail)
+void blockchain_asset_database::store(const hash_digest& hash, const chain::blockchain_asset& sp_detail)
 {
     // Write block data.
     const auto key = hash;

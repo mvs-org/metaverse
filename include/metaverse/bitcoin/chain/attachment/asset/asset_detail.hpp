@@ -119,7 +119,5 @@ private:
 } // namespace chain
 } // namespace libbitcoin
 
-using asset_detail = libbitcoin::chain::asset_detail;
-
 #endif
 

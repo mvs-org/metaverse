@@ -211,7 +211,7 @@ public:
         READWRITE(type);
         READWRITE(status);
 
-        asset_cert_type type_enum(type);
+        bc::chain::asset_cert_type type_enum(type);
         if (type_enum.has_content()) {
             READWRITE(content);
         }

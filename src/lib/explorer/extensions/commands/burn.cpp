@@ -36,7 +36,7 @@ console_result burn::invoke(Json::Value& jv_output,
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    std::string blackhole_did = did_detail::get_blackhole_did_symbol();
+    std::string blackhole_did = chain::did_detail::get_blackhole_did_symbol();
 
     if (option_.is_mit) {
         const char* cmds[] {

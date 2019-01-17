@@ -84,7 +84,7 @@ console_result getassetview::invoke(Json::Value& jv_output,
 
         calc_range(sh_vec->size());
 
-        std::vector<asset_deposited_balance> result(sh_vec->begin() + start, sh_vec->begin() + start + tx_count);
+        std::vector<chain::asset_deposited_balance> result(sh_vec->begin() + start, sh_vec->begin() + start + tx_count);
         for (auto &elem : result){
             auto issued_asset = blockchain.get_issued_asset(elem.symbol);
             if (!issued_asset){
@@ -93,7 +93,7 @@ console_result getassetview::invoke(Json::Value& jv_output,
             Json::Value asset_data = json_helper.prop_list(elem, *issued_asset);
             asset_data["status"] = "unspent";
             json_value.append(asset_data);
-            
+
         }
     }
     else
@@ -102,9 +102,9 @@ console_result getassetview::invoke(Json::Value& jv_output,
         if (!sh_vec->empty()){
             std::sort(sh_vec->begin(), sh_vec->end());
         }
-        
+
         calc_range(sh_vec->size());
-        std::vector<asset_balances> result(sh_vec->begin() + start, sh_vec->begin() + start + tx_count);
+        std::vector<chain::asset_balances> result(sh_vec->begin() + start, sh_vec->begin() + start + tx_count);
         for (auto &elem : result){
             Json::Value asset_data = json_helper.prop_list(elem);
             asset_data["status"] = "unspent";

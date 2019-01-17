@@ -49,15 +49,13 @@ class asset_cert;
 union asset_cert_type;
 }
 }
-using asset_cert = libbitcoin::chain::asset_cert;
-using asset_cert_type = libbitcoin::chain::asset_cert_type;
 
-#define ASSET_CERT_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<asset_cert::asset_cert_status>::type>(kd))
+#define ASSET_CERT_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<bc::chain::asset_cert::asset_cert_status>::type>(kd))
 
-#define ASSET_CERT_NORMAL_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_normal)
-#define ASSET_CERT_ISSUE_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_issue)
-#define ASSET_CERT_TRANSFER_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_transfer)
-#define ASSET_CERT_AUTOISSUE_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_autoissue)
+#define ASSET_CERT_NORMAL_TYPE ASSET_CERT_STATUS2UINT32(bc::chain::asset_cert::asset_cert_status::asset_cert_normal)
+#define ASSET_CERT_ISSUE_TYPE ASSET_CERT_STATUS2UINT32(bc::chain::asset_cert::asset_cert_status::asset_cert_issue)
+#define ASSET_CERT_TRANSFER_TYPE ASSET_CERT_STATUS2UINT32(bc::chain::asset_cert::asset_cert_status::asset_cert_transfer)
+#define ASSET_CERT_AUTOISSUE_TYPE ASSET_CERT_STATUS2UINT32(bc::chain::asset_cert::asset_cert_status::asset_cert_autoissue)
 
 namespace libbitcoin {
 namespace chain {

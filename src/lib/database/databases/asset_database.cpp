@@ -31,6 +31,7 @@ namespace libbitcoin {
 namespace database {
 
 using namespace boost::filesystem;
+using namespace chain;
 
 asset_database::asset_database(const path& map_filename,
     std::shared_ptr<shared_mutex> mutex)

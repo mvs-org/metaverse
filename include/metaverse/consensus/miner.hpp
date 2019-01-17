@@ -24,7 +24,6 @@
 #include <array>
 #include <boost/thread.hpp>
 #include <metaverse/bitcoin.hpp>
-#include "metaverse/blockchain/transaction_pool.hpp"
 #include "metaverse/bitcoin/chain/block.hpp"
 #include "metaverse/bitcoin/chain/input.hpp"
 #include <metaverse/bitcoin/chain/attachment/asset/blockchain_asset.hpp>
@@ -34,9 +33,6 @@
 namespace libbitcoin {
 namespace node {
 class p2p_node;
-}
-namespace blockchain {
-class block_chain_impl;
 }
 }
 
@@ -53,12 +49,7 @@ class miner
 public:
     typedef message::block_message block;
     typedef std::shared_ptr<message::block_message> block_ptr;
-    typedef chain::header header;
-    typedef chain::transaction transaction;
     typedef message::transaction_message::ptr transaction_ptr;
-    typedef blockchain::block_chain_impl block_chain_impl;
-    typedef blockchain::transaction_pool transaction_pool;
-    typedef libbitcoin::node::p2p_node p2p_node;
 
     // prev_output_point -> (prev_block_height, prev_output)
     typedef std::unordered_map<chain::point, std::pair<uint64_t, chain::output>> previous_out_map_t;
@@ -66,7 +57,7 @@ public:
     // tx_hash -> tx_fee
     typedef std::unordered_map<hash_digest, uint64_t> tx_fee_map_t;
 
-    miner(p2p_node& node);
+    miner(node::p2p_node& node);
     ~miner();
 
     enum state
@@ -105,16 +96,16 @@ public:
     static uint64_t calculate_lockblock_reward(uint64_t lcok_heights, uint64_t num);
 
     static uint64_t calculate_mst_subsidy(
-        const blockchain_asset& mining_asset, const asset_cert& mining_cert,
+        const chain::blockchain_asset& mining_asset, const chain::asset_cert& mining_cert,
         uint64_t height, bool is_testnet, uint32_t version);
     static uint64_t calculate_mst_subsidy_pow(
-        const blockchain_asset& mining_asset, const asset_cert& mining_cert,
+        const chain::blockchain_asset& mining_asset, const chain::asset_cert& mining_cert,
         uint64_t height, bool is_testnet);
     static uint64_t calculate_mst_subsidy_pos(
-        const blockchain_asset& mining_asset, const asset_cert& mining_cert,
+        const chain::blockchain_asset& mining_asset, const chain::asset_cert& mining_cert,
         uint64_t height, bool is_testnet);
     static uint64_t calculate_mst_subsidy_dpos(
-        const blockchain_asset& mining_asset, const asset_cert& mining_cert,
+        const chain::blockchain_asset& mining_asset, const chain::asset_cert& mining_cert,
         uint64_t height, bool is_testnet);
 
     chain::block_version get_accept_block_version() const;
@@ -127,8 +118,8 @@ public:
 
     std::string get_mining_asset_symbol() const;
     bool set_mining_asset_symbol(const std::string& symbol);
-    std::shared_ptr<blockchain_asset> get_mining_asset() const;
-    std::shared_ptr<asset_cert> get_mining_cert() const;
+    std::shared_ptr<chain::blockchain_asset> get_mining_asset() const;
+    std::shared_ptr<chain::asset_cert> get_mining_cert() const;
 
     bool is_solo_mining() const;
     void set_solo_mining(bool b);
@@ -136,9 +127,9 @@ public:
 private:
     void work(const wallet::payment_address& pay_address);
     block_ptr create_new_block(const wallet::payment_address& pay_address);
-    block_ptr create_new_block_pow(const wallet::payment_address& pay_address, const header& prev_header);
-    block_ptr create_new_block_pos(const wallet::payment_address& pay_address, const header& prev_header);
-    block_ptr create_new_block_dpos(const wallet::payment_address& pay_address, const header& prev_header);
+    block_ptr create_new_block_pow(const wallet::payment_address& pay_address, const chain::header& prev_header);
+    block_ptr create_new_block_pos(const wallet::payment_address& pay_address, const chain::header& prev_header);
+    block_ptr create_new_block_dpos(const wallet::payment_address& pay_address, const chain::header& prev_header);
 
     const ec_secret& get_private_key() const;
     ec_secret& get_private_key();
@@ -150,7 +141,7 @@ private:
         uint64_t& total_fee, uint32_t& total_tx_sig_length);
     uint64_t store_block(block_ptr block);
     uint64_t get_height() const;
-    bool get_input_etp(const transaction&, const std::vector<transaction_ptr>&, uint64_t&, previous_out_map_t&) const ;
+    bool get_input_etp(const chain::transaction&, const std::vector<transaction_ptr>&, uint64_t&, previous_out_map_t&) const ;
     bool is_stop_miner(uint64_t block_height, block_ptr block) const;
     uint32_t get_tx_sign_length(transaction_ptr tx);
     void sleep_for_mseconds(uint32_t interval, bool force = false);
@@ -178,7 +169,7 @@ private:
         const wallet::payment_address& pay_address);
 
 private:
-    p2p_node& node_;
+    node::p2p_node& node_;
     std::shared_ptr<boost::thread> thread_;
     mutable state state_;
     uint16_t new_block_number_;
@@ -188,8 +179,8 @@ private:
     const blockchain::settings& setting_;
 
     struct mining_context {
-        std::shared_ptr<blockchain_asset> mining_asset_;
-        std::shared_ptr<asset_cert> mining_cert_;
+        std::shared_ptr<chain::blockchain_asset> mining_asset_;
+        std::shared_ptr<chain::asset_cert> mining_cert_;
         wallet::payment_address pay_address_;
         data_chunk public_key_data_;
         ec_secret private_key_;

@@ -70,7 +70,7 @@ console_result transfermit::invoke (Json::Value& jv_output,
     std::vector<receiver_record> receiver{
         {
             to_address, argument_.symbol, 0, 0, 0,
-            utxo_attach_type::asset_mit_transfer, attachment("", to_did)
+            utxo_attach_type::asset_mit_transfer, chain::attachment("", to_did)
         }
     };
 
@@ -78,7 +78,7 @@ console_result transfermit::invoke (Json::Value& jv_output,
         check_message(option_.memo);
 
         receiver.push_back({to_address, "", 0, 0, utxo_attach_type::message,
-            attachment(0, 0, chain::blockchain_message(option_.memo))});
+            chain::attachment(0, 0, chain::blockchain_message(option_.memo))});
     }
 
     auto helper = transferring_mit(

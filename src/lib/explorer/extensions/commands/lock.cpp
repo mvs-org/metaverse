@@ -43,7 +43,7 @@ console_result lock::invoke(Json::Value& jv_output,
         check_asset_symbol(option_.asset_symbol);
     }
 
-    attachment attach;
+    chain::attachment attach;
     std::string to_address = get_address_from_did(argument_.to, blockchain);
     std::string change_address = get_address(option_.change, blockchain);
     attach.set_to_did(argument_.to);
@@ -86,7 +86,7 @@ console_result lock::invoke(Json::Value& jv_output,
 
         receiver.push_back({
             to_address, "", 0, 0, utxo_attach_type::message,
-            attachment(0, 0, chain::blockchain_message(option_.memo))
+            chain::attachment(0, 0, chain::blockchain_message(option_.memo))
         });
     }
 

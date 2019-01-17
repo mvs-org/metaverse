@@ -71,7 +71,7 @@ console_result didchangeaddress::invoke(Json::Value& jv_output,
 
     // receiver
     std::vector<receiver_record> receiver{
-        {argument_.to, argument_.symbol, 0, 0, utxo_attach_type::did_transfer, attachment()}
+        {argument_.to, argument_.symbol, 0, 0, utxo_attach_type::did_transfer, chain::attachment()}
     };
 
     auto toaddr = bc::wallet::payment_address(argument_.to);

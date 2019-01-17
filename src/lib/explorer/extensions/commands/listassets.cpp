@@ -60,7 +60,7 @@ console_result listassets::invoke(Json::Value& jv_output,
             if (!pvaddr)
                 throw address_list_nullptr_exception{"nullptr for address list"};
 
-            auto sh_vec = std::make_shared<asset_cert::list>();
+            auto sh_vec = std::make_shared<chain::asset_cert::list>();
             for (auto& each : *pvaddr) {
                 sync_fetch_asset_cert_balance(each.get_address(), "", blockchain, sh_vec);
             }
@@ -90,7 +90,7 @@ console_result listassets::invoke(Json::Value& jv_output,
             if (!pvaddr)
                 throw address_list_nullptr_exception{"nullptr for address list"};
 
-            auto sh_vec = std::make_shared<asset_balances::list>();
+            auto sh_vec = std::make_shared<chain::asset_balances::list>();
 
             // 1. get asset in blockchain
             // get address unspent asset balance

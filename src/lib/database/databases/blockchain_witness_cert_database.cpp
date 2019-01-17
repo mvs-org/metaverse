@@ -111,14 +111,14 @@ void blockchain_witness_cert_database::sync()
     lookup_manager_.sync();
 }
 
-std::shared_ptr<blockchain_cert> blockchain_witness_cert_database::get(const hash_digest& hash) const
+std::shared_ptr<chain::blockchain_cert> blockchain_witness_cert_database::get(const hash_digest& hash) const
 {
-    std::shared_ptr<blockchain_cert> detail(nullptr);
+    std::shared_ptr<chain::blockchain_cert> detail(nullptr);
 
     const auto raw_memory = lookup_map_.find(hash);
     if (raw_memory) {
         const auto memory = REMAP_ADDRESS(raw_memory);
-        detail = std::make_shared<blockchain_cert>();
+        detail = std::make_shared<chain::blockchain_cert>();
         auto deserial = make_deserializer_unsafe(memory);
         detail->from_data(deserial);
     }
@@ -126,9 +126,9 @@ std::shared_ptr<blockchain_cert> blockchain_witness_cert_database::get(const has
     return detail;
 }
 
-std::shared_ptr<std::vector<blockchain_cert>> blockchain_witness_cert_database::get_certs() const
+std::shared_ptr<std::vector<chain::blockchain_cert>> blockchain_witness_cert_database::get_certs() const
 {
-    auto vec_acc = std::make_shared<std::vector<blockchain_cert>>();
+    auto vec_acc = std::make_shared<std::vector<chain::blockchain_cert>>();
     for( uint64_t i = 0; i < number_buckets; i++ ) {
         auto memo = lookup_map_.find(i);
         if (memo->size()) {
@@ -136,7 +136,7 @@ std::shared_ptr<std::vector<blockchain_cert>> blockchain_witness_cert_database::
             {
                 const auto memory = REMAP_ADDRESS(elem);
                 auto deserial = make_deserializer_unsafe(memory);
-                vec_acc->push_back(blockchain_cert::factory_from_data(deserial));
+                vec_acc->push_back(chain::blockchain_cert::factory_from_data(deserial));
             };
             std::for_each(memo->begin(), memo->end(), action);
         }
@@ -144,7 +144,7 @@ std::shared_ptr<std::vector<blockchain_cert>> blockchain_witness_cert_database::
     return vec_acc;
 }
 
-void blockchain_witness_cert_database::store(const blockchain_cert& bc_cert)
+void blockchain_witness_cert_database::store(const chain::blockchain_cert& bc_cert)
 {
     auto&& key_str = bc_cert.get_cert().get_key();
     const data_chunk& data = data_chunk(key_str.begin(), key_str.end());

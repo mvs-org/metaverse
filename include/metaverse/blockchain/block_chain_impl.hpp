@@ -226,10 +226,10 @@ public:
         uint64_t limit, uint64_t from_height, history_fetch_handler handler) override;
 
     bool fetch_history(const wallet::payment_address& address,
-        uint64_t limit, uint64_t from_height, history_compact::list& history);
+        uint64_t limit, uint64_t from_height, chain::history_compact::list& history);
 
 
-    history::list get_address_history(const wallet::payment_address& addr, bool add_memory_pool = false);
+    chain::history::list get_address_history(const wallet::payment_address& addr, bool add_memory_pool = false);
 
 
     /// fetch stealth results.
@@ -286,7 +286,7 @@ public:
     inline hash_digest get_hash(const std::string& str) const;
     inline short_hash get_short_hash(const std::string& str) const;
 
-    std::shared_ptr<chain::transaction>  get_spends_output(const input_point& input);
+    std::shared_ptr<chain::transaction>  get_spends_output(const chain::input_point& input);
 
     // account related api
     std::shared_ptr<chain::account> is_account_passwd_valid(const std::string& name, const std::string& passwd);
@@ -300,23 +300,23 @@ public:
     operation_result delete_account(const std::string& name);
     operation_result delete_account_address(const std::string& name);
 
-    std::shared_ptr<business_history::list> get_address_business_history(
-        const std::string& addr, business_kind kind, uint8_t confirmed);
-    std::shared_ptr<business_history::list> get_address_business_history(
-        const std::string& addr, business_kind kind, uint32_t time_begin, uint32_t time_end);
-    std::shared_ptr<business_history::list> get_address_business_history(const std::string& addr);
+    std::shared_ptr<chain::business_history::list> get_address_business_history(
+        const std::string& addr, chain::business_kind kind, uint8_t confirmed);
+    std::shared_ptr<chain::business_history::list> get_address_business_history(
+        const std::string& addr, chain::business_kind kind, uint32_t time_begin, uint32_t time_end);
+    std::shared_ptr<chain::business_history::list> get_address_business_history(const std::string& addr);
 
     // account asset api
-    operation_result store_account_asset(const asset_detail& detail, const std::string& name);
-    operation_result store_account_asset(std::shared_ptr<asset_detail> detail, const std::string& name);
+    operation_result store_account_asset(const chain::asset_detail& detail, const std::string& name);
+    operation_result store_account_asset(std::shared_ptr<chain::asset_detail> detail, const std::string& name);
     operation_result delete_account_asset(const std::string& name);
-    std::shared_ptr<business_address_asset::list> get_account_asset(
-        const std::string& name, const std::string& asset_name, business_kind kind);
-    std::shared_ptr<business_address_asset::list> get_account_asset(
+    std::shared_ptr<chain::business_address_asset::list> get_account_asset(
+        const std::string& name, const std::string& asset_name, chain::business_kind kind);
+    std::shared_ptr<chain::business_address_asset::list> get_account_asset(
         const std::string& name, const std::string& asset);
-    std::shared_ptr<business_address_asset::list> get_account_assets(const std::string& name);
-    std::shared_ptr<business_address_asset::list> get_account_assets(
-        const std::string& name, business_kind kind);
+    std::shared_ptr<chain::business_address_asset::list> get_account_assets(const std::string& name);
+    std::shared_ptr<chain::business_address_asset::list> get_account_assets(
+        const std::string& name, chain::business_kind kind);
     uint64_t get_address_asset_volume(const std::string& address, const std::string& asset);
     uint64_t get_account_asset_volume(const std::string& account, const std::string& asset);
     uint64_t get_asset_volume(const std::string& asset);
@@ -324,38 +324,38 @@ public:
     // asset api
     bool is_asset_exist(const std::string& asset_name, bool check_local_db=true);
     uint64_t get_asset_height(const std::string& asset_name) const ;
-    std::shared_ptr<asset_detail::list> get_local_assets();
-    std::shared_ptr<asset_detail::list> get_issued_assets(
+    std::shared_ptr<chain::asset_detail::list> get_local_assets();
+    std::shared_ptr<chain::asset_detail::list> get_issued_assets(
         const std::string& symbol="", const std::string& address="");
-    std::shared_ptr<asset_detail> get_issued_asset(const std::string& symbol);
-    std::shared_ptr<blockchain_asset> get_issued_blockchain_asset(const std::string& symbol);
-    std::shared_ptr<business_address_asset::list> get_account_assets();
-    std::shared_ptr<business_address_asset::list> get_account_unissued_assets(const std::string& name);
-    std::shared_ptr<asset_detail> get_account_unissued_asset(
+    std::shared_ptr<chain::asset_detail> get_issued_asset(const std::string& symbol);
+    std::shared_ptr<chain::blockchain_asset> get_issued_blockchain_asset(const std::string& symbol);
+    std::shared_ptr<chain::business_address_asset::list> get_account_assets();
+    std::shared_ptr<chain::business_address_asset::list> get_account_unissued_assets(const std::string& name);
+    std::shared_ptr<chain::asset_detail> get_account_unissued_asset(
         const std::string& name, const std::string& symbol);
 
-    std::shared_ptr<blockchain_asset::list> get_asset_register_output(const std::string& symbol);
+    std::shared_ptr<chain::blockchain_asset::list> get_asset_register_output(const std::string& symbol);
     // cert api
-    std::shared_ptr<asset_cert> get_asset_cert(const std::string& symbol, asset_cert_type cert_type) const;
-    bool is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_type);
-    uint64_t get_asset_cert_height(const std::string& cert_symbol, asset_cert_type cert_type);
-    std::shared_ptr<asset_cert::list> get_issued_asset_certs(
-        const std::string& address = "", asset_cert_type cert_type = asset_cert_ns::none);
-    std::shared_ptr<asset_cert> get_account_asset_cert(
-        const std::string& account, const std::string& symbol, asset_cert_type cert_type);
-    std::shared_ptr<business_address_asset_cert::list> get_account_asset_certs(
-        const std::string& account, const std::string& symbol, asset_cert_type cert_type);
-    std::shared_ptr<business_address_asset_cert::list> get_address_asset_certs(
-        const std::string& address, const std::string& symbol, asset_cert_type cert_type);
+    std::shared_ptr<chain::asset_cert> get_asset_cert(const std::string& symbol, chain::asset_cert_type cert_type) const;
+    bool is_asset_cert_exist(const std::string& symbol, chain::asset_cert_type cert_type);
+    uint64_t get_asset_cert_height(const std::string& cert_symbol, chain::asset_cert_type cert_type);
+    std::shared_ptr<chain::asset_cert::list> get_issued_asset_certs(
+        const std::string& address = "", chain::asset_cert_type cert_type = asset_cert_ns::none);
+    std::shared_ptr<chain::asset_cert> get_account_asset_cert(
+        const std::string& account, const std::string& symbol, chain::asset_cert_type cert_type);
+    std::shared_ptr<chain::business_address_asset_cert::list> get_account_asset_certs(
+        const std::string& account, const std::string& symbol, chain::asset_cert_type cert_type);
+    std::shared_ptr<chain::business_address_asset_cert::list> get_address_asset_certs(
+        const std::string& address, const std::string& symbol, chain::asset_cert_type cert_type);
 
     // identifiable asset
     bool is_asset_mit_exist(const std::string& symbol);
     uint64_t get_asset_mit_height(const std::string& mit_symbol)const;
-    std::shared_ptr<asset_mit_info> get_registered_mit(const std::string& symbol);
-    std::shared_ptr<asset_mit_info::list> get_registered_mits();
-    std::shared_ptr<asset_mit_info::list> get_mit_history(const std::string& symbol,
+    std::shared_ptr<chain::asset_mit_info> get_registered_mit(const std::string& symbol);
+    std::shared_ptr<chain::asset_mit_info::list> get_registered_mits();
+    std::shared_ptr<chain::asset_mit_info::list> get_mit_history(const std::string& symbol,
         uint64_t limit = 0, uint64_t page_number = 0);
-    std::shared_ptr<asset_mit::list> get_account_mits(
+    std::shared_ptr<chain::asset_mit::list> get_account_mits(
         const std::string& account, const std::string& symbol="");
 
     // account did api
@@ -364,28 +364,28 @@ public:
     bool is_address_registered_did(const std::string& address, uint64_t fork_index = max_uint64);
     bool is_account_owned_did(const std::string& account, const std::string& symbol);
     std::string get_did_from_address(const std::string& address, uint64_t fork_index = max_uint64);
-    std::shared_ptr<did_detail> get_registered_did(const std::string& symbol) const;
-    std::shared_ptr<did_detail::list> get_registered_dids();
-    std::shared_ptr<did_detail::list> get_account_dids(const std::string& account);
+    std::shared_ptr<chain::did_detail> get_registered_did(const std::string& symbol) const;
+    std::shared_ptr<chain::did_detail::list> get_registered_dids();
+    std::shared_ptr<chain::did_detail::list> get_account_dids(const std::string& account);
 
     //get history addresses from did symbol
-    std::shared_ptr<blockchain_did::list>  get_did_history_addresses(const std::string & symbol);
+    std::shared_ptr<chain::blockchain_did::list>  get_did_history_addresses(const std::string & symbol);
 
-    std::shared_ptr<business_history::list> get_account_business_history(
-        const std::string& name, business_kind kind, uint32_t time_begin, uint32_t time_end);
-    std::shared_ptr<business_history::list> get_address_business_history(
-        const std::string& addr, const std::string& symbol, business_kind kind, uint8_t confirmed);
-    std::shared_ptr<business_record::list> get_address_business_record(
+    std::shared_ptr<chain::business_history::list> get_account_business_history(
+        const std::string& name, chain::business_kind kind, uint32_t time_begin, uint32_t time_end);
+    std::shared_ptr<chain::business_history::list> get_address_business_history(
+        const std::string& addr, const std::string& symbol, chain::business_kind kind, uint8_t confirmed);
+    std::shared_ptr<chain::business_record::list> get_address_business_record(
         const std::string& addr, size_t from_height = 0, size_t limit = 0);
-    std::shared_ptr<business_record::list> get_address_business_record(
+    std::shared_ptr<chain::business_record::list> get_address_business_record(
         const std::string& addr, uint64_t start, uint64_t end, const std::string& symbol);
-    std::shared_ptr<business_record::list> get_address_business_record(
+    std::shared_ptr<chain::business_record::list> get_address_business_record(
         const std::string& address, const std::string& symbol, size_t start_height, size_t end_height,
         uint64_t limit, uint64_t page_number) const;
     std::shared_ptr<chain::account_address::list> get_addresses();
 
     // account message api
-    std::shared_ptr<business_address_message::list> get_account_messages(const std::string& name);
+    std::shared_ptr<chain::business_address_message::list> get_account_messages(const std::string& name);
 
     // account adress related api
     operation_result store_account_address(std::shared_ptr<chain::account_address> address);
@@ -404,7 +404,7 @@ public:
     bool get_transaction_consider_pool(
         chain::transaction& tx, uint64_t& tx_height, const hash_digest& hash);
     bool get_history(const wallet::payment_address& address,
-        uint64_t limit, uint64_t from_height, history_compact::list& history);
+        uint64_t limit, uint64_t from_height, chain::history_compact::list& history);
     code validate_transaction(const chain::transaction& tx);
     code broadcast_transaction(const chain::transaction& tx);
     bool get_tx_inputs_etp_value (chain::transaction& tx, uint64_t& etp_val);
@@ -451,7 +451,7 @@ public:
     uint64_t get_witness_cert_mars(
         const std::string& address, uint64_t epoch_height);
 
-    std::shared_ptr<asset_cert::list> get_address_witness_certs(
+    std::shared_ptr<chain::asset_cert::list> get_address_witness_certs(
         const std::string& address, uint64_t epoch_height);
 
     // use witness_cert database
@@ -459,13 +459,13 @@ public:
         const std::string& symbol, uint64_t epoch_height);
 
     // use witness_cert database
-    std::shared_ptr<blockchain_cert::list> get_issued_witness_certs(
+    std::shared_ptr<chain::blockchain_cert::list> get_issued_witness_certs(
         const std::string& symbol = "",
         const std::string& address = "",
         uint64_t epoch_height = 0);
 
     // use witness_cert database
-    std::shared_ptr<blockchain_cert::list> get_issued_secondary_witness_certs(
+    std::shared_ptr<chain::blockchain_cert::list> get_issued_secondary_witness_certs(
         const std::string& primary_symbol = "",
         uint64_t epoch_height = 0);
 
@@ -507,7 +507,7 @@ private:
     void fetch_serial(perform_read_functor perform_read);
     bool stopped() const;
 
-    std::string get_asset_symbol_from_business_data(const business_data& data) const;
+    std::string get_asset_symbol_from_business_data(const chain::business_data& data) const;
 
 private:
     std::atomic<bool> stopped_;

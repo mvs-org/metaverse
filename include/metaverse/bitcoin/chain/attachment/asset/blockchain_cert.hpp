@@ -77,6 +77,3 @@ private:
 
 } // namespace chain
 } // namespace libbitcoin
-
-using blockchain_cert = libbitcoin::chain::blockchain_cert;
-

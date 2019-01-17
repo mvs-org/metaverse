@@ -37,7 +37,7 @@ console_result send::invoke(Json::Value& jv_output,
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    attachment attach;
+    chain::attachment attach;
     std::string to_address = get_address(argument_.to, attach, false, blockchain);
     std::string change_address = get_address(option_.change, blockchain);
 
@@ -61,7 +61,7 @@ console_result send::invoke(Json::Value& jv_output,
 
         receiver.push_back({
             to_address, "", 0, 0, utxo_attach_type::message,
-            attachment(0, 0, chain::blockchain_message(option_.memo))
+            chain::attachment(0, 0, chain::blockchain_message(option_.memo))
         });
     }
 

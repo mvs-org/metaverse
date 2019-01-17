@@ -60,12 +60,12 @@ public:
     /// Call to unload the memory map.
     bool close();
 
-    std::shared_ptr<blockchain_cert> get(const hash_digest& hash) const;
+    std::shared_ptr<chain::blockchain_cert> get(const hash_digest& hash) const;
 
     /// Get all witness certs
-    std::shared_ptr<std::vector<blockchain_cert>> get_certs() const;
+    std::shared_ptr<std::vector<chain::blockchain_cert>> get_certs() const;
 
-    void store(const blockchain_cert& sp_cert);
+    void store(const chain::blockchain_cert& sp_cert);
 
     /// Delete a transaction from database.
     void remove(const hash_digest& hash);

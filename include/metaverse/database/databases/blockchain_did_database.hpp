@@ -60,23 +60,23 @@ public:
     /// Call to unload the memory map.
     bool close();
 
-    std::shared_ptr<blockchain_did> get(const hash_digest& hash) const;
+    std::shared_ptr<chain::blockchain_did> get(const hash_digest& hash) const;
 
     ///
-    std::shared_ptr<std::vector<blockchain_did> > get_history_dids(const hash_digest& hash) const;
+    std::shared_ptr<std::vector<chain::blockchain_did> > get_history_dids(const hash_digest& hash) const;
     ///
-    std::shared_ptr<std::vector<blockchain_did> > get_blockchain_dids() const;
+    std::shared_ptr<std::vector<chain::blockchain_did> > get_blockchain_dids() const;
 
     /// 
-    std::shared_ptr<blockchain_did> get_register_history(const std::string & did_symbol) const;
+    std::shared_ptr<chain::blockchain_did> get_register_history(const std::string & did_symbol) const;
     ///
     uint64_t get_register_height(const std::string & did_symbol) const;
 
-    std::shared_ptr<std::vector<blockchain_did> > getdids_from_address_history(
+    std::shared_ptr<std::vector<chain::blockchain_did> > getdids_from_address_history(
         const std::string &address, const uint64_t& fromheight = 0
         ,const uint64_t & toheight = max_uint64 ) const;
 
-    void store(const hash_digest& hash, const blockchain_did& sp_detail);
+    void store(const hash_digest& hash, const chain::blockchain_did& sp_detail);
 
     /// Delete a transaction from database.
     void remove(const hash_digest& hash);
@@ -86,10 +86,10 @@ public:
     void sync();
 
     //pop back did_detail
-    std::shared_ptr<blockchain_did> pop_did_transfer(const hash_digest &hash);
+    std::shared_ptr<chain::blockchain_did> pop_did_transfer(const hash_digest &hash);
 protected:
     /// update address status(current or old), default old
-     std::shared_ptr<blockchain_did> update_address_status(const hash_digest& hash,uint32_t status = blockchain_did::address_history);
+     std::shared_ptr<chain::blockchain_did> update_address_status(const hash_digest& hash,uint32_t status = chain::blockchain_did::address_history);
 private:
     typedef slab_hash_table<hash_digest> slab_map;
 

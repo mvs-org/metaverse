@@ -318,16 +318,5 @@ public:
 } // namespace chain
 } // namespace libbitcoin
 
-using business_kind = libbitcoin::chain::business_kind;
-using business_status = libbitcoin::chain::business_status;
-using business_data = libbitcoin::chain::business_data;
-using business_record = libbitcoin::chain::business_record;
-using business_history = libbitcoin::chain::business_history;
-using business_address_asset = libbitcoin::chain::business_address_asset;
-using business_address_asset_cert = libbitcoin::chain::business_address_asset_cert;
-using business_address_mit = libbitcoin::chain::business_address_mit;
-using business_address_did = libbitcoin::chain::business_address_did;
-using business_address_message = libbitcoin::chain::business_address_message;
-
 #endif
 

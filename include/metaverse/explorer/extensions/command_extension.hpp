@@ -48,7 +48,7 @@ struct prikey_etp_amount
     std::string key;
     uint64_t    value;
     uint64_t    asset_amount;
-    output_point output;
+    chain::output_point output;
 };
 
 struct utxo_attach_info
