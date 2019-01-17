@@ -22,6 +22,7 @@
 #include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/consensus/witness.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -36,12 +37,41 @@ console_result getlocked::invoke(Json::Value& jv_output,
     auto& blockchain = node.chain_impl();
     auto&& address = get_address(argument_.address, blockchain);
 
+    if (option_.dpos_stake) {
+        Json::Value result;
+        uint64_t locked_vaule = 0;
+
+        uint64_t last_height = 0;
+        blockchain.get_last_height(last_height);
+
+        auto height = option_.expiration > last_height ? option_.expiration : last_height;
+        if (consensus::witness::is_witness_enabled(height)) {
+            auto epoch_height = consensus::witness::get_epoch_begin_height(height);
+            auto locked_balance = blockchain.get_locked_balance(epoch_height, address);
+            locked_vaule = locked_balance.first;
+        }
+        auto satified = locked_vaule >= consensus::witness::witness_lock_threshold;
+
+        result["address"] = address;
+        result["locked_balance"] = locked_vaule;
+        result["satified"] = satified;
+
+        jv_output = result;
+        return console_result::okay;
+    }
+
     bool is_asset = !is_default_invalid_asset_symbol(option_.asset_symbol);
     if (is_asset) {
         blockchain.uppercase_symbol(option_.asset_symbol);
         check_asset_symbol(option_.asset_symbol);
     }
     auto asset_symbol = is_asset ? option_.asset_symbol : std::string("");
+
+    // range check
+    if (!option_.range.is_valid()) {
+        throw argument_legality_exception("invalid range option! "
+            + option_.range.encode_colon_delimited());
+    }
 
     Json::Value balances;
 
@@ -50,6 +80,9 @@ console_result getlocked::invoke(Json::Value& jv_output,
     std::sort(sh_vec->begin(), sh_vec->end());
 
     for (const auto& balance: *sh_vec) {
+        if (!option_.range.is_in_range(balance.locked_value)) {
+            continue;
+        }
         Json::Value json_balance;
         json_balance["address"] = balance.address;
         json_balance["locked_balance"] = balance.locked_value;
