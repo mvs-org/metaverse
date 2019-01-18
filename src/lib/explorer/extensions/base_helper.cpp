@@ -1894,10 +1894,11 @@ void base_transfer_common::populate_tx_header()
     tx_.locktime = locktime_;
 #endif
 
-    if (validate_transaction::is_nova_feature_activated(blockchain_)) {
-        tx_.version = transaction_version::check_nova_feature;
-    }
-    else {
+    // latest version
+    tx_.version = transaction_version::check_nova_feature;
+
+    // previous version
+    if (!validate_transaction::is_nova_feature_activated(blockchain_)) {
         tx_.version = transaction_version::check_output_script;
     }
 }

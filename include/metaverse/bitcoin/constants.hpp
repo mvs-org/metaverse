@@ -97,6 +97,8 @@ BC_API uint32_t get_relative_locktime_locked_seconds(uint32_t raw_value);
 //-----------------------------------------------------------------------------
 extern const uint64_t future_blocktime_fork_height;
 
+extern const uint64_t nova_enabled_height;
+
 // Relative PoS & DPoS constants.
 //-----------------------------------------------------------------------------
 extern uint64_t pos_enabled_height;

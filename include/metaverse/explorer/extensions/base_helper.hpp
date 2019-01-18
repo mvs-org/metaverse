@@ -337,7 +337,8 @@ public:
     virtual void populate_unspent_list() = 0;
     virtual void sign_tx_inputs();
     virtual void send_tx();
-    virtual void populate_tx_header();
+
+    void populate_tx_header();
 
     // common functions, single responsibility.
     static void check_fee_in_valid_range(uint64_t fee);
@@ -644,11 +645,6 @@ public:
 
     bool is_locked_asset_as_payment() const override {return true;}
 
-    void populate_tx_header() override {
-        tx_.version = chain::transaction_version::check_nova_feature;
-        tx_.locktime = locktime_;
-    };
-
 private:
     uint64_t volume_{0};
     std::shared_ptr<chain::asset_detail> issued_asset_;
@@ -704,11 +700,6 @@ public:
 
     void sum_payment_amount() override;
 
-    void populate_tx_header() override {
-        tx_.version = chain::transaction_version::check_nova_feature;
-        tx_.locktime = locktime_;
-    };
-
 private:
     uint32_t fee_percentage_to_miner_;
 };
@@ -742,11 +733,6 @@ public:
     // no operation in exec
     void send_tx() override {}
 
-    void populate_tx_header() override {
-        tx_.version = chain::transaction_version::check_nova_feature;
-        tx_.locktime = locktime_;
-    };
-
 private:
     std::string fromfee;
     chain::account_multisig multisig_from_;
@@ -774,11 +760,6 @@ public:
     void populate_unspent_list() override;
     void populate_change() override;
 
-    void populate_tx_header() override {
-        tx_.version = chain::transaction_version::check_nova_feature;
-        tx_.locktime = locktime_;
-    };
-
 private:
     std::string fromfee;
 };
@@ -798,11 +779,6 @@ public:
 
     ~transferring_asset_cert()
     {}
-
-    void populate_tx_header() override {
-        tx_.version = chain::transaction_version::check_nova_feature;
-        tx_.locktime = locktime_;
-    };
 };
 
 class BCX_API issuing_asset_cert : public base_transfer_helper
@@ -822,12 +798,8 @@ public:
     {}
 
     void sum_payment_amount() override;
-
-    void populate_tx_header() override {
-        tx_.version = chain::transaction_version::check_nova_feature;
-        tx_.locktime = locktime_;
-    };
 };
+
 class BCX_API registering_mit : public base_transfer_helper
 {
 public:
@@ -844,11 +816,6 @@ public:
 
     ~registering_mit()
     {}
-
-    void populate_tx_header() override {
-        tx_.version = chain::transaction_version::check_nova_feature;
-        tx_.locktime = locktime_;
-    };
 
     chain::attachment populate_output_attachment(const receiver_record& record) override;
 
@@ -872,11 +839,6 @@ public:
 
     ~transferring_mit()
     {}
-
-    void populate_tx_header() override {
-        tx_.version = chain::transaction_version::check_nova_feature;
-        tx_.locktime = locktime_;
-    };
 
     chain::attachment populate_output_attachment(const receiver_record& record) override;
 };

@@ -32,6 +32,7 @@
 #include <metaverse/blockchain/validate_block.hpp>
 #include <metaverse/blockchain/block_chain_impl.hpp>
 #include <metaverse/consensus/miner.hpp>
+#include <metaverse/consensus/witness.hpp>
 
 #ifdef WITH_CONSENSUS
 #include <metaverse/consensus.hpp>
@@ -1373,6 +1374,10 @@ code validate_transaction::check_transaction() const
 {
     code ret = error::success;
 
+    if ((ret = check_transaction_version())) {
+        return ret;
+    }
+
     if ((ret = check_transaction_basic())) {
         return ret;
     }
@@ -1389,26 +1394,24 @@ code validate_transaction::check_transaction() const
         return ret;
     }
 
-    if (tx_->version >= transaction_version::check_nova_feature) {
-        if ((ret = check_asset_cert_transaction())) {
-            return ret;
-        }
+    if ((ret = check_asset_cert_transaction())) {
+        return ret;
+    }
 
-        if ((ret = check_secondaryissue_transaction())) {
-            return ret;
-        }
+    if ((ret = check_secondaryissue_transaction())) {
+        return ret;
+    }
 
-        if ((ret = check_asset_mit_transaction())) {
-            return ret;
-        }
+    if ((ret = check_asset_mit_transaction())) {
+        return ret;
+    }
 
-        if ((ret = check_did_transaction())) {
-            return ret;
-        }
+    if ((ret = check_did_transaction())) {
+        return ret;
+    }
 
-        if ((ret = attenuation_model::check_model_param(*this))) {
-            return ret;
-        }
+    if ((ret = attenuation_model::check_model_param(*this))) {
+        return ret;
     }
 
     return ret;
@@ -1516,24 +1519,50 @@ code validate_transaction::check_sequence_locks() const
     return error::success;
 }
 
-code validate_transaction::check_transaction_basic() const
+code validate_transaction::check_transaction_version() const
 {
     const chain::transaction& tx = *tx_;
     block_chain_impl& chain = blockchain_;
+
+    auto use_testnet_rules = chain.chain_settings().use_testnet_rules;
+    auto is_nova_activated = is_nova_feature_activated(chain);
 
     if (tx.version >= transaction_version::max_version) {
         return error::transaction_version_error;
     }
 
-    if (tx.version == transaction_version::check_nova_feature
-        && !is_nova_feature_activated(chain)) {
+    if (tx.is_coinbase() || tx.is_coinstake()) {
+        return error::success;
+    }
+
+    if (tx.version >= transaction_version::check_nova_feature && !is_nova_activated) {
         return error::nova_feature_not_activated;
     }
 
-    if (tx.version == transaction_version::check_nova_testnet
-        && !chain.chain_settings().use_testnet_rules) {
+    if (tx.version == transaction_version::check_nova_testnet && !use_testnet_rules) {
         return error::transaction_version_error;
     }
+
+    uint64_t current_blockheight = 0;
+    chain.get_last_height(current_blockheight);
+
+    auto is_pos_activated = current_blockheight >= pos_enabled_height;
+    auto is_dpos_activated = consensus::witness::is_witness_enabled(current_blockheight);
+
+    if ((!use_testnet_rules && is_pos_activated) ||
+        (use_testnet_rules && is_dpos_activated)) {
+        if (tx.version < transaction_version::check_nova_feature) {
+            return error::transaction_version_error;
+        }
+    }
+
+    return error::success;
+}
+
+code validate_transaction::check_transaction_basic() const
+{
+    const chain::transaction& tx = *tx_;
+    block_chain_impl& chain = blockchain_;
 
     if (tx.version >= transaction_version::check_output_script) {
         for (auto& i : tx.outputs) {
@@ -2061,7 +2090,7 @@ bool validate_transaction::is_nova_feature_activated(block_chain_impl& chain)
     chain.get_last_height(current_blockheight);
 
     // active SuperNove on 2018-06-18 (duanwu festival)
-    return (current_blockheight > 1270000);
+    return (current_blockheight > nova_enabled_height);
 }
 
 } // namespace blockchain
