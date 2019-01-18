@@ -194,7 +194,12 @@ bool executor::menu()
 
     try
     {
-        log::info(LOG_SERVER) << "mvsd version " << MVS_VERSION;
+#ifdef NDEBUG
+        std::string running_mode = " (release mode) ";
+#else
+        std::string running_mode = " (debug mode) ";
+#endif
+        log::info(LOG_SERVER) << "mvsd version " << MVS_VERSION << running_mode;
         // set block data absolute path
         const auto& directory = metadata_.configured.database.directory ;
         if (!directory.is_absolute()) {
@@ -241,10 +246,10 @@ bool executor::run()
     node_ = std::make_shared<server_node>(metadata_.configured);
 
 #ifdef PRIVATE_CHAIN
-    log::info(LOG_SERVER) << "running private net";
+    log::info(LOG_SERVER) << "running (private net)";
 #else
     log::info(LOG_SERVER)
-        << (!node_->is_use_testnet_rules() ? "running mainnet" : "running testnet");
+        << (!node_->is_use_testnet_rules() ? "running (mainnet)" : "running (testnet)");
 #endif
 
     // The callback may be returned on the same thread.

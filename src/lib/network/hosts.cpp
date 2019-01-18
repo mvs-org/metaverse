@@ -557,8 +557,11 @@ void hosts::store(const address::list& hosts, result_handler handler)
 
             // Do not treat invalid address as an error, just log it.
             if (!host.is_valid()) {
-                log::debug(LOG_NETWORK)
-                        << "Invalid host address from peer.";
+                auto host_str = config::authority(host).to_string();
+                if (host_str != "[::]") {
+                    log::debug(LOG_NETWORK)
+                            << "Invalid host address from peer: " << host_str;
+                }
                 continue;
             }
 
