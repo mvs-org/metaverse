@@ -102,7 +102,7 @@ uint32_t get_relative_locktime_locked_seconds(uint32_t raw_value)
 std::string get_genesis_address(bool is_testnet)
 {
     if (is_testnet) {
-        return "tBELxsiiaMVGQcY2Apf7hmzAaipD4YWTTj";            // for testnet
+        return "tPd41bKLJGf1C5RRvaiV2mytqZB6WfM1vR";            // for testnet
     }
 
 #ifdef PRIVATE_CHAIN

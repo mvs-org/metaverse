@@ -74,16 +74,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
 
     auto type = static_cast<utxo_attach_type>(option_.type);
 
-    if (type == utxo_attach_type::deposit) {
-        if (!option_.symbol.empty()) {
-            throw argument_legality_exception{"not deposit asset " + option_.symbol};
-        }
-
-        if (option_.receivers.size() != 1) {
-            throw argument_legality_exception{"only support deposit on one address!"};
-        }
-    }
-    else if (type == utxo_attach_type::asset_transfer) {
+    if (type == utxo_attach_type::asset_transfer) {
         blockchain.uppercase_symbol(option_.symbol);
 
         // check asset symbol
@@ -137,16 +128,6 @@ console_result createrawtx::invoke(Json::Value& jv_output,
                              blockchain, type,
                              std::move(senders), std::move(receivers),
                              std::move(option_.symbol), std::move(change_address),
-                             std::move(option_.message),
-                             option_.fee, option_.locktime);
-        break;
-    }
-
-    case utxo_attach_type::deposit: {
-        sp_send_helper = std::make_shared<depositing_etp_transaction>(
-                             blockchain, type,
-                             std::move(senders), std::move(receivers),
-                             option_.deposit, std::move(change_address),
                              std::move(option_.message),
                              option_.fee, option_.locktime);
         break;
