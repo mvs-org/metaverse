@@ -319,96 +319,6 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     RETURN_IF_STOPPED();
 
-    std::set<string> assets;
-    std::set<string> asset_certs;
-    std::set<string> asset_mits;
-    std::set<string> dids;
-    std::set<string> didaddreses;
-    code first_tx_ec = error::success;
-    for (const auto& tx : transactions)
-    {
-        RETURN_IF_STOPPED();
-
-        const auto validate_tx = std::make_shared<validate_transaction>(chain, tx, *this);
-        ec = validate_tx->check_transaction();
-        if (!ec) {
-            ec = validate_tx->check_transaction_connect_input(header.number);
-        }
-
-        for (uint64_t i = 0; (!ec) && (i < tx.outputs.size()); ++i) {
-            const auto& output = tx.outputs[i];
-            if (output.is_asset_issue()) {
-                auto r = assets.insert(output.get_asset_symbol());
-                if (r.second == false) {
-                    log::debug(LOG_BLOCKCHAIN)
-                        << "check_block asset " + output.get_asset_symbol()
-                        << " already exists in block!"
-                        << " " << tx.to_string(1);
-                    ec = error::asset_exist;
-                    break;
-                }
-            }
-            else if (output.is_asset_cert()) {
-                auto&& key = output.get_asset_cert().get_key();
-                auto r = asset_certs.insert(key);
-                if (r.second == false) {
-                    log::debug(LOG_BLOCKCHAIN)
-                        << "check_block cert " + output.get_asset_cert_symbol()
-                        << " with type " << output.get_asset_cert_type()
-                        << " already exists in block!"
-                        << " " << tx.to_string(1);
-                    ec = error::asset_cert_exist;
-                    break;
-                }
-            }
-            else if (output.is_asset_mit()) {
-                auto r = asset_mits.insert(output.get_asset_symbol());
-                if (r.second == false) {
-                    log::debug(LOG_BLOCKCHAIN)
-                        << "check_block mit " + output.get_asset_symbol()
-                        << " already exists in block!"
-                        << " " << tx.to_string(1);
-                    ec = error::mit_exist;
-                    break;
-                }
-            }
-            else if (output.is_did()) {
-                auto didexist = dids.insert(output.get_did_symbol());
-                if (didexist.second == false) {
-                    log::debug(LOG_BLOCKCHAIN)
-                        << "check_block did " + output.get_did_symbol()
-                        << " already exists in block!"
-                        << " " << tx.to_string(1);
-                    ec = error::did_exist;
-                    break;
-                }
-
-                auto didaddress = didaddreses.insert(output.get_did_address());
-                if (didaddress.second == false ) {
-                    log::debug(LOG_BLOCKCHAIN)
-                        << "check_block did " + output.get_did_address()
-                        << " address_registered_did!"
-                        << " " << tx.to_string(1);
-                    ec = error::address_registered_did;
-                    break;
-                }
-            }
-        }
-
-        if (ec) {
-            if (!first_tx_ec) {
-                first_tx_ec = ec;
-            }
-            chain.pool().delete_tx(tx.hash());
-        }
-    }
-
-    if (first_tx_ec) {
-        return first_tx_ec;
-    }
-
-    RETURN_IF_STOPPED();
-
     if (!is_distinct_tx_set(transactions))
     {
         log::warning(LOG_BLOCKCHAIN) << "is_distinct_tx_set!!!";
@@ -673,6 +583,96 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
                 return error::mst_coinbase_too_large;
             }
         }
+    }
+
+    RETURN_IF_STOPPED();
+
+    std::set<string> assets;
+    std::set<string> asset_certs;
+    std::set<string> asset_mits;
+    std::set<string> dids;
+    std::set<string> didaddreses;
+    code first_tx_ec = error::success;
+    for (const auto& tx : transactions)
+    {
+        RETURN_IF_STOPPED();
+
+        const auto validate_tx = std::make_shared<validate_transaction>(chain, tx, *this);
+        auto ec = validate_tx->check_transaction();
+        if (!ec) {
+            ec = validate_tx->check_transaction_connect_input(current_block_.header.number);
+        }
+
+        for (uint64_t i = 0; (!ec) && (i < tx.outputs.size()); ++i) {
+            const auto& output = tx.outputs[i];
+            if (output.is_asset_issue()) {
+                auto r = assets.insert(output.get_asset_symbol());
+                if (r.second == false) {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << "check_block asset " + output.get_asset_symbol()
+                        << " already exists in block!"
+                        << " " << tx.to_string(1);
+                    ec = error::asset_exist;
+                    break;
+                }
+            }
+            else if (output.is_asset_cert()) {
+                auto&& key = output.get_asset_cert().get_key();
+                auto r = asset_certs.insert(key);
+                if (r.second == false) {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << "check_block cert " + output.get_asset_cert_symbol()
+                        << " with type " << output.get_asset_cert_type()
+                        << " already exists in block!"
+                        << " " << tx.to_string(1);
+                    ec = error::asset_cert_exist;
+                    break;
+                }
+            }
+            else if (output.is_asset_mit()) {
+                auto r = asset_mits.insert(output.get_asset_symbol());
+                if (r.second == false) {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << "check_block mit " + output.get_asset_symbol()
+                        << " already exists in block!"
+                        << " " << tx.to_string(1);
+                    ec = error::mit_exist;
+                    break;
+                }
+            }
+            else if (output.is_did()) {
+                auto didexist = dids.insert(output.get_did_symbol());
+                if (didexist.second == false) {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << "check_block did " + output.get_did_symbol()
+                        << " already exists in block!"
+                        << " " << tx.to_string(1);
+                    ec = error::did_exist;
+                    break;
+                }
+
+                auto didaddress = didaddreses.insert(output.get_did_address());
+                if (didaddress.second == false ) {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << "check_block did " + output.get_did_address()
+                        << " address_registered_did!"
+                        << " " << tx.to_string(1);
+                    ec = error::address_registered_did;
+                    break;
+                }
+            }
+        }
+
+        if (ec) {
+            if (!first_tx_ec) {
+                first_tx_ec = ec;
+            }
+            chain.pool().delete_tx(tx.hash());
+        }
+    }
+
+    if (first_tx_ec) {
+        return first_tx_ec;
     }
 
     return error::success;
