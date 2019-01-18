@@ -255,9 +255,9 @@ u256 HeaderAux::calculate_difficulty_v2(
     if (current.transaction_count > 0) {
         log::info("difficulty")
             << "{ \"block_type\" : \"" << chain::get_block_version(current) << "\""
-            << ", \"last_interval\" : " << interval << "\""
-            << ", \"current_height\" : " << current.number << "\""
-            << ", \"difficulty\" : " << result << "\" }";
+            << ", \"last_interval\" : " << interval
+            << ", \"current_height\" : " << current.number
+            << ", \"difficulty\" : " << result << " }";
     }
 
     // Retarget
