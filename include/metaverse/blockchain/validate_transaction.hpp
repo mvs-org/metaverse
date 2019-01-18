@@ -69,11 +69,11 @@ public:
     code check_secondaryissue_transaction() const;
     code check_asset_mit_transaction() const;
     code check_did_transaction() const;
-    bool connect_did_input(const did& info) const;
+    bool connect_did_input(const chain::did& info) const;
     bool is_did_match_address_in_orphan_chain(const std::string& symbol, const std::string& address) const;
     bool is_did_in_orphan_chain(const std::string& did) const;
-    code check_attachment_to_did(const output& output) const;
-    code connect_attachment_from_did(const output& output) const;
+    code check_attachment_to_did(const chain::output& output) const;
+    code connect_attachment_from_did(const chain::output& output) const;
 
     bool connect_input(const chain::transaction& previous_tx, uint64_t parent_height);
 
@@ -81,21 +81,21 @@ public:
         const chain::transaction& tx, uint64_t value_in, uint64_t& fees, bool is_coinstake = false);
     static bool check_special_fees(bool is_testnet, const chain::transaction& tx, uint64_t fees);
 
-    bool check_asset_amount(const transaction& tx) const;
-    bool check_asset_symbol(const transaction& tx) const;
-    bool check_asset_certs(const transaction& tx) const;
-    bool check_asset_mit(const transaction& tx) const;
+    bool check_asset_amount(const chain::transaction& tx) const;
+    bool check_asset_symbol(const chain::transaction& tx) const;
+    bool check_asset_certs(const chain::transaction& tx) const;
+    bool check_asset_mit(const chain::transaction& tx) const;
     bool check_address_registered_did(const std::string& address) const;
 
     //check input did match output did
-    bool check_did_symbol_match(const transaction& tx) const;
+    bool check_did_symbol_match(const chain::transaction& tx) const;
 
     static bool is_nova_feature_activated(block_chain_impl& chain);
 
     bool get_previous_tx(chain::transaction& prev_tx, uint64_t& prev_height, const chain::input&) const;
 
-    transaction& get_tx();
-    const transaction& get_tx() const;
+    chain::transaction& get_tx();
+    const chain::transaction& get_tx() const;
     block_chain_impl& get_blockchain();
     const block_chain_impl& get_blockchain() const;
     const validate_block* get_validate_block() const;
@@ -127,7 +127,7 @@ private:
     code check_tx_connect_input() const;
     bool check_did_exist(const std::string& did) const;
     bool check_asset_exist(const std::string& symbol) const;
-    bool check_asset_cert_exist(const std::string& cert, asset_cert_type cert_type) const;
+    bool check_asset_cert_exist(const std::string& cert, chain::asset_cert_type cert_type) const;
     bool check_asset_mit_exist(const std::string& mit) const;
 
     block_chain_impl& blockchain_;
@@ -140,7 +140,7 @@ private:
     uint64_t last_block_height_;
     uint64_t value_in_;
     uint64_t asset_amount_in_;
-    std::vector<asset_cert_type> asset_certs_in_;
+    std::vector<chain::asset_cert_type> asset_certs_in_;
     std::string old_symbol_in_; // used for check same asset/did/mit symbol in previous outputs
     std::string old_cert_symbol_in_; // used for check same cert symbol in previous outputs
     uint32_t current_input_;

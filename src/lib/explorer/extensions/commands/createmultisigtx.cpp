@@ -55,7 +55,7 @@ console_result createmultisigtx::invoke(
         throw multisig_notfound_exception{"multisig of from address not found."};
     }
 
-    account_multisig acc_multisig = *(multisig_vec->begin());
+    auto acc_multisig = *(multisig_vec->begin());
 
     // check to address
     if (!blockchain.is_valid_address(argument_.to)) {
@@ -68,14 +68,14 @@ console_result createmultisigtx::invoke(
     auto type = static_cast<utxo_attach_type>(option_.type);
     switch (type) {
         case utxo_attach_type::etp: {
-            receiver.push_back({argument_.to, "", argument_.amount, 0, type, attachment()});
+            receiver.push_back({argument_.to, "", argument_.amount, 0, type, chain::attachment()});
             break;
         }
 
         case utxo_attach_type::asset_transfer: {
             blockchain.uppercase_symbol(option_.symbol);
             check_asset_symbol(option_.symbol);
-            receiver.push_back({argument_.to, option_.symbol, 0, argument_.amount, type, attachment()});
+            receiver.push_back({argument_.to, option_.symbol, 0, argument_.amount, type, chain::attachment()});
             break;
         }
 

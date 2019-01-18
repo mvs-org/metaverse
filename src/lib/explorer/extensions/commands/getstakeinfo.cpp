@@ -19,52 +19,35 @@
  */
 
 #include <metaverse/explorer/json_helper.hpp>
-#include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/commands/getaccount.hpp>
+#include <metaverse/explorer/extensions/commands/getstakeinfo.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/base_helper.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-using namespace bc::explorer::config;
-using namespace bc::chain;
 
-/************************ getaccount *************************/
+/************************ getstakeinfo *************************/
 
-console_result getaccount::invoke(Json::Value& jv_output,
-                                  libbitcoin::server::server_node& node)
+console_result getstakeinfo::invoke(Json::Value& jv_output,
+                                     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    auto&& address = get_address(argument_.address, blockchain);
 
-    //auto&& mnemonic = acc->get_mnemonic(auth_.auth);
-    std::string&& mnemonic = blockchain.is_account_lastwd_valid(*acc, auth_.auth, argument_.last_word);
+    wallet::payment_address waddr(address);
 
-    auto& root = jv_output;
+    uint64_t last_height = 0;
+    blockchain.get_last_height(last_height);
 
-    if (get_api_version() == 1) {
-        root["name"] = acc->get_name();
-        root["mnemonic-key"] = mnemonic;
-        root["address-count"] += acc->get_hd_index() + 1;
-        root["user-status"] += (uint8_t)account_status::normal;
-    }
-    else if (get_api_version() == 2) {
-        root["name"] = acc->get_name();
-        root["mnemonic-key"] = mnemonic;
-        root["address-count"] = acc->get_hd_index() + 1;
-        root["user-status"] = (uint8_t)account_status::normal;
-    }
-    else {
-        root["name"] = acc->get_name();
-        root["mnemonic"] = mnemonic;
-        root["address_count"] = acc->get_hd_index() + 1;
-    }
+    auto stake_utxo_count = blockchain.select_utxo_for_staking(last_height, waddr);
+    jv_output["address"] = address;
+    jv_output["stake_utxo_count"] = stake_utxo_count;
 
     return console_result::okay;
 }
-
 
 } // namespace commands
 } // namespace explorer

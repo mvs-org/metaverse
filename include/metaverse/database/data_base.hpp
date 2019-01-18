@@ -203,63 +203,63 @@ public:
 
     /* begin store asset info into  database */
 
-    void push_attachment(const attachment& attach, const wallet::payment_address& address,
-            const output_point& outpoint, uint32_t output_height, uint64_t value);
+    void push_attachment(const chain::attachment& attach, const wallet::payment_address& address,
+            const chain::output_point& outpoint, uint32_t output_height, uint64_t value);
 
-    void push_etp(const etp& etp, const short_hash& key,
-            const output_point& outpoint, uint32_t output_height, uint64_t value);
+    void push_etp(const chain::etp& etp, const short_hash& key,
+            const chain::output_point& outpoint, uint32_t output_height, uint64_t value);
 
-    void push_etp_award(const etp_award& etp, const short_hash& key,
-            const output_point& outpoint, uint32_t output_height, uint64_t value);
+    void push_etp_award(const chain::etp_award& etp, const short_hash& key,
+            const chain::output_point& outpoint, uint32_t output_height, uint64_t value);
 
     void push_message(const chain::blockchain_message& msg, const short_hash& key,
-            const output_point& outpoint, uint32_t output_height, uint64_t value);
+            const chain::output_point& outpoint, uint32_t output_height, uint64_t value);
 
-    void push_asset(const asset& sp, const short_hash& key,
-                const output_point& outpoint, uint32_t output_height, uint64_t value);
+    void push_asset(const chain::asset& sp, const short_hash& key,
+                const chain::output_point& outpoint, uint32_t output_height, uint64_t value);
 
-    void push_asset_cert(const asset_cert& sp_cert, const short_hash& key,
-                const output_point& outpoint, uint32_t output_height, uint64_t value);
+    void push_asset_cert(const chain::asset_cert& sp_cert, const short_hash& key,
+                const chain::output_point& outpoint, uint32_t output_height, uint64_t value);
 
-    void push_asset_detail(const asset_detail& sp_detail, const short_hash& key,
-                const output_point& outpoint, uint32_t output_height, uint64_t value);
+    void push_asset_detail(const chain::asset_detail& sp_detail, const short_hash& key,
+                const chain::output_point& outpoint, uint32_t output_height, uint64_t value);
 
-    void push_asset_transfer(const asset_transfer& sp_transfer, const short_hash& key,
-                const output_point& outpoint, uint32_t output_height, uint64_t value);
+    void push_asset_transfer(const chain::asset_transfer& sp_transfer, const short_hash& key,
+                const chain::output_point& outpoint, uint32_t output_height, uint64_t value);
 
-    void push_did(const did& sp, const short_hash& key,
-                const output_point& outpoint, uint32_t output_height, uint64_t value);
+    void push_did(const chain::did& sp, const short_hash& key,
+                const chain::output_point& outpoint, uint32_t output_height, uint64_t value);
 
-    void push_did_detail(const did_detail& sp_detail, const short_hash& key,
-                const output_point& outpoint, uint32_t output_height, uint64_t value);
+    void push_did_detail(const chain::did_detail& sp_detail, const short_hash& key,
+                const chain::output_point& outpoint, uint32_t output_height, uint64_t value);
 
-    void push_mit(const asset_mit& mit, const short_hash& key,
-                const output_point& outpoint, uint32_t output_height, uint64_t value,
+    void push_mit(const chain::asset_mit& mit, const short_hash& key,
+                const chain::output_point& outpoint, uint32_t output_height, uint64_t value,
                 const std::string from_did, std::string to_did);
 
    class attachment_visitor : public boost::static_visitor<void>
     {
     public:
-        attachment_visitor(data_base* db, const short_hash& sh_hash,  const output_point& outpoint,
+        attachment_visitor(data_base* db, const short_hash& sh_hash,  const chain::output_point& outpoint,
             uint32_t output_height, uint64_t value, const std::string from_did, std::string to_did):
             db_(db), sh_hash_(sh_hash), outpoint_(outpoint), output_height_(output_height), value_(value),
             from_did_(from_did), to_did_(to_did)
         {
 
         }
-        void operator()(const asset &t) const
+        void operator()(const chain::asset &t) const
         {
             return db_->push_asset(t, sh_hash_, outpoint_, output_height_, value_);
         }
-        void operator()(const asset_cert &t) const
+        void operator()(const chain::asset_cert &t) const
         {
             return db_->push_asset_cert(t, sh_hash_, outpoint_, output_height_, value_);
         }
-        void operator()(const etp &t) const
+        void operator()(const chain::etp &t) const
         {
             return db_->push_etp(t, sh_hash_, outpoint_, output_height_, value_);
         }
-        void operator()(const etp_award &t) const
+        void operator()(const chain::etp_award &t) const
         {
             return db_->push_etp_award(t, sh_hash_, outpoint_, output_height_, value_);
         }
@@ -267,18 +267,18 @@ public:
         {
             return db_->push_message(t, sh_hash_, outpoint_, output_height_, value_);
         }
-        void operator()(const did &t) const
+        void operator()(const chain::did &t) const
         {
             return db_->push_did(t, sh_hash_, outpoint_, output_height_, value_);
         }
-        void operator()(const asset_mit &t) const
+        void operator()(const chain::asset_mit &t) const
         {
             return db_->push_mit(t, sh_hash_, outpoint_, output_height_, value_, from_did_, to_did_);
         }
     private:
         data_base* db_;
         short_hash sh_hash_;
-        output_point outpoint_;
+        chain::output_point outpoint_;
         uint32_t output_height_;
         uint64_t value_;
         std::string from_did_;
@@ -289,23 +289,23 @@ public:
     {
     public:
         asset_visitor(data_base* db, const short_hash& key,
-            const output_point& outpoint, uint32_t output_height, uint64_t value):
+            const chain::output_point& outpoint, uint32_t output_height, uint64_t value):
             db_(db), key_(key), outpoint_(outpoint), output_height_(output_height), value_(value)
         {
 
         }
-        void operator()(const asset_detail &t) const
+        void operator()(const chain::asset_detail &t) const
         {
             return db_->push_asset_detail(t, key_, outpoint_, output_height_, value_);
         }
-        void operator()(const asset_transfer &t) const
+        void operator()(const chain::asset_transfer &t) const
         {
              return db_->push_asset_transfer(t, key_, outpoint_, output_height_, value_);
         }
     private:
         data_base* db_;
         short_hash key_;
-        output_point outpoint_;
+        chain::output_point outpoint_;
         uint32_t output_height_;
         uint64_t value_;
     };

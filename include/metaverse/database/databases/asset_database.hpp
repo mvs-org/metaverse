@@ -50,10 +50,10 @@ public:
     /// get asset info by symbol hash
     asset_result get_asset_result(const hash_digest& hash) const;
     /// get all assets in the blockchain
-    std::shared_ptr<std::vector<asset_detail>> get_asset_details() const;
+    std::shared_ptr<std::vector<chain::asset_detail>> get_asset_details() const;
     /// Store a asset in the database. Returns a unique index
     /// which can be used to reference the asset.
-    void store(const hash_digest& hash, const asset_detail& sp_detail);
+    void store(const hash_digest& hash, const chain::asset_detail& sp_detail);
 };
 
 } // namespace database

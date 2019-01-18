@@ -72,6 +72,3 @@ private:
 
 } // namespace chain
 } // namespace libbitcoin
-
-using blockchain_asset = libbitcoin::chain::blockchain_asset;
-

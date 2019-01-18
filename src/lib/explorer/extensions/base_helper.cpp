@@ -341,7 +341,7 @@ std::string get_address(const std::string& did_or_address,
 }
 
 std::string get_address(const std::string& did_or_address,
-    attachment& attach, bool is_from,
+    chain::attachment& attach, bool is_from,
     bc::blockchain::block_chain_impl& blockchain)
 {
     std::string address;
@@ -1233,7 +1233,7 @@ void base_transfer_common::sync_fetchutxo(
             std::string model_param(new_model_param_ptr->begin(), new_model_param_ptr->end());
             receiver_list_.push_back({record.addr, record.symbol,
                                       0, locked_asset, utxo_attach_type::asset_locked_transfer,
-                                      attachment(0, 0, chain::blockchain_message(std::move(model_param))), record.output});
+                                      chain::attachment(0, 0, chain::blockchain_message(std::move(model_param))), record.output});
             // in secondary issue, locked asset can also verify threshold condition
             if (is_locked_asset_as_payment()) {
                 payment_asset_ = (payment_asset_ > locked_asset)
@@ -1416,7 +1416,7 @@ void base_transfer_common::populate_etp_change(const std::string& address)
 
         if (blockchain_.is_valid_address(addr)) {
             receiver_list_.push_back(
-                {addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+                {addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, chain::attachment()});
         }
         else {
             if (addr.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
@@ -1430,7 +1430,7 @@ void base_transfer_common::populate_etp_change(const std::string& address)
                     "mychange did symbol " + addr + "does not exist on the blockchain"};
             }
 
-            attachment attach;
+            chain::attachment attach;
             attach.set_version(DID_ATTACH_VERIFY_VERSION);
             attach.set_to_did(addr);
             receiver_list_.push_back(
@@ -1451,7 +1451,7 @@ void base_transfer_common::populate_asset_change(const std::string& address)
 
         if (blockchain_.is_valid_address(addr)) {
             receiver_list_.push_back({addr, symbol_, 0, unspent_asset_ - payment_asset_,
-                utxo_attach_type::asset_transfer, attachment()});
+                utxo_attach_type::asset_transfer, chain::attachment()});
         }
         else {
             if (addr.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
@@ -1465,7 +1465,7 @@ void base_transfer_common::populate_asset_change(const std::string& address)
                     "mychange did symbol " + addr + "does not exist on the blockchain"};
             }
 
-            attachment attach;
+            chain::attachment attach;
             attach.set_version(DID_ATTACH_VERIFY_VERSION);
             attach.set_to_did(addr);
             receiver_list_.push_back({diddetail->get_address(), symbol_, 0, unspent_asset_ - payment_asset_,
@@ -1606,7 +1606,7 @@ void base_transfer_common::populate_tx_inputs()
     }
 }
 
-void base_transfer_common::set_did_verify_attachment(const receiver_record& record, attachment& attach)
+void base_transfer_common::set_did_verify_attachment(const receiver_record& record, chain::attachment& attach)
 {
     if (record.attach_elem.get_version() == DID_ATTACH_VERIFY_VERSION) {
         attach.set_version(DID_ATTACH_VERIFY_VERSION);
@@ -1615,17 +1615,17 @@ void base_transfer_common::set_did_verify_attachment(const receiver_record& reco
     }
 }
 
-attachment base_transfer_common::populate_output_attachment(const receiver_record& record)
+chain::attachment base_transfer_common::populate_output_attachment(const receiver_record& record)
 {
     if ((record.type == utxo_attach_type::etp)
         || (record.type == utxo_attach_type::deposit)
         || ((record.type == utxo_attach_type::asset_transfer)
             && ((record.amount > 0) && (!record.asset_amount)))) { // etp
-        return attachment(ETP_TYPE, ATTACH_INIT_VERSION, chain::etp(record.amount));
+        return chain::attachment(ETP_TYPE, ATTACH_INIT_VERSION, chain::etp(record.amount));
     }
     else if (record.type == utxo_attach_type::asset_issue
         || record.type == utxo_attach_type::asset_secondaryissue) {
-        return attachment(ASSET_TYPE, ATTACH_INIT_VERSION, asset(/*set on subclass*/));
+        return chain::attachment(ASSET_TYPE, ATTACH_INIT_VERSION, asset(/*set on subclass*/));
     }
     else if (record.type == utxo_attach_type::asset_transfer
             || record.type == utxo_attach_type::asset_locked_transfer
@@ -1635,7 +1635,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!ass.is_valid()) {
             throw tx_attachment_value_exception{"invalid asset transfer attachment"};
         }
-        return attachment(ASSET_TYPE, ATTACH_INIT_VERSION, ass);
+        return chain::attachment(ASSET_TYPE, ATTACH_INIT_VERSION, ass);
     }
     else if (record.type == utxo_attach_type::message) {
         auto msg = boost::get<blockchain_message>(record.attach_elem.get_attach());
@@ -1645,7 +1645,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!msg.is_valid()) {
             throw tx_attachment_value_exception{"invalid message attachment"};
         }
-        return attachment(MESSAGE_TYPE, ATTACH_INIT_VERSION, msg);
+        return chain::attachment(MESSAGE_TYPE, ATTACH_INIT_VERSION, msg);
     }
     else if (record.type == utxo_attach_type::did_register) {
         did_detail diddetail(symbol_, record.target);
@@ -1653,7 +1653,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!ass.is_valid()) {
             throw tx_attachment_value_exception{"invalid did register attachment"};
         }
-        return attachment(DID_TYPE, ATTACH_INIT_VERSION, ass);
+        return chain::attachment(DID_TYPE, ATTACH_INIT_VERSION, ass);
     }
     else if (record.type == utxo_attach_type::did_transfer) {
         auto sh_did = blockchain_.get_registered_did(symbol_);
@@ -1665,7 +1665,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!ass.is_valid()) {
             throw tx_attachment_value_exception{"invalid did transfer attachment"};
         }
-        return attachment(DID_TYPE, ATTACH_INIT_VERSION, ass);
+        return chain::attachment(DID_TYPE, ATTACH_INIT_VERSION, ass);
     }
     else if (record.type == utxo_attach_type::asset_cert
         || record.type == utxo_attach_type::asset_cert_autoissue
@@ -1695,11 +1695,11 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!cert_info.is_valid()) {
             throw tx_attachment_value_exception{"invalid cert attachment"};
         }
-        return attachment(ASSET_CERT_TYPE, ATTACH_INIT_VERSION, cert_info);
+        return chain::attachment(ASSET_CERT_TYPE, ATTACH_INIT_VERSION, cert_info);
     }
     else if (record.type == utxo_attach_type::asset_mit
         || record.type == utxo_attach_type::asset_mit_transfer) {
-        return attachment(ASSET_MIT_TYPE, ATTACH_INIT_VERSION, asset_mit(/*set on subclass*/));
+        return chain::attachment(ASSET_MIT_TYPE, ATTACH_INIT_VERSION, asset_mit(/*set on subclass*/));
     }
 
     throw tx_attachment_value_exception{
@@ -1970,7 +1970,7 @@ void base_transaction_constructor::populate_change()
         auto addr = !mychange_.empty() ? mychange_ : from_list_.begin()->addr;
         receiver_list_.push_back({addr, "", 0, 0,
             utxo_attach_type::message,
-            attachment(0, 0, chain::blockchain_message(message_))});
+            chain::attachment(0, 0, chain::blockchain_message(message_))});
     }
 }
 
@@ -2059,7 +2059,7 @@ void issuing_asset::sum_payment_amount()
     if (amount > 0) {
         auto&& address = bc::get_developer_community_address(blockchain_.chain_settings().use_testnet_rules);
         auto&& did = blockchain_.get_did_from_address(address);
-        receiver_list_.push_back({address, "", amount, 0, utxo_attach_type::etp, attachment("", did)});
+        receiver_list_.push_back({address, "", amount, 0, utxo_attach_type::etp, chain::attachment("", did)});
     }
 }
 
@@ -2074,9 +2074,9 @@ issuing_asset::get_script_operations(const receiver_record& record) const
     return base_transfer_helper::get_script_operations(record);
 }
 
-attachment issuing_asset::populate_output_attachment(const receiver_record& record)
+chain::attachment issuing_asset::populate_output_attachment(const receiver_record& record)
 {
-    attachment&& attach = base_transfer_common::populate_output_attachment(record);
+    chain::attachment&& attach = base_transfer_common::populate_output_attachment(record);
 
     if (record.type == utxo_attach_type::asset_issue) {
         unissued_asset_->set_address(record.target);
@@ -2119,7 +2119,7 @@ void sending_asset::populate_change()
         auto addr = !mychange_.empty() ? mychange_ : from_list_.begin()->addr;
         receiver_list_.push_back({addr, "", 0, 0,
             utxo_attach_type::message,
-            attachment(0, 0, chain::blockchain_message(message_))});
+            chain::attachment(0, 0, chain::blockchain_message(message_))});
     }
 }
 
@@ -2184,12 +2184,12 @@ void secondary_issuing_asset::populate_change()
     if (payment_asset_ > 0) {
         receiver_list_.push_back({target_address_, symbol_,
             0, payment_asset_,
-            utxo_attach_type::asset_transfer, attachment()});
+            utxo_attach_type::asset_transfer, chain::attachment()});
     }
     populate_asset_change(target_address_);
 }
 
-attachment secondary_issuing_asset::populate_output_attachment(const receiver_record& record)
+chain::attachment secondary_issuing_asset::populate_output_attachment(const receiver_record& record)
 {
     auto&& attach = base_transfer_common::populate_output_attachment(record);
 
@@ -2246,7 +2246,7 @@ void registering_did::sum_payment_amount()
     if (amount > 0) {
         auto&& address = bc::get_developer_community_address(blockchain_.chain_settings().use_testnet_rules);
         auto&& did = blockchain_.get_did_from_address(address);
-        receiver_list_.push_back({address, "", amount, 0, utxo_attach_type::etp, attachment("", did)});
+        receiver_list_.push_back({address, "", amount, 0, utxo_attach_type::etp, chain::attachment("", did)});
     }
 }
 
@@ -2370,7 +2370,7 @@ void sending_did::populate_unspent_list()
     populate_change();
 }
 
-attachment registering_mit::populate_output_attachment(const receiver_record& record)
+chain::attachment registering_mit::populate_output_attachment(const receiver_record& record)
 {
     auto&& attach = base_transfer_common::populate_output_attachment(record);
 
@@ -2392,7 +2392,7 @@ attachment registering_mit::populate_output_attachment(const receiver_record& re
     return attach;
 }
 
-attachment transferring_mit::populate_output_attachment(const receiver_record& record)
+chain::attachment transferring_mit::populate_output_attachment(const receiver_record& record)
 {
     auto&& attach = base_transfer_common::populate_output_attachment(record);
 

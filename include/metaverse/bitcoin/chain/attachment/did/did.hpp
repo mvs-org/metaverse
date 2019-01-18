@@ -37,12 +37,11 @@ namespace chain {
 class did;
 }
 }
-using did = libbitcoin::chain::did;
 
-#define DID_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<did::did_status>::type>(kd))
+#define DID_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<bc::chain::did::did_status>::type>(kd))
 
-#define DID_DETAIL_TYPE DID_STATUS2UINT32(did::did_status::did_locked)
-#define DID_TRANSFERABLE_TYPE DID_STATUS2UINT32(did::did_status::did_transferable)
+#define DID_DETAIL_TYPE DID_STATUS2UINT32(bc::chain::did::did_status::did_locked)
+#define DID_TRANSFERABLE_TYPE DID_STATUS2UINT32(bc::chain::did::did_status::did_transferable)
 
 namespace libbitcoin {
 namespace chain {

@@ -112,14 +112,14 @@ void blockchain_asset_cert_database::sync()
     lookup_manager_.sync();
 }
 
-std::shared_ptr<asset_cert> blockchain_asset_cert_database::get(const hash_digest& hash) const
+std::shared_ptr<chain::asset_cert> blockchain_asset_cert_database::get(const hash_digest& hash) const
 {
-    std::shared_ptr<asset_cert> detail(nullptr);
+    std::shared_ptr<chain::asset_cert> detail(nullptr);
 
     const auto raw_memory = lookup_map_.find(hash);
     if(raw_memory) {
         const auto memory = REMAP_ADDRESS(raw_memory);
-        detail = std::make_shared<asset_cert>();
+        detail = std::make_shared<chain::asset_cert>();
         auto deserial = make_deserializer_unsafe(memory);
         detail->from_data(deserial);
     }
@@ -127,9 +127,9 @@ std::shared_ptr<asset_cert> blockchain_asset_cert_database::get(const hash_diges
     return detail;
 }
 
-std::shared_ptr<std::vector<asset_cert>> blockchain_asset_cert_database::get_blockchain_asset_certs() const
+std::shared_ptr<std::vector<chain::asset_cert>> blockchain_asset_cert_database::get_blockchain_asset_certs() const
 {
-    auto vec_acc = std::make_shared<std::vector<asset_cert>>();
+    auto vec_acc = std::make_shared<std::vector<chain::asset_cert>>();
     for( uint64_t i = 0; i < number_buckets; i++ ) {
         auto memo = lookup_map_.find(i);
         if (memo->size()) {
@@ -137,7 +137,7 @@ std::shared_ptr<std::vector<asset_cert>> blockchain_asset_cert_database::get_blo
             {
                 const auto memory = REMAP_ADDRESS(elem);
                 auto deserial = make_deserializer_unsafe(memory);
-                vec_acc->push_back(asset_cert::factory_from_data(deserial));
+                vec_acc->push_back(chain::asset_cert::factory_from_data(deserial));
             };
             std::for_each(memo->begin(), memo->end(), action);
         }
@@ -146,7 +146,7 @@ std::shared_ptr<std::vector<asset_cert>> blockchain_asset_cert_database::get_blo
 }
 
 
-void blockchain_asset_cert_database::store(const asset_cert& sp_cert)
+void blockchain_asset_cert_database::store(const chain::asset_cert& sp_cert)
 {
     auto&& key_str = sp_cert.get_key();
     const data_chunk& data = data_chunk(key_str.begin(), key_str.end());

@@ -21,6 +21,8 @@
 
 #pragma once
 #include <metaverse/explorer/define.hpp>
+#include <metaverse/explorer/extensions/command_extension.hpp>
+#include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 
 namespace libbitcoin {
@@ -28,15 +30,15 @@ namespace explorer {
 namespace commands {
 
 
-/************************ getlocked *************************/
+/************************ getstakeinfo *************************/
 
-class getlocked: public command_extension
+class getstakeinfo: public command_extension
 {
 public:
-    static const char* symbol(){ return "getlocked";}
+    static const char* symbol(){ return "getstakeinfo";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "Get any valid target address ETP balance."; }
+    const char* description() override { return "getstakeinfo "; }
 
     arguments_metadata& load_arguments() override
     {
@@ -64,27 +66,7 @@ public:
         (
             "ADDRESS",
             value<std::string>(&argument_.address)->required(),
-            "did/address"
-        )
-        (
-            "expiration,e",
-            value<uint64_t>(&option_.expiration)->default_value(0),
-            "expiration height, should be still locked at this height."
-        )
-        (
-            "symbol,s",
-            value<std::string>(&option_.asset_symbol)->default_value(DEFAULT_INVALID_ASSET_SYMBOL),
-            "asset symbol"
-        )
-        (
-            "stake,k",
-            value<bool>(&option_.dpos_stake)->default_value(false)->zero_tokens(),
-            "If specified, then sum effective locked values for DPoS stake. Defaults to false."
-        )
-        (
-            "range,r",
-            value<colon_delimited2_item<uint64_t, uint64_t>>(&option_.range),
-            "Pick locked value between this range [begin:end)."
+            "did/address."
         );
 
         return options;
@@ -95,7 +77,7 @@ public:
     }
 
     console_result invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node) override;
+             libbitcoin::server::server_node& node) override;
 
     struct argument
     {
@@ -104,15 +86,9 @@ public:
 
     struct option
     {
-        std::string asset_symbol;
-        uint64_t expiration;
-        colon_delimited2_item<uint64_t, uint64_t> range = {0, 0};
-        bool dpos_stake;
     } option_;
 
 };
-
-
 
 
 } // namespace commands

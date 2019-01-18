@@ -65,7 +65,7 @@ console_result getasset::invoke(Json::Value& jv_output,
             }
         }
         else {
-            auto result_vec = std::make_shared<asset_cert::list>();
+            auto result_vec = std::make_shared<chain::asset_cert::list>();
             for (auto& cert : *sh_vec) {
                 if (argument_.symbol != cert.get_symbol()) {
                     continue;

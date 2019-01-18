@@ -342,7 +342,7 @@ Json::Value json_helper::prop_attenuation_model_param(const std::string& param_s
         if (vec.size() == 2) {
             auto& key = vec[0];
             auto& value = vec[1];
-            if (attenuation_model::is_multi_value_key(key)) {
+            if (chain::attenuation_model::is_multi_value_key(key)) {
                 try {
                     if (key == "UC") {
                         auto&& str_vec = bc::split(value, ",", true);
@@ -364,7 +364,7 @@ Json::Value json_helper::prop_attenuation_model_param(const std::string& param_s
             }
             else {
                 uint64_t num = std::stoull(value);
-                auto display_key = attenuation_model::get_name_of_key(key);
+                auto display_key = chain::attenuation_model::get_name_of_key(key);
                 tree[display_key] = num;
             }
         }
@@ -998,7 +998,7 @@ Json::Value json_helper::prop_tree(const bitcoin_uri& uri)
 //block
 
 
-Json::Value json_helper::prop_tree(const block& block, bool json, bool tx_json)
+Json::Value json_helper::prop_tree(const chain::block& block, bool json, bool tx_json)
 {
     Json::Value tree;
 

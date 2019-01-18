@@ -68,7 +68,7 @@ console_result swapmit::invoke(Json::Value& jv_output,
     std::string from_address(mit.get_address());
     bool is_multisig_address = blockchain.is_script_address(from_address);
 
-    account_multisig acc_multisig;
+    chain::account_multisig acc_multisig;
     if (is_multisig_address) {
         auto multisig_vec = acc->get_multisig(from_address);
         if (!multisig_vec || multisig_vec->empty()) {
@@ -90,12 +90,12 @@ console_result swapmit::invoke(Json::Value& jv_output,
     std::vector<receiver_record> receiver{
         {
             to_address, argument_.symbol, 0, 0, 0,
-            utxo_attach_type::asset_mit_transfer, attachment("", to_did)
+            utxo_attach_type::asset_mit_transfer, chain::attachment("", to_did)
         },
 
         {
             swapfee_address, "", option_.swapfee, 0,
-            utxo_attach_type::etp, attachment()
+            utxo_attach_type::etp, chain::attachment()
         }
     };
 
@@ -105,7 +105,7 @@ console_result swapmit::invoke(Json::Value& jv_output,
 
         receiver.push_back({
             to_address, "", 0, 0, utxo_attach_type::message,
-            attachment(0, 0, chain::blockchain_message(option_.memo))
+            chain::attachment(0, 0, chain::blockchain_message(option_.memo))
         });
     }
 
@@ -113,7 +113,7 @@ console_result swapmit::invoke(Json::Value& jv_output,
     std::string message("{\"type\":\"ETH\",\"address\":\"" + argument_.foreign_addr + "\"}");
     receiver.push_back({
         to_address, "", 0, 0, utxo_attach_type::message,
-        attachment(0, 0, chain::blockchain_message(message))
+        chain::attachment(0, 0, chain::blockchain_message(message))
     });
 
     auto helper = transferring_mit(

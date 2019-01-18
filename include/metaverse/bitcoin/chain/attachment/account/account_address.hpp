@@ -104,9 +104,5 @@ private:
 
 } // namespace chain
 } // namespace libbitcoin
-
-using account_address_status = libbitcoin::chain::account_address_status;
-using account_address = libbitcoin::chain::account_address;
-
 #endif
 

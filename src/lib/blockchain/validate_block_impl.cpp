@@ -335,7 +335,7 @@ std::string validate_block_impl::get_did_from_address_consider_orphan_chain(
             // iter inputs
             for (const auto& input : orphan_tx.inputs) {
                 uint64_t previous_height;
-                transaction previous_tx;
+                chain::transaction previous_tx;
                 const auto& previous_output = input.previous_output;
 
                 // This searches the blockchain and then the orphan pool up to and
@@ -429,7 +429,7 @@ bool validate_block_impl::is_asset_in_orphan_chain(const std::string& symbol) co
     return false;
 }
 
-bool validate_block_impl::is_asset_cert_in_orphan_chain(const std::string& symbol, asset_cert_type cert_type) const
+bool validate_block_impl::is_asset_cert_in_orphan_chain(const std::string& symbol, chain::asset_cert_type cert_type) const
 {
     BITCOIN_ASSERT(!symbol.empty());
 

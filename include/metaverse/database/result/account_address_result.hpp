@@ -38,7 +38,7 @@ public:
     account_address_result(const memory_ptr slab);
 
     /// The account_address.
-    std::shared_ptr<account_address> get_account_address_detail() const;
+    std::shared_ptr<chain::account_address> get_account_address_detail() const;
 };
 
 } // namespace database

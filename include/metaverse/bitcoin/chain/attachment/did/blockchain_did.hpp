@@ -81,6 +81,3 @@ private:
 
 } // namespace chain
 } // namespace libbitcoin
-
-using blockchain_did = libbitcoin::chain::blockchain_did;
-

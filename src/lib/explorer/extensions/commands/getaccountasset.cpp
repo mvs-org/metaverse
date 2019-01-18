@@ -55,12 +55,12 @@ console_result getaccountasset::invoke(Json::Value& jv_output,
     if (option_.is_cert || !option_.cert_type.empty()) { // only get asset certs
         json_key = "assetcerts";
 
-        asset_cert_type cert_type = asset_cert_ns::none;
+        chain::asset_cert_type cert_type = asset_cert_ns::none;
         if (!option_.cert_type.empty()) {
             cert_type = check_cert_type_name(option_.cert_type, true);
         }
 
-        auto sh_vec = std::make_shared<asset_cert::list>();
+        auto sh_vec = std::make_shared<chain::asset_cert::list>();
         for (auto& each : *pvaddr){
             sync_fetch_asset_cert_balance(
                 each.get_address(), argument_.symbol, blockchain, sh_vec, cert_type);
@@ -74,7 +74,7 @@ console_result getaccountasset::invoke(Json::Value& jv_output,
     }
     else if (option_.deposited) {
         json_key = "assets";
-        auto sh_vec = std::make_shared<asset_deposited_balance::list>();
+        auto sh_vec = std::make_shared<chain::asset_deposited_balance::list>();
 
         // get address unspent asset balance
         std::string addr;
@@ -101,7 +101,7 @@ console_result getaccountasset::invoke(Json::Value& jv_output,
     }
     else {
         json_key = "assets";
-        auto sh_vec = std::make_shared<asset_balances::list>();
+        auto sh_vec = std::make_shared<chain::asset_balances::list>();
 
         // 1. get asset in blockchain
         // get address unspent asset balance

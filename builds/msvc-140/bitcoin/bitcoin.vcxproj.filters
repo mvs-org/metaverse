@@ -584,6 +584,9 @@
     <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\vrf_private.cpp">
       <Filter>Source Files\wallet</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\blockchain_cert.cpp">
+      <Filter>Source Files\chain\attachment\asset</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\lib\bitcoin\math\secp256k1_initializer.hpp">
@@ -1161,6 +1164,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\vrf_private.hpp">
       <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\blockchain_cert.hpp">
+      <Filter>Header Files\chain\attachment\asset</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

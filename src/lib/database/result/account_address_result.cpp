@@ -28,9 +28,9 @@ namespace libbitcoin {
 namespace database {
 
 template <typename Iterator>
-std::shared_ptr<account_address> deserialize_account_address_detail(const Iterator first)
+std::shared_ptr<chain::account_address> deserialize_account_address_detail(const Iterator first)
 {
-    auto detail = std::make_shared<account_address>();
+    auto detail = std::make_shared<chain::account_address>();
     auto deserial = make_deserializer_unsafe(first);
     detail->from_data(deserial);
     return detail;
@@ -41,10 +41,10 @@ account_address_result::account_address_result(const memory_ptr slab)
 {
 }
 
-std::shared_ptr<account_address> account_address_result::get_account_address_detail() const
+std::shared_ptr<chain::account_address> account_address_result::get_account_address_detail() const
 {
     //BITCOIN_ASSERT(get_slab());
-    std::shared_ptr<account_address> addr(nullptr);
+    std::shared_ptr<chain::account_address> addr(nullptr);
     if(get_slab())
     {
         const auto memory = REMAP_ADDRESS(get_slab());

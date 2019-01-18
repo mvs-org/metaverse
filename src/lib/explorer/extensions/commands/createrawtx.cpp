@@ -95,7 +95,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
     for ( auto& each : option_.receivers) {
         colon_delimited2_item<std::string, uint64_t> item(each);
 
-        attachment attach;
+        chain::attachment attach;
         auto addr = get_address(item.first(), attach, false, blockchain);
         if (!from_did.empty()) {
             attach.set_from_did(from_did);
@@ -158,8 +158,8 @@ console_result createrawtx::invoke(Json::Value& jv_output,
     }
     }
 
-    history::list utxo_list;
-    std::unordered_map<input_point, uint32_t> utxo_seq_map; //((hash, index), sequence)
+    chain::history::list utxo_list;
+    std::unordered_map<chain::input_point, uint32_t> utxo_seq_map; //((hash, index), sequence)
     for (const std::string utxo : option_.utxos) {
         const auto utxo_stru = bc::split(utxo, ":");
         if ((utxo_stru.size() != 2) && (utxo_stru.size() != 3)) {
@@ -183,7 +183,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
             if ((chain::get_script_context() & chain::script_context::bip112_enabled) == 0) {
                 throw argument_legality_exception{"invalid utxo: " + utxo + ", lock sequence(bip112) is not enabled"};
             }
-            input_point utxo_point(hash, utxo_index);
+            chain::input_point utxo_point(hash, utxo_index);
             if (utxo_seq_map.count(utxo_point)) {
                 throw argument_legality_exception{"duplicate utxo: " + utxo};
             }
@@ -191,7 +191,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
             utxo_seq_map[utxo_point] = utxo_sequence;
         }
 
-        history h;
+        chain::history h;
         h.output.hash = tx.hash();
         h.output.index = utxo_index;
         h.output_height = tx_height;

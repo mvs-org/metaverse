@@ -109,9 +109,5 @@ private:
 } // namespace chain
 } // namespace libbitcoin
 
-using asset_balances = libbitcoin::chain::asset_balances;
-using asset_deposited_balance = libbitcoin::chain::asset_deposited_balance;
-using asset_transfer = libbitcoin::chain::asset_transfer;
-
 #endif
 

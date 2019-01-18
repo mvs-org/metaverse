@@ -57,16 +57,16 @@ void account_database::set_admin(const std::string& name, const std::string& pas
     // create admin account if not exists
     const auto hash = get_hash(name);
     if( nullptr == get(hash)) {
-        account acc;
+        chain::account acc;
         acc.set_name(name);
         acc.set_passwd(passwd);
-        acc.set_priority(account_priority::administrator);
+        acc.set_priority(chain::account_priority::administrator);
         store(acc);
         sync();
     }
 }
 
-void account_database::store(const account& account)
+void account_database::store(const chain::account& account)
 {
     const auto& name = account.get_name();
     const auto hash = get_hash(name);
@@ -122,9 +122,9 @@ void account_database::store(const account& account)
     }
 }
 
-std::shared_ptr<std::vector<account>> account_database::get_accounts() const
+std::shared_ptr<std::vector<chain::account>> account_database::get_accounts() const
 {
-    auto vec_acc = std::make_shared<std::vector<account>>();
+    auto vec_acc = std::make_shared<std::vector<chain::account>>();
     for (size_t i = 0; i < get_bucket_count(); i++ ) {
         auto memo = lookup_map_.find(i);
         if (memo->size()) {
@@ -132,7 +132,7 @@ std::shared_ptr<std::vector<account>> account_database::get_accounts() const
             {
                 const auto memory = REMAP_ADDRESS(elem);
                 auto deserial = make_deserializer_unsafe(memory);
-                vec_acc->push_back(account::factory_from_data(deserial));
+                vec_acc->push_back(chain::account::factory_from_data(deserial));
             };
             std::for_each(memo->begin(), memo->end(), action);
         }

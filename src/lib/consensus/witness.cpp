@@ -55,7 +55,7 @@ uint32_t hash_digest_to_uint(const hash_digest& hash)
     return result;
 };
 
-witness::witness(p2p_node& node)
+witness::witness(node::p2p_node& node)
     : node_(node)
     , setting_(node_.chain_impl().chain_settings())
     , witness_list_()
@@ -68,7 +68,7 @@ witness::~witness()
 {
 }
 
-void witness::init(p2p_node& node)
+void witness::init(node::p2p_node& node)
 {
     static witness s_instance(node);
     instance_ = &s_instance;
@@ -98,7 +98,7 @@ void witness::init(p2p_node& node)
     BITCOIN_ASSERT(register_witness_lock_height >= epoch_cycle_height);
 }
 
-witness& witness::create(p2p_node& node)
+witness& witness::create(node::p2p_node& node)
 {
     static std::once_flag flag;
     std::call_once(flag, &witness::init, std::ref(node));
@@ -764,13 +764,13 @@ bool witness::get_header(chain::header& out_header, uint64_t height) const
     return node_.chain_impl().get_header(out_header, height);
 }
 
-void witness::set_validate_block(const validate_block* validate_block)
+void witness::set_validate_block(const blockchain::validate_block* validate_block)
 {
     validate_block_ = validate_block;
 }
 
 witness_with_validate_block_context::witness_with_validate_block_context(
-    witness& w, const validate_block* v)
+    witness& w, const blockchain::validate_block* v)
     : witness_(w)
 {
     witness_.set_validate_block(v);
