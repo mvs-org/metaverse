@@ -221,7 +221,7 @@ u256 HeaderAux::calculate_difficulty_v2(
         minimumDifficulty = is_testnet ? bigint(300000) : bigint(914572800);
 #ifdef PRIVATE_CHAIN
         minimumDifficulty = bigint(300000);
-        if (current.number < 6000) {
+        if (current.number < 10000) {
             return u256(bigint(10));
         }
 #endif

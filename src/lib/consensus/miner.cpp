@@ -419,7 +419,7 @@ uint64_t miner::calculate_block_subsidy_pow(uint64_t block_height, bool is_testn
     }
 
     double base = rate > 4 ? 2.5 : 3.0;
-    auto target_reward = std::trunc(base * coin_price() * pow(0.95, rate));
+    auto target_reward = std::round(base * coin_price() * pow(0.95, rate));
     return std::min<uint64_t>(target_reward, 3 * coin_price());
 }
 
@@ -428,7 +428,7 @@ uint64_t miner::calculate_block_subsidy_pos(uint64_t block_height, bool is_testn
     auto attenuation = is_testnet ? bucket_size/10 : bucket_size;
     uint32_t rate = block_height / attenuation;
 
-    auto target_reward = std::trunc(0.3 * coin_price() * pow(0.95, rate));
+    auto target_reward = std::round(0.3 * coin_price() * pow(0.95, rate));
     return std::min<uint64_t>(target_reward, 0.3 * coin_price());
 }
 
@@ -487,7 +487,7 @@ uint64_t miner::calculate_mst_subsidy_pow(
     double base = (*params)[chain::asset_cert::key_base];
     uint64_t mst_bucket_size = (*params)[chain::asset_cert::key_interval];
     auto rate = (block_height - asset.get_height()) / mst_bucket_size;
-    auto target_reward = std::trunc(initial_subsidy * pow(base, rate));
+    auto target_reward = std::round(initial_subsidy * pow(base, rate));
     return std::min<uint64_t>(target_reward, max_uint64);
 }
 
@@ -917,14 +917,6 @@ miner::block_ptr miner::create_new_block_pos(
         return nullptr;
     }
 
-    // check utxo stake
-    auto stake_outputs = std::make_shared<chain::output_info::list>();
-    if (0 == block_chain.select_utxo_for_staking(last_height, pay_address, stake_outputs, 1000)) {
-        log::warning(LOG_HEADER) << "no enough pos utxo stake is holded at address " << pay_address;
-        sleep_for_mseconds(10 * 1000);
-        return nullptr;
-    }
-
     // create block
     uint32_t start_time = get_adjust_time(block_height);
     uint32_t block_time = start_time;
@@ -937,7 +929,16 @@ miner::block_ptr miner::create_new_block_pos(
     pblock->header.previous_block_hash = prev_header.hash();
     pblock->header.nonce = 0;
     pblock->header.mixhash = 0;
-    pblock->header.bits = get_next_target_required(pblock->header, prev_header);
+    auto difficulty = get_next_target_required(pblock->header, prev_header);
+    pblock->header.bits = difficulty;
+
+    // check utxo stake
+    auto stake_outputs = std::make_shared<chain::output_info::list>();
+    if (0 == block_chain.select_utxo_for_staking(difficulty, last_height, pay_address, stake_outputs, 1000)) {
+        log::warning(LOG_HEADER) << "no enough pos utxo stake is holded at address " << pay_address;
+        sleep_for_mseconds(10 * 1000);
+        return nullptr;
+    }
 
     // create coinbase tx
     transaction_ptr coinbase = create_coinbase_tx(pay_address, 0, block_height, 0);
@@ -1165,7 +1166,7 @@ miner::transaction_ptr miner::create_coinstake_tx(
     uint64_t nCredit = 0;
     for (const auto& stake: stake_outputs) {
         if (!block_chain.check_pos_utxo_height_and_value(
-            stake.height, pblock->header.number, stake.data.value)) {
+            pblock->header.bits, stake.height, pblock->header.number, stake.data.value)) {
             continue;
         }
 

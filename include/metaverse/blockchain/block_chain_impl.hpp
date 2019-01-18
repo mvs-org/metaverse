@@ -258,21 +258,21 @@ public:
 
     /// select pos utxo. target value
     virtual uint32_t select_utxo_for_staking(
+        const u256& bits,
         uint64_t best_height,
         const wallet::payment_address& pay_addres,
         std::shared_ptr<chain::output_info::list> stake_outputs = nullptr,
         uint32_t max_count = max_uint32) override;
 
-    inline bool check_pos_utxo_height_and_value(
+    bool check_pos_utxo_height_and_value(
+        const u256& bits,
         const uint64_t& out_height,
         const uint64_t& curr_height,
-        const uint64_t& value)
-    {
-        return (value >= pos_stake_min_value) && (out_height + pos_stake_min_height <= curr_height);
-    }
+        const uint64_t& value);
 
     bool check_pos_utxo_capability(
-        const  uint64_t& height,
+        const u256& bits,
+        const uint64_t& height,
         const chain::transaction& tx,
         const uint32_t& out_index ,
         const uint64_t& out_height,
