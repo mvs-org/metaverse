@@ -155,45 +155,31 @@ bool MinerAux::verify_work(const libbitcoin::chain::header& header, const libbit
 
 bool MinerAux::verify_stake(const chain::header& header, const chain::output_info& stake_output)
 {
-    if (header.number + pos_stake_min_height < stake_output.height) {
-        return false;
-    }
+    // Base target
+    h256 boundary = HeaderAux::boundary(header);
+    uint64_t amount = std::max<uint64_t>(1, (stake_output.data.value / coin_price()));
+    uint64_t s = (uint64_t)log2l(amount);
+    uint64_t stake = (s * s * s * pos_stake_factor);
 
-    return MinerAux::check_proof_of_stake(header, stake_output);
-}
+    // Calculate hash
+    u256 pos = HeaderAux::hash_head_pos(header, stake_output);
+    pos /= u256(stake);
 
-bool MinerAux::check_proof_of_stake(const chain::header& header, const chain::output_info& stake_output)
-{
-    bool succeed = false;
-
-    if (stake_output.data.value >= pos_stake_min_value) {
-        // Base target
-        h256 boundary = HeaderAux::boundary(header);
-        uint64_t amount = std::max<uint64_t>(1, (stake_output.data.value / coin_price()));
-        uint64_t s = (uint64_t)log2l(amount);
-        uint64_t stake = (s * s * s * pos_stake_factor);
-
-        // Calculate hash
-        u256 pos = HeaderAux::hash_head_pos(header, stake_output);
-        pos /= u256(stake);
-
-        succeed = (h256(pos) <= boundary);
+    bool succeed = (h256(pos) <= boundary);
 
 #ifdef MVS_DEBUG
-        if (header.transaction_count > 0) {
-            uint64_t coin_age = header.number - stake_output.height;
-            log::info("verify_stake")
-                << (succeed ? "True" : "False")
-                << ", stake amount: " << (uint64_t)(stake_output.data.value / coin_price())
-                << " ETPs, coin_age: " << coin_age
-                << ", height: " << header.number
-                << ", bits: " << header.bits
-                << ", pos: " << h256(pos)
-                << ", boundary: " << boundary;
-        }
-#endif
-
+    if (header.transaction_count > 0) {
+        uint64_t coin_age = header.number - stake_output.height;
+        log::info("verify_stake")
+            << (succeed ? "True" : "False")
+            << ", stake amount: " << (uint64_t)(stake_output.data.value / coin_price())
+            << " ETPs, coin_age: " << coin_age
+            << ", height: " << header.number
+            << ", bits: " << header.bits
+            << ", pos: " << h256(pos)
+            << ", boundary: " << boundary;
     }
+#endif
 
     return succeed;
 }

@@ -151,6 +151,7 @@ public:
         uint64_t best_height,
         const wallet::payment_address& pay_addres) = 0;
     virtual uint32_t select_utxo_for_staking(
+        const u256& bits,
         uint64_t best_height,
         const wallet::payment_address& pay_addres,
         std::shared_ptr<chain::output_info::list> stake_outputs = nullptr,

@@ -157,17 +157,47 @@ void block_chain_impl::subscribe_reorganize(reorganize_handler handler)
     organizer_.subscribe_reorganize(handler);
 }
 
+static uint64_t get_stake_utxo_maturity_height(const u256& bits)
+{
+    auto adjust = bits / 100000000;
+    auto value = adjust.convert_to<double>();
+    auto result = 1000.0 / (1 + std::exp(-std::log(value)));
+    return std::max<uint64_t>(250, std::round(result));
+}
+
+bool block_chain_impl::check_pos_utxo_height_and_value(
+    const u256& bits,
+    const uint64_t& out_height,
+    const uint64_t& curr_height,
+    const uint64_t& value)
+{
+    if (value < pos_stake_min_value) {
+        return false;
+    }
+
+    auto maturity_height = get_stake_utxo_maturity_height(bits);
+
+#ifdef MVS_DEBUG
+    static uint64_t record(0);
+    if (record != maturity_height) {
+        record = maturity_height;
+        log::info("blockchain") << "PoS stake utxo maturity height: " << record << ", bits: " << bits;
+    }
+#endif
+
+    return (value >= pos_stake_min_value) && (out_height + maturity_height <= curr_height);
+}
 
 bool block_chain_impl::check_pos_utxo_capability(
-    const uint64_t& height, const chain::transaction& tx, const uint32_t& out_index,
-    const uint64_t& out_height, bool strict)
+    const u256& bits, const uint64_t& height, const chain::transaction& tx,
+    const uint32_t& out_index, const uint64_t& out_height, bool strict)
 {
     if (strict) {
         if (out_index >= tx.outputs.size()){
             return false;
         }
         const auto output = tx.outputs[out_index];
-        if (!check_pos_utxo_height_and_value(out_height, height, output.value)) {
+        if (!check_pos_utxo_height_and_value(bits, out_height, height, output.value)) {
             return false;
         }
     }
@@ -189,6 +219,7 @@ bool block_chain_impl::pos_exist_before(const uint64_t& height) const
 }
 
 uint32_t block_chain_impl::select_utxo_for_staking(
+    const u256& bits,
     uint64_t best_height,
     const wallet::payment_address& pay_address,
     std::shared_ptr<chain::output_info::list> stake_outputs,
@@ -218,11 +249,11 @@ uint32_t block_chain_impl::select_utxo_for_staking(
                 continue;
             }
 
-            if (!check_pos_utxo_capability(best_height, tx_temp, row.output.index, row.output_height, false)){
+            if (!check_pos_utxo_capability(bits, best_height, tx_temp, row.output.index, row.output_height, false)){
                 continue;
             }
 
-            bool satisfied = check_pos_utxo_height_and_value(row.output_height, best_height, row.value);
+            bool satisfied = check_pos_utxo_height_and_value(bits, row.output_height, best_height, row.value);
             if (satisfied) {
                 ++stake_utxos;
                 if (stake_outputs) {

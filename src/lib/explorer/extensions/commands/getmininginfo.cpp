@@ -19,6 +19,7 @@
  */
 
 #include <metaverse/explorer/json_helper.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/explorer/extensions/node_method_wrapper.hpp>
 #include <metaverse/explorer/extensions/commands/getmininginfo.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -30,6 +31,37 @@ namespace commands {
 using namespace bc::explorer::config;
 
 /************************ getmininginfo *************************/
+
+
+u256 getmininginfo::get_last_bits(libbitcoin::server::server_node& node)
+{
+    std::promise<code> p;
+    u256 bits(0);
+
+    auto handler = [this, &p, &bits](const code& ec, const chain::header& header) {
+        if (ec) {
+            p.set_value(ec);
+            return;
+        }
+
+        bits = header.bits;
+        p.set_value(error::success);
+    };
+
+    auto& blockchain = node.chain_impl();
+    uint64_t height = 0;
+    if (!blockchain.get_last_height(height)) {
+        throw block_last_height_get_exception{"query last height failure."};
+    }
+
+    blockchain.fetch_block_header(height, handler);
+    auto result = p.get_future().get();
+    if (result) {
+        throw block_header_get_exception{"query last block header failure."};
+    }
+
+    return bits;
+}
 
 console_result getmininginfo::invoke(Json::Value& jv_output,
                                      libbitcoin::server::server_node& node)
@@ -68,8 +100,9 @@ console_result getmininginfo::invoke(Json::Value& jv_output,
         jv_output["block_version"] = block_version;
 
         if (waddr && (miner.get_accept_block_version() == chain::block_version_pos)) {
+            auto bits = get_last_bits(node);
             auto& blockchain = node.chain_impl();
-            auto stake_utxo_count = blockchain.select_utxo_for_staking(height, waddr);
+            auto stake_utxo_count = blockchain.select_utxo_for_staking(bits, height, waddr);
             jv_output["stake_utxo_count"] = stake_utxo_count;
         }
     }
