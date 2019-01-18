@@ -112,7 +112,6 @@ extern const uint64_t pos_lock_min_height;
 extern const uint64_t pos_lock_gap_height;
 
 extern const uint64_t pos_stake_min_value;
-extern const uint64_t pos_stake_min_height;
 extern const double   pos_stake_factor;
 extern const uint32_t block_timespan_window;
 extern const uint64_t pos_genesis_reward;

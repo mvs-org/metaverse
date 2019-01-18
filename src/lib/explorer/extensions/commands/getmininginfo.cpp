@@ -35,32 +35,18 @@ using namespace bc::explorer::config;
 
 u256 getmininginfo::get_last_bits(libbitcoin::server::server_node& node)
 {
-    std::promise<code> p;
-    u256 bits(0);
-
-    auto handler = [this, &p, &bits](const code& ec, const chain::header& header) {
-        if (ec) {
-            p.set_value(ec);
-            return;
-        }
-
-        bits = header.bits;
-        p.set_value(error::success);
-    };
-
     auto& blockchain = node.chain_impl();
     uint64_t height = 0;
     if (!blockchain.get_last_height(height)) {
         throw block_last_height_get_exception{"query last height failure."};
     }
 
-    blockchain.fetch_block_header(height, handler);
-    auto result = p.get_future().get();
-    if (result) {
+    chain::header header;
+    if (!blockchain.get_header(header, height)) {
         throw block_header_get_exception{"query last block header failure."};
     }
 
-    return bits;
+    return header.bits;
 }
 
 console_result getmininginfo::invoke(Json::Value& jv_output,
