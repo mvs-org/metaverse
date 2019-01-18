@@ -59,6 +59,7 @@ public:
         const chain::transaction& current_tx, uint64_t input_index,
         uint32_t flags);
 
+    code check_transaction_version() const;
     code check_transaction_connect_input(uint64_t last_height);
     code check_transaction() const;
     code check_transaction_basic() const;
