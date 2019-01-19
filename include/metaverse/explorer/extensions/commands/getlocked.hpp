@@ -75,6 +75,16 @@ public:
             "symbol,s",
             value<std::string>(&option_.asset_symbol)->default_value(DEFAULT_INVALID_ASSET_SYMBOL),
             "asset symbol"
+        )
+        (
+            "stake,k",
+            value<bool>(&option_.dpos_stake)->default_value(false)->zero_tokens(),
+            "If specified, then sum effective locked values for DPoS stake. Defaults to false."
+        )
+        (
+            "range,r",
+            value<colon_delimited2_item<uint64_t, uint64_t>>(&option_.range),
+            "Pick locked value between this range [begin:end)."
         );
 
         return options;
@@ -96,6 +106,8 @@ public:
     {
         std::string asset_symbol;
         uint64_t expiration;
+        colon_delimited2_item<uint64_t, uint64_t> range = {0, 0};
+        bool dpos_stake;
     } option_;
 
 };

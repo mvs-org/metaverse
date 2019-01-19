@@ -21,12 +21,12 @@
 #ifndef MVS_CONSENSUS_MINER_HPP
 #define MVS_CONSENSUS_MINER_HPP
 
-#include <vector>
+#include <array>
 #include <boost/thread.hpp>
 #include <metaverse/bitcoin.hpp>
-#include "metaverse/blockchain/transaction_pool.hpp"
 #include "metaverse/bitcoin/chain/block.hpp"
 #include "metaverse/bitcoin/chain/input.hpp"
+#include <metaverse/bitcoin/chain/attachment/asset/blockchain_asset.hpp>
 #include <metaverse/bitcoin/wallet/ec_public.hpp>
 #include <metaverse/blockchain/settings.hpp>
 
@@ -34,31 +34,22 @@ namespace libbitcoin {
 namespace node {
 class p2p_node;
 }
-namespace blockchain {
-class block_chain_impl;
-}
 }
 
 namespace libbitcoin {
 namespace consensus {
 
 BC_CONSTEXPR uint32_t min_tx_fee_per_kb = 1000;
-BC_CONSTEXPR uint32_t median_time_span = 11;
 
-extern int bucket_size;
-extern std::vector<uint64_t> lock_heights;
+extern std::array<uint64_t, 5> lock_heights;
+extern const std::array<uint16_t,5 > lock_cycles;
 
 class miner
 {
 public:
     typedef message::block_message block;
     typedef std::shared_ptr<message::block_message> block_ptr;
-    typedef chain::header header;
-    typedef chain::transaction transaction;
     typedef message::transaction_message::ptr transaction_ptr;
-    typedef blockchain::block_chain_impl block_chain_impl;
-    typedef blockchain::transaction_pool transaction_pool;
-    typedef libbitcoin::node::p2p_node p2p_node;
 
     // prev_output_point -> (prev_block_height, prev_output)
     typedef std::unordered_map<chain::point, std::pair<uint64_t, chain::output>> previous_out_map_t;
@@ -66,7 +57,7 @@ public:
     // tx_hash -> tx_fee
     typedef std::unordered_map<hash_digest, uint64_t> tx_fee_map_t;
 
-    miner(p2p_node& node);
+    miner(node::p2p_node& node);
     ~miner();
 
     enum state
@@ -83,6 +74,85 @@ public:
         std::vector<transaction_ptr>& transactions);
     bool script_hash_signature_operations_count(uint64_t &count, const chain::input& input,
         std::vector<transaction_ptr>& transactions);
+
+    block_ptr get_block(bool is_force_create_block = false);
+    bool get_work(std::string& seed_hash, std::string& header_hash, std::string& boundary);
+    bool put_result(const std::string& nonce, const std::string& mix_hash,
+        const std::string& header_hash, const uint64_t &nounce_mask);
+    const wallet::payment_address& get_miner_payment_address() const;
+    bool set_miner_payment_address(const wallet::payment_address& address);
+    void get_state(uint64_t &height,  uint64_t &rate, std::string& difficulty, bool& is_mining);
+    bool get_block_header(chain::header& block_header, const std::string& para);
+
+    static chain::operation::stack to_script_operation(
+        const wallet::payment_address& pay_address, uint64_t lock_height=0);
+
+    static uint64_t get_reward_lock_height(uint16_t lock_cycle);
+    static int get_lock_heights_index(uint64_t height);
+    static uint64_t calculate_block_subsidy(uint64_t height, bool is_testnet, uint32_t version);
+    static uint64_t calculate_block_subsidy_pow(uint64_t height, bool is_testnet);
+    static uint64_t calculate_block_subsidy_pos(uint64_t height, bool is_testnet);
+    static uint64_t calculate_block_subsidy_dpos(uint64_t height, bool is_testnet);
+    static uint64_t calculate_lockblock_reward(uint64_t lcok_heights, uint64_t num);
+
+    static uint64_t calculate_mst_subsidy(
+        const chain::blockchain_asset& mining_asset, const chain::asset_cert& mining_cert,
+        uint64_t height, bool is_testnet, uint32_t version);
+    static uint64_t calculate_mst_subsidy_pow(
+        const chain::blockchain_asset& mining_asset, const chain::asset_cert& mining_cert,
+        uint64_t height, bool is_testnet);
+    static uint64_t calculate_mst_subsidy_pos(
+        const chain::blockchain_asset& mining_asset, const chain::asset_cert& mining_cert,
+        uint64_t height, bool is_testnet);
+    static uint64_t calculate_mst_subsidy_dpos(
+        const chain::blockchain_asset& mining_asset, const chain::asset_cert& mining_cert,
+        uint64_t height, bool is_testnet);
+
+    chain::block_version get_accept_block_version() const;
+    void set_accept_block_version(chain::block_version v);
+
+    bool is_witness() const;
+    bool set_pub_and_pri_key(const std::string& pubkey, const std::string& prikey);
+    const data_chunk& get_public_key_data() const;
+    data_chunk& get_public_key_data();
+
+    std::string get_mining_asset_symbol() const;
+    bool set_mining_asset_symbol(const std::string& symbol);
+    std::shared_ptr<chain::blockchain_asset> get_mining_asset() const;
+    std::shared_ptr<chain::asset_cert> get_mining_cert() const;
+
+    bool is_solo_mining() const;
+    void set_solo_mining(bool b);
+
+private:
+    void work(const wallet::payment_address& pay_address);
+    block_ptr create_new_block(const wallet::payment_address& pay_address);
+    block_ptr create_new_block_pow(const wallet::payment_address& pay_address, const chain::header& prev_header);
+    block_ptr create_new_block_pos(const wallet::payment_address& pay_address, const chain::header& prev_header);
+    block_ptr create_new_block_dpos(const wallet::payment_address& pay_address, const chain::header& prev_header);
+
+    const ec_secret& get_private_key() const;
+    ec_secret& get_private_key();
+
+    uint32_t get_adjust_time(uint64_t height) const;
+    bool get_transaction(uint64_t last_height, std::vector<transaction_ptr>&, previous_out_map_t&, tx_fee_map_t&) const;
+    bool get_block_transactions(
+        uint64_t last_height, std::vector<transaction_ptr>& txs, std::vector<transaction_ptr>& reward_txs,
+        uint64_t& total_fee, uint32_t& total_tx_sig_length);
+    uint64_t store_block(block_ptr block);
+    uint64_t get_height() const;
+    bool get_input_etp(const chain::transaction&, const std::vector<transaction_ptr>&, uint64_t&, previous_out_map_t&) const ;
+    bool is_stop_miner(uint64_t block_height, block_ptr block) const;
+    uint32_t get_tx_sign_length(transaction_ptr tx);
+    void sleep_for_mseconds(uint32_t interval, bool force = false);
+
+    u256 get_next_target_required(const chain::header& header, const chain::header& prev_header);
+
+    std::shared_ptr<chain::output> create_coinbase_mst_output(
+        const wallet::payment_address& pay_address, const std::string& symbol, uint64_t value);
+    bool add_coinbase_mst_output(chain::transaction& coinbase_tx,
+        const wallet::payment_address& pay_address, uint64_t block_height, uint32_t version);
+
     transaction_ptr create_coinbase_tx(const wallet::payment_address& pay_address,
         uint64_t value, uint64_t block_height, int lock_height);
     transaction_ptr create_coinstake_tx(
@@ -93,63 +163,30 @@ public:
         const ec_secret& private_key,
         transaction_ptr coinstake);
     transaction_ptr create_pos_genesis_tx(uint64_t block_height, uint32_t block_time);
-
-    block_ptr get_block(bool is_force_create_block = false);
-    bool get_work(std::string& seed_hash, std::string& header_hash, std::string& boundary);
-    bool put_result(const std::string& nonce, const std::string& mix_hash,
-        const std::string& header_hash, const uint64_t &nounce_mask);
-    bool set_miner_payment_address(const wallet::payment_address& address);
-    void get_state(uint64_t &height,  uint64_t &rate, std::string& difficulty, bool& is_mining);
-    bool get_block_header(chain::header& block_header, const std::string& para);
-
-    static int get_lock_heights_index(uint64_t height);
-    static uint64_t calculate_block_subsidy(uint64_t height, bool is_testnet, uint32_t version);
-    static uint64_t calculate_block_subsidy_pow(uint64_t height, bool is_testnet);
-    static uint64_t calculate_block_subsidy_pos(uint64_t height, bool is_testnet);
-    static uint64_t calculate_block_subsidy_dpos(uint64_t height, bool is_testnet);
-    static uint64_t calculate_lockblock_reward(uint64_t lcok_heights, uint64_t num);
-
-    chain::block_version get_accept_block_version() const;
-    void set_accept_block_version(chain::block_version v);
-
-    bool is_witness() const;
-    bool set_pub_and_pri_key(const std::string& pubkey, const std::string& prikey);
+    std::shared_ptr<chain::output> create_witness_cert_output(
+        const std::string& symbol,
+        const std::string& to_did,
+        const wallet::payment_address& pay_address);
 
 private:
-    void work(const wallet::payment_address& pay_address);
-    block_ptr create_new_block(const wallet::payment_address& pay_address);
-    block_ptr create_new_block_pow(const wallet::payment_address& pay_address);
-    block_ptr create_new_block_pos(const wallet::payment_address& pay_address);
-    block_ptr create_new_block_dpos(const wallet::payment_address& pay_address);
-
-    uint32_t get_adjust_time(uint64_t height) const;
-    uint32_t get_median_time_past(uint64_t height) const;
-    bool get_transaction(std::vector<transaction_ptr>&, previous_out_map_t&, tx_fee_map_t&) const;
-    bool get_block_transactions(
-        uint64_t last_height, std::vector<transaction_ptr>& txs, std::vector<transaction_ptr>& reward_txs,
-        uint64_t& total_fee, uint32_t& total_tx_sig_length);
-    uint64_t store_block(block_ptr block);
-    uint64_t get_height() const;
-    bool get_input_etp(const transaction&, const std::vector<transaction_ptr>&, uint64_t&, previous_out_map_t&) const ;
-    bool is_stop_miner(uint64_t block_height, block_ptr block) const;
-    uint32_t get_tx_sign_length(transaction_ptr tx);
-    void sleep_for_mseconds(uint32_t interval, bool force = false);
-
-    u256 get_next_target_required(const chain::header& header, const chain::header& prev_header, bool is_staking);
-
-private:
-    p2p_node& node_;
+    node::p2p_node& node_;
     std::shared_ptr<boost::thread> thread_;
     mutable state state_;
     uint16_t new_block_number_;
     uint16_t new_block_limit_;
     chain::block_version accept_block_version_;
-
     block_ptr new_block_;
-    wallet::payment_address pay_address_;
     const blockchain::settings& setting_;
-    data_chunk public_key_data_;
-    ec_secret private_key_;
+
+    struct mining_context {
+        std::shared_ptr<chain::blockchain_asset> mining_asset_;
+        std::shared_ptr<chain::asset_cert> mining_cert_;
+        wallet::payment_address pay_address_;
+        data_chunk public_key_data_;
+        ec_secret private_key_;
+    };
+    mining_context pool_context, solo_context;
+    bool is_solo_mining_;
 };
 
 }

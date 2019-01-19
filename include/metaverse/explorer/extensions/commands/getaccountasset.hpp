@@ -88,6 +88,11 @@ public:
             "If specified, then only get related cert. Default is not specified."
         )
         (
+            "type,t",
+            value<std::string>(&option_.cert_type)->default_value(""),
+            "If specified, then only get related type of cert. Default is not specified."
+        )
+        (
             "deposited,d",
             value<bool>(&option_.deposited)->zero_tokens()->default_value(false),
             "If specified, then only get deposited assets. Default is not specified."
@@ -111,13 +116,15 @@ public:
 
     struct option
     {
-        option():
-            is_cert(false),
-            deposited(false)
+        option()
+            : is_cert(false)
+            , deposited(false)
+            , cert_type("")
         {}
 
         bool is_cert;
         bool deposited;
+        std::string cert_type;
     } option_;
 
 };

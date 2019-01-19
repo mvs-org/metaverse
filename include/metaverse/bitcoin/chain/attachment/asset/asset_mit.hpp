@@ -34,14 +34,13 @@ namespace chain {
 class asset_mit;
 }
 }
-using asset_mit = libbitcoin::chain::asset_mit;
 
-#define MIT_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<asset_mit::mit_status>::type>(kd))
+#define MIT_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<bc::chain::asset_mit::mit_status>::type>(kd))
 
-#define MIT_STATUS_NONE        MIT_STATUS2UINT32(asset_mit::mit_status::mit_status_none)
-#define MIT_STATUS_REGISTER    MIT_STATUS2UINT32(asset_mit::mit_status::mit_status_register)
-#define MIT_STATUS_TRANSFER    MIT_STATUS2UINT32(asset_mit::mit_status::mit_status_transfer)
-#define MIT_STATUS_MAX         MIT_STATUS2UINT32(asset_mit::mit_status::mit_status_max)
+#define MIT_STATUS_NONE        MIT_STATUS2UINT32(bc::chain::asset_mit::mit_status::mit_status_none)
+#define MIT_STATUS_REGISTER    MIT_STATUS2UINT32(bc::chain::asset_mit::mit_status::mit_status_register)
+#define MIT_STATUS_TRANSFER    MIT_STATUS2UINT32(bc::chain::asset_mit::mit_status::mit_status_transfer)
+#define MIT_STATUS_MAX         MIT_STATUS2UINT32(bc::chain::asset_mit::mit_status::mit_status_max)
 
 namespace libbitcoin {
 namespace chain {
@@ -139,9 +138,6 @@ struct BC_API asset_mit_info
 
 } // namespace chain
 } // namespace libbitcoin
-
-using asset_mit = libbitcoin::chain::asset_mit;
-using asset_mit_info = libbitcoin::chain::asset_mit_info;
 
 #endif
 

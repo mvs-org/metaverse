@@ -32,6 +32,7 @@
 #include <metaverse/blockchain/validate_block.hpp>
 #include <metaverse/blockchain/block_chain_impl.hpp>
 #include <metaverse/consensus/miner.hpp>
+#include <metaverse/consensus/witness.hpp>
 
 #ifdef WITH_CONSENSUS
 #include <metaverse/consensus.hpp>
@@ -124,17 +125,13 @@ void validate_transaction::start(validate_handler handler)
 
 code validate_transaction::basic_checks() const
 {
+    if (tx_->is_coinbase())
+        return error::coinbase_transaction;
+
     const auto ec = check_transaction();
 
     if (ec)
         return ec;
-
-    // This should probably preceed check_transaction.
-    if (tx_->is_coinbase())
-        return error::coinbase_transaction;
-
-    // Ummm...
-    //if ((int64)nLockTime > INT_MAX)
 
     if (!is_standard())
         return error::is_not_standard;
@@ -570,6 +567,7 @@ code validate_transaction::check_asset_issue_transaction() const
     is_asset_issue = false;
     int num_cert_issue{0};
     int num_cert_domain_or_naming{0};
+    int num_cert_mining{0};
     std::vector<asset_cert_type> cert_mask;
     std::vector<asset_cert_type> cert_type;
     std::string asset_symbol;
@@ -658,6 +656,26 @@ code validate_transaction::check_asset_issue_transaction() const
                     return error::asset_issue_error;
                 }
             }
+            else if (cur_cert_type == asset_cert_ns::mining) {
+                ++num_cert_mining;
+                if (num_cert_mining > 1) {
+                    return error::asset_issue_error;
+                }
+
+                if (!check_same(asset_symbol, cert_info.get_symbol())) {
+                    return error::asset_issue_error;
+                }
+
+                if (!check_same(asset_address, output.get_script_address())) {
+                    return error::asset_issue_error;
+                }
+
+                if (!cert_info.check_mining_subsidy_param()) {
+                    log::error(LOG_BLOCKCHAIN) << "issue: invalid mining subsidy param of cert "
+                        << cert_info.to_string();
+                    return error::asset_issue_error;
+                }
+            }
             else {
                 log::debug(LOG_BLOCKCHAIN) << "issue: invalid output of cert "
                                            <<  cert_info.to_string();
@@ -720,11 +738,13 @@ code validate_transaction::check_asset_cert_transaction() const
 
     int num_cert_issue{0};
     int num_cert_domain{0};
+    int num_cert_primary_witness{0};
     int num_cert_transfer{0};
     asset_cert_type issue_cert_type{asset_cert_ns::none};
     std::vector<asset_cert_type> cert_type;
     std::string cert_symbol;
     std::string domain_symbol;
+    std::string primary_witness_symbol;
     std::string cert_owner;
     for (auto& output : tx.outputs)
     {
@@ -800,6 +820,34 @@ code validate_transaction::check_asset_cert_transaction() const
                     return error::asset_cert_issue_error;
                 }
             }
+            else if (cur_cert_type == asset_cert_ns::witness) {
+                if (issue_cert_type != asset_cert_ns::witness) {
+                    log::debug(LOG_BLOCKCHAIN) << "issue cert: redundant output of witness cert.";
+                    return error::asset_cert_issue_error;
+                }
+
+                ++num_cert_primary_witness;
+                if (num_cert_primary_witness > 1) {
+                    return error::asset_cert_issue_error;
+                }
+
+                primary_witness_symbol = cert_info.get_symbol();
+
+                // check owner
+                cert_owner = cert_info.get_owner();
+                auto diddetail = chain.get_registered_did(cert_owner);
+                auto address = cert_info.get_address();
+                if (!diddetail) {
+                    log::debug(LOG_BLOCKCHAIN) << "issue cert: cert owner is not issued. "
+                                               <<  cert_info.to_string();
+                    return error::asset_cert_issue_error;
+                }
+                if (address != diddetail->get_address()) {
+                    log::debug(LOG_BLOCKCHAIN) << "issue cert: cert address dismatch cert owner. "
+                                               <<  cert_info.to_string();
+                    return error::asset_cert_issue_error;
+                }
+            }
             else {
                 log::debug(LOG_BLOCKCHAIN) << "issue cert: invalid output of cert "
                                            <<  cert_info.to_string();
@@ -832,23 +880,45 @@ code validate_transaction::check_asset_cert_transaction() const
         if (issue_cert_type == asset_cert_ns::naming) {
             if (!asset_cert::test_certs(cert_type, asset_cert_ns::domain)
                 || cert_owner.empty()) {
-                log::debug(LOG_BLOCKCHAIN) << "issue cert: "
-                                           << "no domain cert provided to issue naming cert.";
+                log::debug(LOG_BLOCKCHAIN) << "issue naming cert: "
+                                           << "no domain cert is provided."
+                                           << ", issuing: " << cert_symbol;
                 return error::asset_cert_issue_error;
             }
 
             auto&& domain = asset_cert::get_domain(cert_symbol);
             if (domain != domain_symbol) {
-                log::debug(LOG_BLOCKCHAIN) << "issue cert: "
-                                           << "invalid domain cert provided to issue naming cert.";
+                log::debug(LOG_BLOCKCHAIN) << "issue naming cert: "
+                                           << "invalid domain cert is provided."
+                                           << ", issuing: " << cert_symbol;
+                return error::asset_cert_issue_error;
+            }
+        }
+        else if (issue_cert_type == asset_cert_ns::witness) {
+            if (!asset_cert::test_certs(cert_type, asset_cert_ns::witness)
+                || cert_owner.empty()) {
+                log::debug(LOG_BLOCKCHAIN) << "issue secondary witness cert: "
+                                           << "no primary witness cert is provided."
+                                           << ", issuing: " << cert_symbol;
                 return error::asset_cert_issue_error;
             }
 
-            // check asset not exist.
-            if (check_asset_exist(cert_symbol)) {
-                log::debug(LOG_BLOCKCHAIN) << "issue cert: "
-                                           << "asset symbol '" + cert_symbol + "' already exists in blockchain!";
-                return error::asset_exist;
+            auto&& prefix = asset_cert::get_primary_witness_symbol(cert_symbol);
+            if (prefix != primary_witness_symbol) {
+                log::debug(LOG_BLOCKCHAIN) << "issue secondary witness cert: "
+                                           << "invalid primary witness cert is provided."
+                                           << ", issuing: " << cert_symbol << ", provided: " << primary_witness_symbol;
+                return error::asset_cert_issue_error;
+            }
+
+            auto last_height = get_height();
+            auto vec = chain.get_issued_secondary_witness_certs(primary_witness_symbol, last_height);
+            if (!vec || vec->size() >= secondary_witness_cert_max) {
+                log::debug(LOG_BLOCKCHAIN) << "issue secondary witness cert: "
+                                           << "primary witness cert is fullfiled"
+                                           << " at " << last_height
+                                           << ", issuing: " << cert_symbol;
+                return error::asset_cert_issue_error;
             }
         }
     }
@@ -1304,6 +1374,10 @@ code validate_transaction::check_transaction() const
 {
     code ret = error::success;
 
+    if ((ret = check_transaction_version())) {
+        return ret;
+    }
+
     if ((ret = check_transaction_basic())) {
         return ret;
     }
@@ -1320,49 +1394,42 @@ code validate_transaction::check_transaction() const
         return ret;
     }
 
-    if (tx_->version >= transaction_version::check_nova_feature) {
-        if ((ret = check_asset_cert_transaction())) {
-            return ret;
-        }
+    if ((ret = check_asset_cert_transaction())) {
+        return ret;
+    }
 
-        if ((ret = check_secondaryissue_transaction())) {
-            return ret;
-        }
+    if ((ret = check_secondaryissue_transaction())) {
+        return ret;
+    }
 
-        if ((ret = check_asset_mit_transaction())) {
-            return ret;
-        }
+    if ((ret = check_asset_mit_transaction())) {
+        return ret;
+    }
 
-        if ((ret = check_did_transaction())) {
-            return ret;
-        }
+    if ((ret = check_did_transaction())) {
+        return ret;
+    }
 
-        if ((ret = attenuation_model::check_model_param(*this))) {
-            return ret;
-        }
+    if ((ret = attenuation_model::check_model_param(*this))) {
+        return ret;
     }
 
     return ret;
 }
 
-uint64_t median_time_past(const uint64_t &height, const block_chain_impl& chain)
+uint64_t validate_transaction::get_height() const
 {
-    const uint64_t median_time_past_blocks = 11;
-    // Read last 11 (or height if height < 11) block times into array.
-    const auto count = std::min(height, median_time_past_blocks);
-
-    header header;
-    std::vector<uint64_t> times;
-    for (uint64_t i = 1; i <= count; ++i) {
-        if (!chain.get_header(header, height - count + i)) {
-            return MAX_UINT64;
-        }
-        times.push_back(header.timestamp);
+    uint64_t height = 0;
+    if (validate_block_) {
+        height = validate_block_->get_height();
+        --height;
+    }
+    else {
+        block_chain_impl& chain = blockchain_;
+        chain.get_last_height(height);
     }
 
-    // Sort and select middle (median) value from the array.
-    std::sort(times.begin(), times.end());
-    return times.empty() ? 0 : times[times.size() / 2];
+    return height;
 }
 
 code validate_transaction::check_final_tx() const
@@ -1381,7 +1448,7 @@ code validate_transaction::check_final_tx() const
     else {
         block_chain_impl& chain = blockchain_;
         chain.get_last_height(height);
-        median_time_past_ = median_time_past(height, chain);
+        median_time_past_ = chain.get_median_time_past(height);
         ++height; // the next block's height
     }
 
@@ -1404,7 +1471,7 @@ code validate_transaction::check_sequence_locks() const
     }
     else {
         chain.get_last_height(last_height);
-        median_time_past_ = median_time_past(last_height, chain);
+        median_time_past_ = chain.get_median_time_past(last_height);
         ++last_height; // the next block's height
     }
 
@@ -1427,14 +1494,17 @@ code validate_transaction::check_sequence_locks() const
             return error::input_not_found;
         }
 
-        if (nSequence & relative_locktime_time_locked) {
+        if (is_relative_locktime_time_locked(nSequence)) {
             if (!chain.get_header(header, prev_height)) {
                 return error::not_found;
             }
-            min_time = std::max(min_time, header.timestamp + uint64_t((nSequence & relative_locktime_mask) << relative_locktime_seconds_shift) - 1);
-        }
+            uint64_t prev_timestamp = header.timestamp;
+            min_time = std::max(min_time, prev_timestamp
+                + get_relative_locktime_locked_seconds(nSequence) - 1);
+       }
         else {
-            min_height = std::max(min_height, prev_height + (nSequence & relative_locktime_mask) - 1);
+            min_height = std::max(min_height, prev_height
+                + get_relative_locktime_locked_heights(nSequence) - 1);
         }
     }
 
@@ -1449,24 +1519,50 @@ code validate_transaction::check_sequence_locks() const
     return error::success;
 }
 
-code validate_transaction::check_transaction_basic() const
+code validate_transaction::check_transaction_version() const
 {
     const chain::transaction& tx = *tx_;
     block_chain_impl& chain = blockchain_;
+
+    auto use_testnet_rules = chain.chain_settings().use_testnet_rules;
+    auto is_nova_activated = is_nova_feature_activated(chain);
 
     if (tx.version >= transaction_version::max_version) {
         return error::transaction_version_error;
     }
 
-    if (tx.version == transaction_version::check_nova_feature
-        && !is_nova_feature_activated(chain)) {
+    if (tx.is_coinbase() || tx.is_coinstake()) {
+        return error::success;
+    }
+
+    if (tx.version >= transaction_version::check_nova_feature && !is_nova_activated) {
         return error::nova_feature_not_activated;
     }
 
-    if (tx.version == transaction_version::check_nova_testnet
-        && !chain.chain_settings().use_testnet_rules) {
+    if (tx.version == transaction_version::check_nova_testnet && !use_testnet_rules) {
         return error::transaction_version_error;
     }
+
+    uint64_t current_blockheight = 0;
+    chain.get_last_height(current_blockheight);
+
+    auto is_pos_activated = current_blockheight >= pos_enabled_height;
+    auto is_dpos_activated = consensus::witness::is_witness_enabled(current_blockheight);
+
+    if ((!use_testnet_rules && is_pos_activated) ||
+        (use_testnet_rules && is_dpos_activated)) {
+        if (tx.version < transaction_version::check_nova_feature) {
+            return error::transaction_version_error;
+        }
+    }
+
+    return error::success;
+}
+
+code validate_transaction::check_transaction_basic() const
+{
+    const chain::transaction& tx = *tx_;
+    block_chain_impl& chain = blockchain_;
 
     if (tx.version >= transaction_version::check_output_script) {
         for (auto& i : tx.outputs) {
@@ -1516,23 +1612,23 @@ code validate_transaction::check_transaction_basic() const
 
     for (auto& output : tx.outputs) {
         if (output.is_asset_issue()) {
-            if (!chain::output::is_valid_symbol(output.get_asset_symbol(), tx.version)) {
+            if (!block_chain_impl::is_valid_symbol(output.get_asset_symbol(), tx.version)) {
                 return error::asset_symbol_invalid;
             }
         }
         else if (output.is_asset_cert()) {
-            if (!chain::output::is_valid_symbol(output.get_asset_symbol(), tx.version)) {
+            if (!block_chain_impl::is_valid_symbol(output.get_asset_symbol(), tx.version)) {
                 return error::asset_symbol_invalid;
             }
         }
         else if (output.is_did_register()) {
             auto is_test = chain.chain_settings().use_testnet_rules;
-            if (!chain::output::is_valid_did_symbol(output.get_did_symbol(), !is_test)) {
+            if (!block_chain_impl::is_valid_did_symbol(output.get_did_symbol(), !is_test)) {
                 return error::did_symbol_invalid;
             }
         }
         else if (output.is_asset_mit_register()) {
-            if (!chain::output::is_valid_mit_symbol(output.get_asset_symbol(), true)) {
+            if (!block_chain_impl::is_valid_mit_symbol(output.get_asset_symbol(), true)) {
                 return error::mit_symbol_invalid;
             }
         }
@@ -1570,7 +1666,7 @@ code validate_transaction::check_transaction_basic() const
                     continue;
 
                 uint64_t lock_height = chain::operation::get_lock_height_from_sign_key_hash_with_lock_height(input.script.operations);
-                if (lock_height > chain.calc_number_of_blocks(prev_output_blockheight, current_blockheight, validate_block_)) {
+                if (lock_height > chain.calc_number_of_blocks(prev_output_blockheight, current_blockheight)) {
                     return error::invalid_input_script_lock_height;
                 }
             }
@@ -1699,7 +1795,7 @@ bool validate_transaction::connect_input( const transaction& previous_tx, uint64
     }
 
     if (previous_tx.is_coinbase()) {
-        if (coinbase_maturity > blockchain_.calc_number_of_blocks(parent_height, last_block_height_, validate_block_)) {
+        if (coinbase_maturity > blockchain_.calc_number_of_blocks(parent_height, last_block_height_)) {
             log::debug(LOG_BLOCKCHAIN)
                 << "coinbase not maturity from "
                 << parent_height << " to " << last_block_height_;
@@ -1866,7 +1962,9 @@ bool validate_transaction::check_asset_certs(const transaction& tx) const
                 has_cert_autoissue = true;
             }
 
-            if (asset_cert::test_certs(asset_certs_out, cert_type)) { // double certs exists
+            // double certs exists
+            if (asset_cert::test_certs(asset_certs_out, cert_type)
+                && cert_type != asset_cert_ns::witness) {
                 return false;
             }
 
@@ -1992,7 +2090,7 @@ bool validate_transaction::is_nova_feature_activated(block_chain_impl& chain)
     chain.get_last_height(current_blockheight);
 
     // active SuperNove on 2018-06-18 (duanwu festival)
-    return (current_blockheight > 1270000);
+    return (current_blockheight > nova_enabled_height);
 }
 
 } // namespace blockchain

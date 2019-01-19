@@ -41,21 +41,23 @@ namespace chain {
 class attachment;
 }
 }
-using attachment = libbitcoin::chain::attachment;
 
-#define TYPE2UINT32(kd)  (static_cast<typename std::underlying_type<attachment::attachment_type>::type>(kd))
+#define TYPE2UINT32(kd)  (static_cast<typename std::underlying_type<bc::chain::attachment::attachment_type>::type>(kd))
 
-#define ETP_TYPE        TYPE2UINT32(attachment::attachment_type::attachment_etp)
-#define ETP_AWARD_TYPE  TYPE2UINT32(attachment::attachment_type::attachment_etp_award)
-#define ASSET_TYPE      TYPE2UINT32(attachment::attachment_type::attachment_asset)
-#define MESSAGE_TYPE    TYPE2UINT32(attachment::attachment_type::attachment_message)
-#define DID_TYPE        TYPE2UINT32(attachment::attachment_type::attachment_did)
-#define ASSET_CERT_TYPE TYPE2UINT32(attachment::attachment_type::attachment_asset_cert)
-#define ASSET_MIT_TYPE  TYPE2UINT32(attachment::attachment_type::attachment_asset_mit)
-
-#define DID_ATTACH_VERIFY_VERSION       TYPE2UINT32(207)
+#define ETP_TYPE        TYPE2UINT32(bc::chain::attachment::attachment_type::attachment_etp)
+#define ETP_AWARD_TYPE  TYPE2UINT32(bc::chain::attachment::attachment_type::attachment_etp_award)
+#define ASSET_TYPE      TYPE2UINT32(bc::chain::attachment::attachment_type::attachment_asset)
+#define MESSAGE_TYPE    TYPE2UINT32(bc::chain::attachment::attachment_type::attachment_message)
+#define DID_TYPE        TYPE2UINT32(bc::chain::attachment::attachment_type::attachment_did)
+#define ASSET_CERT_TYPE TYPE2UINT32(bc::chain::attachment::attachment_type::attachment_asset_cert)
+#define ASSET_MIT_TYPE  TYPE2UINT32(bc::chain::attachment::attachment_type::attachment_asset_mit)
 
 #define ATTACH_NULL_TYPE MAX_UINT32
+
+enum attachment_version {
+    ATTACH_INIT_VERSION = 1,
+    DID_ATTACH_VERIFY_VERSION = 207
+};
 
 namespace libbitcoin {
 namespace chain {

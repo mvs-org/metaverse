@@ -132,6 +132,8 @@ DEFINE_EXPLORER_EXCEPTION(asset_cert_existed_exception, 5018);
 DEFINE_EXPLORER_EXCEPTION(asset_cert_notfound_exception, 5019);
 DEFINE_EXPLORER_EXCEPTION(asset_cert_notowned_exception, 5020);
 DEFINE_EXPLORER_EXCEPTION(asset_cert_domain_exception, 5021);
+DEFINE_EXPLORER_EXCEPTION(asset_cert_secondary_witness_full_exception, 5022);
+DEFINE_EXPLORER_EXCEPTION(asset_mining_subsidy_parameter_exception, 5023);
 
 DEFINE_EXPLORER_EXCEPTION(etp_lack_exception, 5051);
 
@@ -165,6 +167,7 @@ DEFINE_EXPLORER_EXCEPTION(tx_encode_get_exception, 5310);
 DEFINE_EXPLORER_EXCEPTION(tx_decode_get_exception, 5311);
 DEFINE_EXPLORER_EXCEPTION(tx_timestamp_exception, 5312);
 DEFINE_EXPLORER_EXCEPTION(tx_locktime_exception, 5313);
+DEFINE_EXPLORER_EXCEPTION(tx_lock_sequence_exception, 5314);
 
 DEFINE_EXPLORER_EXCEPTION(utxo_fetch_exception, 5401);
 

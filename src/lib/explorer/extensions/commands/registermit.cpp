@@ -139,7 +139,7 @@ console_result registermit::invoke (Json::Value& jv_output,
         receiver.push_back(
             {
                 to_address, pair.first, 0, 0, 0,
-                utxo_attach_type::asset_mit, attachment(to_did, to_did)
+                utxo_attach_type::asset_mit, chain::attachment(to_did, to_did)
             }
         );
     }

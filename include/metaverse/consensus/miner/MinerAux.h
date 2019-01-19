@@ -28,7 +28,6 @@ public:
 
     static bool verify_work(const chain::header& header, const chain::header::ptr parent);
     static bool verify_stake(const chain::header& header, const chain::output_info& stake_output);
-    static bool check_proof_of_stake(const chain::header& header, const chain::output_info& stake_output);
 
 private:
     MinerAux() {m_rate = 0;}

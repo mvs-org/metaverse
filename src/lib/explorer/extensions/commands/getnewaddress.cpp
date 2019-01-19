@@ -87,7 +87,7 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
 
     Json::Value addresses;
 
-    std::vector<std::shared_ptr<account_address>> account_addresses;
+    std::vector<std::shared_ptr<chain::account_address>> account_addresses;
     account_addresses.reserve(option_.count);
     const auto seed = wallet::decode_mnemonic(words);
     bc::config::base16 bs(seed);
@@ -104,7 +104,7 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
 
     for (uint32_t idx = 0; idx < option_.count; idx++ ) {
 
-        auto addr = std::make_shared<bc::chain::account_address>();
+        auto addr = std::make_shared<chain::account_address>();
         addr->set_name(auth_.name);
 
         const auto child_private_key = private_key.derive_private(acc->get_hd_index());
@@ -112,10 +112,6 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
 
         // Create the private key from hd_key and the public version.
         const auto derive_private_key = bc::wallet::hd_private(hk, prefixes);
-
-#ifdef PRIVATE_CHAIN
-        // test_vrf(derive_private_key);
-#endif
 
         auto pk = encode_base16(derive_private_key.secret());
         addr->set_prv_key(pk.c_str(), auth_.auth);

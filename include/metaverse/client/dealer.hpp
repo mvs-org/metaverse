@@ -67,7 +67,7 @@ public:
     //-------------------------------------------------------------------------
 
     /// Resend any timed out work and return the smallest time remaining.
-    virtual int32_t refresh();
+    virtual int32_t refresh() override;
 
     /// Read from this stream onto the specified stream.
     virtual bool read(stream& stream) override;

@@ -23,6 +23,7 @@
 #include <boost/filesystem.hpp>
 #include <metaverse/consensus/miner.hpp>
 #include <metaverse/bitcoin/constants.hpp>
+#include <metaverse/macros_define.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
@@ -33,7 +34,8 @@ settings::settings()
   : block_pool_capacity(5000),
     transaction_pool_capacity(4096),
     transaction_pool_consistency(false),
-    use_testnet_rules(false)
+    use_testnet_rules(false),
+    collect_split_stake(true)
 {
 }
 
@@ -46,18 +48,25 @@ settings::settings(bc::settings context)
     {
         case bc::settings::mainnet:
         {
+            // FIXEME.p2p-node.cpp, This is for header-first sync, attach_header_sync_session
+            // header sync first has some problem.
+            //basic_checkpoints.reserve(1);
+            //basic_checkpoints.push_back({ "b81848ef9ae86e84c3da26564bc6ab3a79efc628239d11471ab5cd25c0684c2d", 0 });
+
+            // validate_block, This is for each singel node validate
             checkpoints.reserve(1);
             checkpoints.push_back({ "b81848ef9ae86e84c3da26564bc6ab3a79efc628239d11471ab5cd25c0684c2d", 0 });
-            // fixme. header sync first has some problem.
-            //checkpoints.push_back({ "250a083ddd62ea1d0907e29ff8d64e42c451f93560196f3f693fdc1bc6b84d61", 10000 });
+            //checkpoints.push_back({ "d4f84eb9acb52cbfb003bd4fb88f4b5cf1f6328f193097d42b9403d7030abb8e", 3800 });
             //checkpoints.push_back({ "e989e4b2d60ae2f8fbaa1cdb69d05afa63e7f1f99cf715589a93e4877c92fa8b", 100000 });
-            //checkpoints.push_back({ "58986f8f9848d32aa1a210f3890e82312326657b6b84d2aa4bf00b41403dc191", 200000 });
-            //checkpoints.push_back({ "b9ec93b181e5ca3825df23c8100188a503b98d6e7240c7b21cedc980304967ea", 300000 });
-            //checkpoints.push_back({ "843411e1194c11cc958abd923498e1a7488ba9b0bccf1a3a5960f3bc213645ce", 400000 });
-            //checkpoints.push_back({ "2be656ee2c84684faaefd4e9f21f157d1dcb6ad9d25bf18d037cea37d23437ca", 500000 });
-            //checkpoints.push_back({ "265e051b24034d3bb51e99099a98d1d103c703cdac22a0d52e816aeb9cb807b9", 600000 });
-            //checkpoints.push_back({ "bd512ef95e5c6c99bf03112be7ac7fc0a6ef1113678dd583a18778ca683908f9", 700000 });
+            //checkpoints.push_back({ "d120edf7e14d8f426b7390e94ae7bfd746f9fc247b28e336db052295177ac9d3", 410000 }); //0.6.9 fix
             //checkpoints.push_back({ "9a0efd7b41cfc1cbeb1bfbd2ab3cb7989314611608cc4236b80a540444fbfb36", 800000 });
+            //checkpoints.push_back({ "ed11a074ce80cbf82b5724bea0d74319dc6f180198fa1bbfb562bcbd50089e63", 1030000 }); //future time attack
+            //checkpoints.push_back({ "a18a5aa5270835dd720a561c20230435e0508e8339ee30998da6dd79eee83b29", 1270000 }); //super nova
+
+#ifdef PRIVATE_CHAIN
+            checkpoints.clear();
+            checkpoints.push_back({ "b81848ef9ae86e84c3da26564bc6ab3a79efc628239d11471ab5cd25c0684c2d", 0 });
+#endif
 
             bc::wallet::ec_private::mainnet_p2kh = 0x32;
             bc::wallet::ec_public::mainnet_p2kh = 0x32;
@@ -69,16 +78,21 @@ settings::settings(bc::settings context)
         {
             use_testnet_rules = true;
 
+            //basic_checkpoints.reserve(1);
+            //basic_checkpoints.push_back({ "b1076144f919c8efaf55e5ec267daa6d5dc0a12609c9c6fddf8157270ae6e7ca", 0 });
             checkpoints.reserve(1);
-            checkpoints.push_back({ "b1076144f919c8efaf55e5ec267daa6d5dc0a12609c9c6fddf8157270ae6e7ca", 0 });
+            checkpoints.push_back({ "c359a1cc3dfb8b97111c3e602f1f6de31306926f9ec779cb9ea002edbee91741", 0 });
 
             bc::wallet::ec_private::mainnet_p2kh = 0x7f;
             bc::wallet::ec_public::mainnet_p2kh = 0x7f;
             bc::wallet::payment_address::mainnet_p2kh = 0x7f;
 
-            libbitcoin::consensus::bucket_size = 50000;
             libbitcoin::consensus::lock_heights = {10, 20, 30, 40, 50};
-            libbitcoin::coinbase_maturity = 1;
+            libbitcoin::coinbase_maturity       = 1;
+
+#ifndef PRIVATE_CHAIN
+            libbitcoin::pos_enabled_height      = 990000;
+#endif
             break;
         }
 

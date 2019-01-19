@@ -78,30 +78,30 @@ public:
     /// Return statistical info about the database.
     address_mit_statinfo statinfo() const;
 
-    void store_output(const short_hash& key, const output_point& outpoint,
+    void store_output(const short_hash& key, const chain::output_point& outpoint,
         uint32_t output_height, uint64_t value, uint16_t business_kd,
-        uint32_t timestamp, const asset_mit& mit);
+        uint32_t timestamp, const chain::asset_mit& mit);
 
     void store_input(const short_hash& key,
-        const output_point& inpoint, uint32_t input_height,
-        const input_point& previous, uint32_t timestamp);
+        const chain::output_point& inpoint, uint32_t input_height,
+        const chain::input_point& previous, uint32_t timestamp);
 
-    business_record::list get(const short_hash& key, size_t from_height, size_t limit) const;
-    std::shared_ptr<std::vector<business_record>> get(const std::string& address, size_t start, size_t end) const;
-    std::shared_ptr<std::vector<business_record>> get(const std::string& address, const std::string& symbol,
+    chain::business_record::list get(const short_hash& key, size_t from_height, size_t limit) const;
+    std::shared_ptr<std::vector<chain::business_record>> get(const std::string& address, size_t start, size_t end) const;
+    std::shared_ptr<std::vector<chain::business_record>> get(const std::string& address, const std::string& symbol,
         size_t start_height, size_t end_height, uint64_t limit, uint64_t page_number) const;
-    std::shared_ptr<std::vector<business_record>> get(size_t idx) const;
-    business_record get_record(size_t idx) const;
-    business_history::list get_business_history(const short_hash& key,
+    std::shared_ptr<std::vector<chain::business_record>> get(size_t idx) const;
+    chain::business_record get_record(size_t idx) const;
+    chain::business_history::list get_business_history(const short_hash& key,
             size_t from_height) const;
-    business_history::list get_business_history(const std::string& address,
+    chain::business_history::list get_business_history(const std::string& address,
         size_t from_height, uint8_t status) const;
-    business_history::list get_business_history(const std::string& address,
+    chain::business_history::list get_business_history(const std::string& address,
         size_t from_height, uint32_t time_begin, uint32_t time_end) const;
-    std::shared_ptr<std::vector<business_history>> get_address_business_history(const std::string& address,
+    std::shared_ptr<std::vector<chain::business_history>> get_address_business_history(const std::string& address,
         size_t from_height) const;
-    business_address_mit::list get_mits(const std::string& address, size_t from_height,
-        asset_mit::mit_status kind = asset_mit::mit_status::mit_status_none) const;
+    chain::business_address_mit::list get_mits(const std::string& address, size_t from_height,
+        chain::asset_mit::mit_status kind = chain::asset_mit::mit_status::mit_status_none) const;
 
 private:
     typedef record_hash_table<short_hash> record_map;

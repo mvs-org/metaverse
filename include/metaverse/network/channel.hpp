@@ -62,8 +62,8 @@ public:
     using proxy::stopped;
 
 protected:
-    virtual void handle_activity();
-    virtual void handle_stopping();
+    virtual void handle_activity() override;
+    virtual void handle_stopping() override;
 
 private:
     void do_start(const code& ec, result_handler handler);

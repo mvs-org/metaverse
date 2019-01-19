@@ -37,6 +37,7 @@
 #include <metaverse/explorer/extensions/commands/getaddressetp.hpp>
 #include <metaverse/explorer/extensions/commands/addnode.hpp>
 #include <metaverse/explorer/extensions/commands/getmininginfo.hpp>
+#include <metaverse/explorer/extensions/commands/getstakeinfo.hpp>
 #include <metaverse/explorer/extensions/commands/getblockheader.hpp>
 #include <metaverse/explorer/extensions/commands/fetchheaderext.hpp>
 #include <metaverse/explorer/extensions/commands/gettx.hpp>
@@ -56,7 +57,7 @@
 #include <metaverse/explorer/extensions/commands/listbalances.hpp>
 #include <metaverse/explorer/extensions/commands/getbalance.hpp>
 #include <metaverse/explorer/extensions/commands/listtxs.hpp>
-#include <metaverse/explorer/extensions/commands/deposit.hpp>
+// #include <metaverse/explorer/extensions/commands/deposit.hpp>
 #include <metaverse/explorer/extensions/commands/listassets.hpp>
 #include <metaverse/explorer/extensions/commands/getasset.hpp>
 #include <metaverse/explorer/extensions/commands/secondaryissue.hpp>
@@ -102,6 +103,7 @@
 #include <metaverse/explorer/extensions/commands/getdid.hpp>
 #include <metaverse/explorer/extensions/commands/lock.hpp>
 #include <metaverse/explorer/extensions/commands/getlocked.hpp>
+#include <metaverse/explorer/extensions/commands/registerwitness.hpp>
 
 
 namespace libbitcoin {
@@ -137,11 +139,12 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<startmining>());
     func(make_shared<stopmining>());
     func(make_shared<getmininginfo>());
+    func(make_shared<getstakeinfo>());
     func(make_shared<setminingaccount>());
     func(make_shared<getwork>());
     func(make_shared<submitwork>());
     func(make_shared<getmemorypool>());
-    func(make_shared<popblock>());
+    func(make_shared<registerwitness>());
 
     os <<"\r\n";
     // block & tx
@@ -151,6 +154,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<fetchheaderext>());
     func(make_shared<gettx>());
     func(make_shared<listtxs>());
+    func(make_shared<popblock>());
 
     // raw tx
     func(make_shared<createrawtx>());
@@ -172,7 +176,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<send>());
     func(make_shared<sendmore>());
     func(make_shared<sendfrom>());
-    func(make_shared<deposit>());
+    // func(make_shared<deposit>());
     func(make_shared<lock>());
     func(make_shared<listbalances>());
     func(make_shared<getbalance>());
@@ -263,12 +267,16 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<setminingaccount>();
     if (symbol == getmininginfo::symbol())
         return make_shared<getmininginfo>();
+    if (symbol == getstakeinfo::symbol())
+        return make_shared<getstakeinfo>();
     if ((symbol == getwork::symbol()) || (symbol == "eth_getWork"))
         return make_shared<getwork>();
     if ((symbol == submitwork::symbol()) || ( symbol == "eth_submitWork"))
         return make_shared<submitwork>();
     if (symbol == getmemorypool::symbol())
         return make_shared<getmemorypool>();
+    if (symbol == registerwitness::symbol())
+        return make_shared<registerwitness>();
 
     // block & tx
     if (symbol == getheight::symbol())
@@ -323,8 +331,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getbalance>();
     if (symbol == getaddressetp::symbol() || symbol == "fetch-balance")
         return make_shared<getaddressetp>();
-    if (symbol == deposit::symbol())
-        return make_shared<deposit>();
+    // if (symbol == deposit::symbol())
+    //     return make_shared<deposit>();
     if (symbol == lock::symbol())
         return make_shared<lock>();
     if (symbol == getlocked::symbol())

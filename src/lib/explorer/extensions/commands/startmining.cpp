@@ -20,6 +20,7 @@
 
 #include <metaverse/explorer/extensions/commands/startmining.hpp>
 #include <metaverse/macros_define.hpp>
+#include <metaverse/consensus/witness.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -35,7 +36,7 @@ namespace commands {
 console_result startmining::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
-    auto& blockchain = node.chain_impl();
+    auto& blockchain = const_cast<blockchain::block_chain_impl&>(node.chain_impl());
     auto& miner = node.miner();
 
     uint64_t height;
@@ -47,10 +48,12 @@ console_result startmining::invoke(Json::Value& jv_output,
         throw setting_required_exception{"Currently mining, please use command <stopmining> to stop the running mining."};
     }
 
+    miner.set_solo_mining(true);
+
     boost::to_lower(option_.consensus);
     const auto is_use_pow = (option_.consensus == "pow");
     const auto is_use_pos = (option_.consensus == "pos");
-    const auto is_use_dpos = (option_.consensus == "dpos");
+    const auto is_use_dpos = (option_.consensus == "dpos" && consensus::witness::is_dpos_enabled()) ;
 
     std::string str_addr;
     if (!option_.address.empty()) {
@@ -128,13 +131,25 @@ console_result startmining::invoke(Json::Value& jv_output,
         throw argument_legality_exception{"wrong consensus of block version!"};
     }
 
+    auto& symbol = option_.symbol;
+    if (!miner.set_mining_asset_symbol(symbol)) {
+        throw argument_legality_exception{"asset " + symbol + " can not be mined."};
+    }
+
+    miner.set_miner_payment_address(addr);
+
     // start
     if (miner.start(addr, option_.number)){
         std::string prompt = "solo mining started at "
             + str_addr + ", accept consensus " + option_.consensus;
+        if (!symbol.empty()) {
+            prompt = prompt + ", and also mining asset " + symbol;
+        }
+
         if (option_.number == 0) {
             jv_output = prompt;
-        } else {
+        }
+        else {
             jv_output = prompt + ", try to mine " + std::to_string(option_.number) + " block(s).";
         }
     }
@@ -146,8 +161,6 @@ console_result startmining::invoke(Json::Value& jv_output,
 }
 
 
-
 } // namespace commands
 } // namespace explorer
 } // namespace libbitcoin
-

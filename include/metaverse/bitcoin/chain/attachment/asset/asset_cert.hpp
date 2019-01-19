@@ -49,15 +49,13 @@ class asset_cert;
 union asset_cert_type;
 }
 }
-using asset_cert = libbitcoin::chain::asset_cert;
-using asset_cert_type = libbitcoin::chain::asset_cert_type;
 
-#define ASSET_CERT_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<asset_cert::asset_cert_status>::type>(kd))
+#define ASSET_CERT_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<bc::chain::asset_cert::asset_cert_status>::type>(kd))
 
-#define ASSET_CERT_NORMAL_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_normal)
-#define ASSET_CERT_ISSUE_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_issue)
-#define ASSET_CERT_TRANSFER_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_transfer)
-#define ASSET_CERT_AUTOISSUE_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_autoissue)
+#define ASSET_CERT_NORMAL_TYPE ASSET_CERT_STATUS2UINT32(bc::chain::asset_cert::asset_cert_status::asset_cert_normal)
+#define ASSET_CERT_ISSUE_TYPE ASSET_CERT_STATUS2UINT32(bc::chain::asset_cert::asset_cert_status::asset_cert_issue)
+#define ASSET_CERT_TRANSFER_TYPE ASSET_CERT_STATUS2UINT32(bc::chain::asset_cert::asset_cert_status::asset_cert_transfer)
+#define ASSET_CERT_AUTOISSUE_TYPE ASSET_CERT_STATUS2UINT32(bc::chain::asset_cert::asset_cert_status::asset_cert_autoissue)
 
 namespace libbitcoin {
 namespace chain {
@@ -67,11 +65,13 @@ BC_CONSTEXPR size_t ASSET_CERT_OWNER_FIX_SIZE = 64;
 BC_CONSTEXPR size_t ASSET_CERT_ADDRESS_FIX_SIZE = 64;
 BC_CONSTEXPR size_t ASSET_CERT_TYPE_FIX_SIZE = 4;
 BC_CONSTEXPR size_t ASSET_CERT_STATUS_FIX_SIZE = 1;
+BC_CONSTEXPR size_t ASSET_CERT_CONTENT_FIX_SIZE = 64;
 
 BC_CONSTEXPR size_t ASSET_CERT_FIX_SIZE = (ASSET_CERT_SYMBOL_FIX_SIZE
     + ASSET_CERT_OWNER_FIX_SIZE + ASSET_CERT_ADDRESS_FIX_SIZE
     + ASSET_CERT_TYPE_FIX_SIZE + ASSET_CERT_STATUS_FIX_SIZE);
 
+BC_CONSTEXPR size_t ASSET_CERT_FULL_FIX_SIZE = ASSET_CERT_FIX_SIZE + ASSET_CERT_CONTENT_FIX_SIZE;
 
 union asset_cert_type
 {
@@ -79,24 +79,35 @@ union asset_cert_type
         :mask(mask_)
     {
     }
+
     operator uint32_t()const
     {
         return mask;
     }
 
-    struct{
+    bool is_costom() const
+    {
+        return bits.custom == 1;
+    }
+
+    bool has_content() const
+    {
+        return bits.content == 1;
+    }
+
+    struct {
 #ifdef ASSET_CERT_BIG_ENDIAN
         uint32_t custom:1;
-        uint32_t unmovable:1;
-        uint32_t :10;
+        uint32_t content:1;
+        uint32_t reserved:10;
         uint32_t type:20;
 #else
         uint32_t type:20;
-        uint32_t :10;
-        uint32_t unmovable:1;
+        uint32_t reserved:10;
+        uint32_t content:1;
         uint32_t custom:1;
 #endif
-    } cert_type_status;
+    } bits;
 
     uint32_t mask;
 };
@@ -108,6 +119,8 @@ namespace asset_cert_ns {
     const asset_cert_type issue         = 1;
     const asset_cert_type domain        = 2;
     const asset_cert_type naming        = 3;
+    const asset_cert_type mining        = 0x60000000 + 4;
+    const asset_cert_type witness       = 5;
 
     const asset_cert_type custom        = 0x80000000;
     const asset_cert_type custom_max    = 0x800fffff;
@@ -120,6 +133,12 @@ class BC_API asset_cert
 {
 public:
     typedef std::vector<asset_cert> list;
+    typedef std::map<std::string, double> mining_subsidy_param_t;
+    typedef std::shared_ptr<mining_subsidy_param_t> mining_subsidy_param_ptr;
+
+    static const std::string key_initial;
+    static const std::string key_interval;
+    static const std::string key_base;
 
     enum class asset_cert_status : uint8_t
     {
@@ -157,8 +176,8 @@ public:
     void set_address(const std::string& owner);
     const std::string& get_address() const;
 
-    asset_cert_type get_certs() const;
-    void set_certs(asset_cert_type certs);
+    void set_content(const std::string& content);
+    const std::string& get_content() const;
 
     asset_cert_type get_type() const;
     void set_type(asset_cert_type cert_type);
@@ -174,10 +193,29 @@ public:
 
     static std::string get_domain(const std::string& symbol);
     static bool is_valid_domain(const std::string& domain);
-    static std::string get_key(const std::string&symbol, const asset_cert_type& bit);
+    static std::string get_key(const std::string& symbol, const asset_cert_type& bit);
+    static std::string get_witness_key(const std::string& symbol);
 
-    static bool is_unmovable(asset_cert_type cert_type);
-    bool is_unmovable() const;
+    static bool has_content(asset_cert_type cert_type);
+    bool has_content() const;
+    bool check_mining_subsidy_param() const;
+    mining_subsidy_param_ptr get_mining_subsidy_param() const;
+
+    static std::vector<std::string> get_mining_subsidy_param_keys();
+    static mining_subsidy_param_ptr parse_mining_subsidy_param(const std::string& param);
+
+    bool is_primary_witness() const;
+    bool is_secondary_witness() const;
+
+    static std::string get_primary_witness_symbol(const std::string& symbol);
+    static bool is_valid_primary_witness(const std::string& symbol);
+    static bool is_valid_secondary_witness(const std::string& symbol);
+
+    // witness cert index start at 1.
+    static uint32_t get_primary_witness_index(const std::string& symbol);
+
+private:
+    static bool parse_uint32(const std::string& param, uint32_t& value);
 
 private:
     // NOTICE: ref CAssetCert in transaction.h
@@ -187,6 +225,7 @@ private:
     std::string address_; // address that owned asset cert
     asset_cert_type cert_type_; // asset certs
     uint8_t status_;        // asset status
+    std::string content_;
 };
 
 } // namespace chain

@@ -19,6 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/network/sessions/session_seed.hpp>
+#include <metaverse/macros_define.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -133,9 +134,6 @@ void session_seed::start_seed(const config::endpoint& seed,
         return;
     }
 
-    log::info(LOG_NETWORK)
-        << "Contacting seed [" << seed << "]";
-
     // OUTBOUND CONNECT
     auto resolve_handler = [this](const asio::endpoint& endpoint){
         network_.store_seed(config::authority{endpoint}.to_network_address(), [](const code& ec){});
@@ -150,8 +148,6 @@ void session_seed::handle_connect(const code& ec, channel::ptr channel,
 {
     if (ec)
     {
-        log::info(LOG_NETWORK)
-            << "Failure contacting seed [" << seed << "] " << ec.message();
         handler(ec);
         return;
     }
@@ -164,9 +160,6 @@ void session_seed::handle_connect(const code& ec, channel::ptr channel,
         handler(error::address_blocked);
         return;
     }
-
-    log::info(LOG_NETWORK)
-        << "Connected seed [" << seed << "] as " << channel->authority();
 
     register_channel(channel,
         BIND3(handle_channel_start, _1, channel, handler),
@@ -194,17 +187,12 @@ void session_seed::attach_protocols(channel::ptr channel,
 
 void session_seed::handle_channel_stop(const code& ec)
 {
-    log::info(LOG_NETWORK)
-        << "Seed channel stopped: " << ec.message();
 }
 
 // This accepts no error code because individual seed errors are suppressed.
 void session_seed::handle_complete(size_t start_size, result_handler handler)
 {
     address_count(BIND3(handle_final_count, _1, start_size, handler));
-
-    log::info(LOG_NETWORK)
-            << "session_seed complete!";
 }
 
 // We succeed only if there is a host count increase.

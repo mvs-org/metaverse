@@ -73,7 +73,7 @@ console_result transfercert::invoke (Json::Value& jv_output,
     }
 
     auto from_address = cert->get_address();
-    account_multisig acc_multisig;
+    chain::account_multisig acc_multisig;
     bool is_multisig_address = blockchain.is_script_address(from_address);
     if (is_multisig_address) {
         auto multisig_vec = acc->get_multisig(from_address);
@@ -87,7 +87,7 @@ console_result transfercert::invoke (Json::Value& jv_output,
     // receiver
     std::vector<receiver_record> receiver{
         {to_address, argument_.symbol, 0, 0,
-            cert_type, utxo_attach_type::asset_cert_transfer, attachment("", to_did)}
+            cert_type, utxo_attach_type::asset_cert_transfer, chain::attachment("", to_did)}
     };
 
     auto helper = transferring_asset_cert(*this, blockchain,

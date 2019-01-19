@@ -25,6 +25,7 @@
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
+#include <metaverse/bitcoin/constants.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -36,7 +37,13 @@ console_result deposit::invoke(Json::Value& jv_output,
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    attachment attach;
+    uint64_t last_height = 0;
+    blockchain.get_last_height(last_height);
+    if (last_height >= pos_enabled_height) {
+        throw fatal_exception{"deposit is not supported after block " + std::to_string(pos_enabled_height)};
+    }
+
+    chain::attachment attach;
     std::string addr;
 
     if (argument_.address.empty()) {
@@ -48,13 +55,6 @@ console_result deposit::invoke(Json::Value& jv_output,
     }
     else {
         addr = get_address(argument_.address, attach, false, blockchain);
-    }
-
-    if (argument_.deposit != 7 && argument_.deposit != 30
-        && argument_.deposit != 90 && argument_.deposit != 182
-        && argument_.deposit != 365)
-    {
-        throw account_deposit_period_exception{"deposit must be one in [7, 30, 90, 182, 365]."};
     }
 
     // receiver

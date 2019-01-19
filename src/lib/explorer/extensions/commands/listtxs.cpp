@@ -156,10 +156,8 @@ console_result listtxs::invoke(Json::Value& jv_output,
     std::vector<std::string> vec_ip_addr; // input addr
     chain::transaction tx;
     uint64_t tx_height;
-    //hash_digest trans_hash;
     for (auto& each : result) {
-        //decode_hash(trans_hash, each.hash);
-        if (!blockchain.get_transaction(each.get_hash(), tx, tx_height))
+        if (!blockchain.get_transaction(tx, tx_height, each.get_hash()))
             continue;
 
         Json::Value tx_item;

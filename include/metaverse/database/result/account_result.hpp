@@ -40,7 +40,7 @@ public:
 
     /// The account.
     //account get_account_detail() const;
-    std::shared_ptr<account> get_account_detail() const;
+    std::shared_ptr<chain::account> get_account_detail() const;
 };
 
 } // namespace database

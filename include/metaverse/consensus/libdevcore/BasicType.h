@@ -35,10 +35,10 @@ public:
     static u256 calculate_difficulty(
         const chain::header& current,
         const chain::header::ptr prev,
-        const chain::header::ptr pprev,
-        bool is_staking=false);
+        const chain::header::ptr pprev);
 
-    static bigint adjust_difficulty(uint32_t actual_timespan, bigint & result);
+    static bigint adjust_difficulty(uint32_t timespan, bigint & result);
+    static uint32_t limit_timespan(uint32_t timespan);
 
 private:
     HeaderAux() {}

@@ -22,10 +22,12 @@
 #include <metaverse/consensus/miner.hpp>
 
 #include <cstddef>
+#include <future>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/blockchain/block_detail.hpp>
 #include <metaverse/consensus/miner/MinerAux.h>
 #include <metaverse/blockchain/block_chain_impl.hpp>
+#include <metaverse/consensus/witness.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
@@ -52,10 +54,19 @@ bool validate_block_impl::check_work(const chain::block& block) const
     chain::header parent_header = fetch_block(block.header.number - 1);
 
     if (block.is_proof_of_dpos()) {
-        return block.header.bits == parent_header.bits;
+        if (block.header.bits != parent_header.bits) {
+            return false;
+        }
+        uint32_t stored_slot = static_cast<uint32_t>(block.header.nonce);
+        uint32_t expect_slot = consensus::witness::get().get_slot_num(
+            consensus::witness::to_witness_id(block.public_key));
+        if (stored_slot != expect_slot) {
+            return false;
+        }
+        return true;
     }
 
-    chain::header::ptr last_header = get_last_block_header(parent_header, block.is_proof_of_stake());
+    chain::header::ptr last_header = get_last_block_header(parent_header, block.header.version);
     BITCOIN_ASSERT(nullptr != last_header);
 
     return MinerAux::verify_work(block.header, last_header);
@@ -78,7 +89,7 @@ bool validate_block_impl::verify_stake(const chain::block& block) const
     bc::wallet::payment_address pay_address(coinstake.inputs[0].get_script_address());
 
     auto height = block.header.number - 1;
-    if (!chain_.check_pos_capability(height, pay_address, false)) {
+    if (!chain_.check_pos_capability(height, pay_address)) {
         log::error(LOG_BLOCKCHAIN)
             << "Failed to check pos capability. height: "
             << block.header.number << ", address=" << pay_address.encoded()
@@ -98,7 +109,8 @@ bool validate_block_impl::verify_stake(const chain::block& block) const
     BITCOIN_ASSERT(stake_output_point.index < utxo_tx.outputs.size());
 
     if (!chain_.check_pos_utxo_capability(
-        block.header.number, utxo_tx, stake_output_point.index, utxo_height, true, this)) {
+        block.header.bits, block.header.number,
+        utxo_tx, stake_output_point.index, utxo_height, true)) {
         log::error(LOG_BLOCKCHAIN)
             << "Failed to check utxo capability, hash=" << encode_hash(stake_output_point.hash)
             << ", index=" << stake_output_point.index
@@ -174,6 +186,34 @@ uint64_t validate_block_impl::median_time_past() const
     return times.empty() ? 0 : times[times.size() / 2];
 }
 
+chain::block::ptr validate_block_impl::fetch_full_block(uint64_t fetch_height) const
+{
+    if (fetch_height > fork_index_) {
+        const auto fetch_index = fetch_height - fork_index_ - 1;
+        BITCOIN_ASSERT(fetch_index <= orphan_index_);
+        BITCOIN_ASSERT(orphan_index_ < orphan_chain_.size());
+        return orphan_chain_[fetch_index]->actual();
+    }
+
+    std::promise<code> p;
+    chain::block::ptr sp_block;
+    chain_.fetch_block(fetch_height,
+        [&p, &sp_block](const code & ec, chain::block::ptr block){
+            if (ec) {
+                p.set_value(ec);
+                return;
+            }
+            sp_block = block;
+            p.set_value(error::success);
+        });
+
+    auto result = p.get_future().get();
+    if (result) {
+        return nullptr;
+    }
+    return sp_block;
+}
+
 chain::header validate_block_impl::fetch_block(uint64_t fetch_height) const
 {
     if (fetch_height > fork_index_) {
@@ -189,18 +229,19 @@ chain::header validate_block_impl::fetch_block(uint64_t fetch_height) const
     return out;
 }
 
-chain::header::ptr validate_block_impl::get_last_block_header(const chain::header& parent_header, bool is_staking) const
+chain::header::ptr validate_block_impl::get_last_block_header(const chain::header& parent_header, uint32_t version) const
 {
     uint64_t height = parent_header.number;
-    if (parent_header.is_proof_of_stake() == is_staking) {
+    if (parent_header.version == version) {
         // log::info(LOG_BLOCKCHAIN) << "validate_block_impl::get_last_block_header: prev: "
         //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
         return std::make_shared<chain::header>(parent_header);
     }
 
-    while ((is_staking && height > pos_enabled_height) || (!is_staking && height > 2)) {
+    bool isPoW = (version == chain::block_version_pow);
+    while ((!isPoW && height > pos_enabled_height) || (isPoW && height > 2)) {
         chain::header prev_header = fetch_block(--height);
-        if (prev_header.is_proof_of_stake() == is_staking) {
+        if (prev_header.version == version) {
             // log::info(LOG_BLOCKCHAIN) << "validate_block_impl::get_last_block_header: prev: "
             //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
             return std::make_shared<chain::header>(prev_header);
@@ -294,7 +335,7 @@ std::string validate_block_impl::get_did_from_address_consider_orphan_chain(
             // iter inputs
             for (const auto& input : orphan_tx.inputs) {
                 uint64_t previous_height;
-                transaction previous_tx;
+                chain::transaction previous_tx;
                 const auto& previous_output = input.previous_output;
 
                 // This searches the blockchain and then the orphan pool up to and
@@ -388,7 +429,7 @@ bool validate_block_impl::is_asset_in_orphan_chain(const std::string& symbol) co
     return false;
 }
 
-bool validate_block_impl::is_asset_cert_in_orphan_chain(const std::string& symbol, asset_cert_type cert_type) const
+bool validate_block_impl::is_asset_cert_in_orphan_chain(const std::string& symbol, chain::asset_cert_type cert_type) const
 {
     BITCOIN_ASSERT(!symbol.empty());
 
@@ -490,6 +531,125 @@ bool validate_block_impl::check_get_coinage_reward_transaction(const chain::tran
         return false;
     }
 }
+
+bool validate_block_impl::check_max_successive_height(uint64_t height, chain::block_version version) const
+{
+    if (!enable_max_successive_height) {
+        return true;
+    }
+
+    if (height <= pos_enabled_height + 10000) {
+        return true;
+    }
+
+    if (version == chain::block_version_pow) {
+        using namespace consensus;
+        if (height >= witness::witness_enable_height) {
+            // consider the beginning of dpos epoch
+            uint64_t height_in_epoch = witness::get_height_in_epoch(height);
+            if (height_in_epoch <= witness::vote_maturity) {
+                return true;
+            }
+            if (height_in_epoch > witness::epoch_cycle_height - witness::vote_maturity) {
+                return true;
+            }
+        }
+
+        auto header = get_prev_block_header(height, version, false);
+        if (header && height - header->number > pow_max_successive_height) {
+            log::warning(LOG_BLOCKCHAIN) << "Failed to check pow max successive height: "
+                << (height - header->number);
+            return false;
+        }
+    }
+    else if (version == chain::block_version_pos) {
+        auto header = get_prev_block_header(height, version, false);
+        if (header && height - header->number > pos_max_successive_height) {
+            log::warning(LOG_BLOCKCHAIN) << "Failed to check pos max successive height: "
+                << (height - header->number);
+            return false;
+        }
+    }
+    else if (version == chain::block_version_dpos) {
+        if (height <= consensus::witness::witness_enable_height) {
+            return true;
+        }
+        // TODO
+    }
+
+    return true;
+}
+
+bool validate_block_impl::can_use_dpos(uint64_t height) const
+{
+    using namespace consensus;
+
+    if (!witness::is_witness_enabled(height)) {
+        return false;
+    }
+
+    // ensure the vote is maturity
+    {
+        uint64_t height_in_epoch = witness::get_height_in_epoch(height);
+        // [0 .. vote_maturity)
+        if (height_in_epoch < witness::vote_maturity) {
+            return false;
+        }
+
+        // [epoch_cycle_height - vote_maturity .. epoch_cycle_height)
+        if (height_in_epoch >= witness::epoch_cycle_height - witness::vote_maturity) {
+            return false;
+        }
+    }
+
+    // a dpos must followed by a non dpos block.
+    chain::header header = fetch_block(height - 1);
+    if (header.is_proof_of_dpos()) {
+        return false;
+    }
+
+    return true;
+}
+
+chain::header::ptr validate_block_impl::get_prev_block_header(
+    uint64_t height, chain::block_version ver, bool same_version) const
+{
+    if (height < 2) {
+        return nullptr;
+    }
+
+    chain::header header;
+    while (--height > 0) {
+        if (same_version) {
+            if (ver == chain::block_version_pos && height < pos_enabled_height) {
+                return nullptr;
+            }
+            else if (ver == chain::block_version_dpos && height < consensus::witness::witness_enable_height) {
+                return nullptr;
+            }
+        }
+        else {
+            if (ver == chain::block_version_pow && height < pos_enabled_height) {
+                return nullptr;
+            }
+        }
+
+        header = fetch_block(height);
+        if (same_version) {
+            if (header.version == ver) {
+                return std::make_shared<chain::header>(header);
+            }
+        }
+        else {
+            if (header.version != ver) {
+                return std::make_shared<chain::header>(header);
+            }
+        }
+    }
+
+    return nullptr;
+}
+
 
 } // namespace blockchain
 } // namespace libbitcoin

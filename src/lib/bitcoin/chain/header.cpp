@@ -268,11 +268,11 @@ std::string get_block_version(uint32_t version)
 {
     switch (version) {
     case block_version_any:
-        return " Any";
+        return "Any";
     case block_version_pow:
-        return " PoW";
+        return "PoW";
     case block_version_pos:
-        return " PoS";
+        return "PoS";
     case block_version_dpos:
         return "DPoS";
     default:;

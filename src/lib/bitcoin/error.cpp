@@ -156,6 +156,8 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "block version rejected at current height";
         case error::coinbase_height_mismatch:
             return "block height mismatch in coinbase";
+        case error::block_intermix_interval_error:
+            return "block intermix interval dismatch";
 
         // connect_block()
         case error::duplicate_or_spent:
@@ -287,10 +289,17 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "more than one coinstake";
         case error::coinstake_version_invalid:
             return "coinstake version invalid";
-        case error::cointstake_signature_invalid:
-            return "validate coinstake block signature failed";
+        case error::block_signature_invalid:
+            return "block signature failed";
         case error::check_pos_genesis_error:
             return "check pos genesis block failed";
+        case error::mst_coinbase_too_large:
+            return "asset coinbase value is too large";
+        case error::mst_coinbase_invalid:
+            return "asset coinbase value is invalid";
+
+        case error::invalid_output_script_lock_sequence:
+            return "invalid output script lock sequence";
 
         // unknown errors
         case error::unknown:

@@ -24,6 +24,7 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/explorer/extensions/base_helper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -40,24 +41,26 @@ console_result setminingaccount::invoke(Json::Value& jv_output,
 
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if (!pvaddr)
-        throw address_list_nullptr_exception{"nullptr for address list"};
+    auto address = get_address(argument_.payment_address, blockchain);
 
-#if 0 // no random address required for miner
-    auto pubkey = pvaddr->begin()->get_pub_key();
-#else
-    auto is_found = blockchain.get_account_address(auth_.name, argument_.payment_address.encoded());
-    if (!is_found)
-        throw address_dismatch_account_exception{"address does not match account."};
-#endif
-
-    auto ret = miner.set_miner_payment_address(argument_.payment_address);
-    if (ret) {
-        jv_output = "Address [" + argument_.payment_address.encoded() + "] setted.";
-    } else {
-        throw unknown_error_exception{"set mining account solo mining got an error"};
+    auto sp_account_address = blockchain.get_account_address(auth_.name, address);
+    if (!sp_account_address) {
+        throw address_dismatch_account_exception{
+            "did/address does not match account. " + argument_.payment_address};
     }
+
+    auto& symbol = option_.symbol;
+    if (!miner.set_mining_asset_symbol(symbol)) {
+        throw argument_legality_exception{"asset " + symbol + " can not be mined."};
+    }
+
+    miner.set_miner_payment_address(wallet::payment_address(address));
+
+    std::string text = "Address [" + address + "] setted.";
+    if (!symbol.empty()) {
+        text += " Also mining asset " + symbol;
+    }
+    jv_output = text;
 
     return console_result::okay;
 }

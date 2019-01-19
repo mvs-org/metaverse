@@ -64,7 +64,7 @@ console_result deletelocalasset::invoke(Json::Value& jv_output,
         }
     }
 
-    std::vector<business_address_asset> assets = *blockchain.get_account_unissued_assets(auth_.name);
+    std::vector<chain::business_address_asset> assets = *blockchain.get_account_unissued_assets(auth_.name);
     bool found = false;
     for (auto it = assets.begin(); it != assets.end(); ++it) {
         if (it->detail.get_symbol() == option_.symbol) {

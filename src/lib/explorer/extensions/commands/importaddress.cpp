@@ -30,7 +30,7 @@ namespace explorer {
 namespace commands {
 namespace fs = boost::filesystem;
 using namespace bc::explorer::config;
-using payment_address = wallet::payment_address;
+using namespace bc::chain;
 
 /************************ importkeyfile *************************/
 
@@ -55,7 +55,7 @@ console_result importaddress::invoke(Json::Value& jv_output,
             throw redeem_script_data_exception{"error occured when parse redeem script data."};
         }
 
-        const payment_address address(redeem_script, payment_address::mainnet_p2sh);
+        const wallet::payment_address address(redeem_script, wallet::payment_address::mainnet_p2sh);
         const std::string p2sh_address = address.encoded(); // pay address
 
         acc_script.set_address(p2sh_address);

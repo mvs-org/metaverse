@@ -79,7 +79,13 @@ public:
             "cert,c",
             value<bool>(&option_.is_cert)->default_value(false)->zero_tokens(),
             "If specified, then only get related cert. Default is not specified."
-        );
+        )
+        (
+            "type,t",
+            value<std::string>(&option_.cert_type)->default_value(""),
+            "If specified, then only get related type of cert. Default is not specified."
+        )
+        ;
 
         return options;
     }
@@ -98,6 +104,7 @@ public:
     struct option
     {
         bool is_cert;
+        std::string cert_type;
     } option_;
 
 };

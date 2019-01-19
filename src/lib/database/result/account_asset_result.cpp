@@ -28,9 +28,9 @@ namespace libbitcoin {
 namespace database {
 
 template <typename Iterator>
-asset_transfer deserialize_asset_transfer(const Iterator first)
+chain::asset_transfer deserialize_asset_transfer(const Iterator first)
 {
-    asset_transfer sp_detail;
+    chain::asset_transfer sp_detail;
     auto deserial = make_deserializer_unsafe(first);
     sp_detail.from_data(deserial);
     return sp_detail;
@@ -41,7 +41,7 @@ account_asset_result::account_asset_result(const memory_ptr slab)
 {
 }
 
-asset_transfer account_asset_result::get_account_asset_transfer() const
+chain::asset_transfer account_asset_result::get_account_asset_transfer() const
 {
     BITCOIN_ASSERT(get_slab());
     const auto memory = REMAP_ADDRESS(get_slab());

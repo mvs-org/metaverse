@@ -342,7 +342,7 @@ Json::Value json_helper::prop_attenuation_model_param(const std::string& param_s
         if (vec.size() == 2) {
             auto& key = vec[0];
             auto& value = vec[1];
-            if (attenuation_model::is_multi_value_key(key)) {
+            if (chain::attenuation_model::is_multi_value_key(key)) {
                 try {
                     if (key == "UC") {
                         auto&& str_vec = bc::split(value, ",", true);
@@ -364,7 +364,7 @@ Json::Value json_helper::prop_attenuation_model_param(const std::string& param_s
             }
             else {
                 uint64_t num = std::stoull(value);
-                auto display_key = attenuation_model::get_name_of_key(key);
+                auto display_key = chain::attenuation_model::get_name_of_key(key);
                 tree[display_key] = num;
             }
         }
@@ -529,6 +529,10 @@ Json::Value json_helper::prop_list(const bc::chain::asset_cert& cert_info)
     tree["owner"] = cert_info.get_owner();
     tree["address"] = cert_info.get_address();
     tree["cert"] = cert_info.get_type_name();
+    if (cert_info.has_content()) {
+        tree["content"] = cert_info.get_content();
+    }
+
     return tree;
 }
 
@@ -670,7 +674,7 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
         tree["content"] = msg_info.get_content();
     }
     else if(attach_data.get_type() == ATTACH_NULL_TYPE){
-        tree["type"] = "null";
+        tree["type"] = "coinstake";
     }
     else {
         tree["type"] = "unknown business";
@@ -994,7 +998,7 @@ Json::Value json_helper::prop_tree(const bitcoin_uri& uri)
 //block
 
 
-Json::Value json_helper::prop_tree(const block& block, bool json, bool tx_json)
+Json::Value json_helper::prop_tree(const chain::block& block, bool json, bool tx_json)
 {
     Json::Value tree;
 
@@ -1009,6 +1013,13 @@ Json::Value json_helper::prop_tree(const block& block, bool json, bool tx_json)
         else {
             tree = prop_tree(block.header);
             tree["transactions"] = prop_tree(txs, tx_json);
+            if (block.is_proof_of_stake()) {
+                tree["blocksig"] = encode_base16(block.blocksig);
+            }
+            else if (block.is_proof_of_dpos()) {
+                tree["blocksig"] = encode_base16(block.blocksig);
+                tree["public_key"] = encode_base16(block.public_key);
+            }
         }
     }
     else {

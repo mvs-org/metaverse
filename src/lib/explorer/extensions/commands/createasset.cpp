@@ -95,7 +95,7 @@ console_result createasset::invoke(Json::Value& jv_output,
             + " already created, you can delete and recreate it."};
     }
 
-    auto acc = std::make_shared<asset_detail>();
+    auto acc = std::make_shared<chain::asset_detail>();
     acc->set_symbol(option_.symbol);
     acc->set_maximum_supply(option_.maximum_supply.volume);
     acc->set_decimal_number(static_cast<uint8_t>(option_.decimal_number));
@@ -103,7 +103,7 @@ console_result createasset::invoke(Json::Value& jv_output,
     acc->set_description(option_.description);
     // use 127 to represent freely secondary issue, and 255 for its secondary issued status.
     acc->set_secondaryissue_threshold((threshold == -1) ?
-        asset_detail::freely_secondaryissue_threshold : static_cast<uint8_t>(threshold));
+        chain::asset_detail::freely_secondaryissue_threshold : static_cast<uint8_t>(threshold));
 
     blockchain.store_account_asset(acc, auth_.name);
 

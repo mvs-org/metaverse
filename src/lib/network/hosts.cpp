@@ -439,9 +439,8 @@ code hosts::store_seed(const address& host)
         else {
             seeds_.push_back(host);
         }
-#ifdef PRIVATE_CHAIN
-        log::info(LOG_NETWORK) << "store seed " << config::authority(host).to_string();
-#endif
+
+        // log::info(LOG_NETWORK) << "store seed " << config::authority(host).to_string();
     }
 
     return error::success;
@@ -469,9 +468,7 @@ code hosts::remove_seed(const address& host)
         upgrade_to_unique_lock unq_lock(lock);
         seeds_.erase(iter);
 
-#ifdef PRIVATE_CHAIN
-        log::info(LOG_NETWORK) << "remove seed " << config::authority(host).to_string();
-#endif
+        // log::info(LOG_NETWORK) << "remove seed " << config::authority(host).to_string();
     }
 
     return error::success;
@@ -560,8 +557,11 @@ void hosts::store(const address::list& hosts, result_handler handler)
 
             // Do not treat invalid address as an error, just log it.
             if (!host.is_valid()) {
-                log::debug(LOG_NETWORK)
-                        << "Invalid host address from peer.";
+                auto host_str = config::authority(host).to_string();
+                if (host_str != "[::]") {
+                    log::debug(LOG_NETWORK)
+                            << "Invalid host address from peer: " << host_str;
+                }
                 continue;
             }
 

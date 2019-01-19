@@ -71,7 +71,7 @@ console_result didchangeaddress::invoke(Json::Value& jv_output,
 
     // receiver
     std::vector<receiver_record> receiver{
-        {argument_.to, argument_.symbol, 0, 0, utxo_attach_type::did_transfer, attachment()}
+        {argument_.to, argument_.symbol, 0, 0, utxo_attach_type::did_transfer, chain::attachment()}
     };
 
     auto toaddr = bc::wallet::payment_address(argument_.to);
@@ -86,7 +86,7 @@ console_result didchangeaddress::invoke(Json::Value& jv_output,
     || toaddr.version() == bc::wallet::payment_address::mainnet_p2sh) // for multisig address
     {
 
-        auto findmultisig = [&acc](account_multisig& acc_multisig, std::string address) {
+        auto findmultisig = [&acc](chain::account_multisig& acc_multisig, std::string address) {
             auto multisig_vec = acc->get_multisig(address);
             if (!multisig_vec || multisig_vec->empty())
                 return false;
@@ -95,11 +95,11 @@ console_result didchangeaddress::invoke(Json::Value& jv_output,
             return true;
         };
 
-        account_multisig acc_multisig;
+        chain::account_multisig acc_multisig;
         if (addr.version() == bc::wallet::payment_address::mainnet_p2sh && !findmultisig(acc_multisig, from_address))
             throw multisig_notfound_exception{"from address multisig record not found."};
 
-        account_multisig acc_multisig_to;
+        chain::account_multisig acc_multisig_to;
         if (toaddr.version() == bc::wallet::payment_address::mainnet_p2sh && !findmultisig(acc_multisig_to, argument_.to))
             throw multisig_notfound_exception{"to address multisig record not found."};
 

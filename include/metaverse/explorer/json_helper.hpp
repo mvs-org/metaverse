@@ -410,7 +410,7 @@ BCX_API Json::Value prop_tree(const wallet::bitcoin_uri& uri);
  * @param[in]  tx_json   json output for tx within this block.
  * @returns          A new property tree containing the settings.
  */
-BCX_API Json::Value prop_tree(const block& block, bool json, bool tx_json);
+BCX_API Json::Value prop_tree(const chain::block& block, bool json, bool tx_json);
 
 /**
  * Generate a property list for a asset detail.

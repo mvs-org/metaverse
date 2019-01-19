@@ -19,6 +19,7 @@
  */
 
 #include <metaverse/explorer/json_helper.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/explorer/extensions/node_method_wrapper.hpp>
 #include <metaverse/explorer/extensions/commands/getmininginfo.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -30,6 +31,23 @@ namespace commands {
 using namespace bc::explorer::config;
 
 /************************ getmininginfo *************************/
+
+
+u256 getmininginfo::get_last_bits(libbitcoin::server::server_node& node)
+{
+    auto& blockchain = node.chain_impl();
+    uint64_t height = 0;
+    if (!blockchain.get_last_height(height)) {
+        throw block_last_height_get_exception{"query last height failure."};
+    }
+
+    chain::header header;
+    if (!blockchain.get_header(header, height)) {
+        throw block_header_get_exception{"query last block header failure."};
+    }
+
+    return header.bits;
+}
 
 console_result getmininginfo::invoke(Json::Value& jv_output,
                                      libbitcoin::server::server_node& node)
@@ -44,19 +62,35 @@ console_result getmininginfo::invoke(Json::Value& jv_output,
     miner.get_state(height, rate, difficulty, is_mining);
 
     if (get_api_version() <= 2) {
-        auto& aroot = jv_output;
         Json::Value info;
         info["is-mining"] = is_mining;
         info["height"] += height;
         info["rate"] += rate;
         info["difficulty"] = difficulty;
-        aroot["mining-info"] = info;
+        jv_output["mining-info"] = info;
     }
     else {
         jv_output["is_mining"] = is_mining;
         jv_output["height"] += height;
         jv_output["rate"] += rate;
         jv_output["difficulty"] = difficulty;
+
+        auto& waddr = miner.get_miner_payment_address();
+        std::string payment_address = waddr ? waddr.encoded() : "";
+        std::string asset_symbol = miner.get_mining_asset_symbol();
+        std::string block_version = chain::get_block_version(miner.get_accept_block_version());
+        boost::trim(block_version);
+
+        jv_output["payment_address"] = payment_address;
+        jv_output["asset_symbol"] = asset_symbol;
+        jv_output["block_version"] = block_version;
+
+        if (waddr && (miner.get_accept_block_version() == chain::block_version_pos)) {
+            auto bits = get_last_bits(node);
+            auto& blockchain = node.chain_impl();
+            auto stake_utxo_count = blockchain.select_utxo_for_staking(bits, height, waddr);
+            jv_output["stake_utxo_count"] = stake_utxo_count;
+        }
     }
 
     return console_result::okay;

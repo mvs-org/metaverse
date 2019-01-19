@@ -23,6 +23,8 @@
     <ClInclude Include="..\..\..\include\metaverse\database\databases\blockchain_asset_database.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\database\databases\blockchain_did_database.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\database\databases\blockchain_mit_database.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\blockchain_witness_cert_database.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\blockchain_witness_profile_database.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\database\databases\block_database.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\database\databases\history_database.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\database\databases\mit_history_database.hpp" />
@@ -77,6 +79,8 @@
     <ClCompile Include="..\..\..\src\lib\database\databases\blockchain_asset_database.cpp" />
     <ClCompile Include="..\..\..\src\lib\database\databases\blockchain_did_database.cpp" />
     <ClCompile Include="..\..\..\src\lib\database\databases\blockchain_mit_database.cpp" />
+    <ClCompile Include="..\..\..\src\lib\database\databases\blockchain_witness_cert_database.cpp" />
+    <ClCompile Include="..\..\..\src\lib\database\databases\blockchain_witness_profile_database.cpp" />
     <ClCompile Include="..\..\..\src\lib\database\databases\block_database.cpp" />
     <ClCompile Include="..\..\..\src\lib\database\databases\history_database.cpp" />
     <ClCompile Include="..\..\..\src\lib\database\databases\mit_history_database.cpp" />

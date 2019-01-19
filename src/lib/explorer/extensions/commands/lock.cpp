@@ -43,9 +43,10 @@ console_result lock::invoke(Json::Value& jv_output,
         check_asset_symbol(option_.asset_symbol);
     }
 
-    attachment attach;
-    std::string to_address = get_address(argument_.to, attach, false, blockchain);
+    chain::attachment attach;
+    std::string to_address = get_address_from_did(argument_.to, blockchain);
     std::string change_address = get_address(option_.change, blockchain);
+    attach.set_to_did(argument_.to);
 
     bc::wallet::payment_address addr(to_address);
     if (addr.version() == bc::wallet::payment_address::mainnet_p2sh) { // for multisig address
@@ -62,8 +63,7 @@ console_result lock::invoke(Json::Value& jv_output,
     }
 
     if ((argument_.sequence & bc::relative_locktime_disabled) ||
-        argument_.sequence == 0 ||
-        argument_.sequence == bc::max_input_sequence) {
+        (argument_.sequence & bc::relative_locktime_mask) == 0) {
         throw argument_legality_exception(
             "invalid sequence parameter!" + std::to_string(argument_.sequence));
     }
@@ -86,7 +86,7 @@ console_result lock::invoke(Json::Value& jv_output,
 
         receiver.push_back({
             to_address, "", 0, 0, utxo_attach_type::message,
-            attachment(0, 0, chain::blockchain_message(option_.memo))
+            chain::attachment(0, 0, chain::blockchain_message(option_.memo))
         });
     }
 

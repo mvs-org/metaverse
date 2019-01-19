@@ -518,6 +518,24 @@ opcode data_to_opcode(const data_chunk& value)
     return code;
 }
 
+// Determine if code is in the op_n range.
+bool within_op_n(opcode code)
+{
+    const auto value = static_cast<uint8_t>(code);
+    constexpr auto op_1 = static_cast<uint8_t>(opcode::op_1);
+    constexpr auto op_16 = static_cast<uint8_t>(opcode::op_16);
+    return op_1 <= value && value <= op_16;
+}
+
+// Return the op_n index (i.e. value of n).
+uint8_t decode_op_n(opcode code)
+{
+    BITCOIN_ASSERT(within_op_n(code));
+    const auto value = static_cast<uint8_t>(code);
+    constexpr auto op_0 = static_cast<uint8_t>(opcode::op_1) - 1;
+    return value - op_0;
+}
+
 script_context get_script_context()
 {
 #ifdef ENABLE_LOCKTIME

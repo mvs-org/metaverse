@@ -11,10 +11,14 @@
  * The semantic version of this repository as: [major].[minor].[patch]
  * For interpretation of the versioning scheme see: http://semver.org
  */
+/*
+ * 2019.1.8 jowenshaw modify to 0.6.1
+ * 1. add Pos/DPos consensus
+ */
 
-#define MVS_CONSENSUS_VERSION "0.6.0"
+#define MVS_CONSENSUS_VERSION "0.6.1"
 #define MVS_CONSENSUS_MAJOR_VERSION 0
 #define MVS_CONSENSUS_MINOR_VERSION 6
-#define MVS_CONSENSUS_PATCH_VERSION 0
+#define MVS_CONSENSUS_PATCH_VERSION 1
 
 #endif

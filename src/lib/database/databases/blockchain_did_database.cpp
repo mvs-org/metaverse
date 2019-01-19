@@ -112,14 +112,14 @@ void blockchain_did_database::sync()
     lookup_manager_.sync();
 }
 
-std::shared_ptr<blockchain_did> blockchain_did_database::get(const hash_digest& hash) const
+std::shared_ptr<chain::blockchain_did> blockchain_did_database::get(const hash_digest& hash) const
 {
-    std::shared_ptr<blockchain_did> detail(nullptr);
+    std::shared_ptr<chain::blockchain_did> detail(nullptr);
 
     const auto raw_memory = lookup_map_.find(hash);
     if(raw_memory) {
         const auto memory = REMAP_ADDRESS(raw_memory);
-        detail = std::make_shared<blockchain_did>();
+        detail = std::make_shared<chain::blockchain_did>();
         auto deserial = make_deserializer_unsafe(memory);
         detail->from_data(deserial);
     }
@@ -128,16 +128,16 @@ std::shared_ptr<blockchain_did> blockchain_did_database::get(const hash_digest& 
 }
 
 
-std::shared_ptr<std::vector<blockchain_did>> blockchain_did_database::get_history_dids(const hash_digest &hash) const
+std::shared_ptr<std::vector<chain::blockchain_did>> blockchain_did_database::get_history_dids(const hash_digest &hash) const
 {
-    auto did_details = std::make_shared<std::vector<blockchain_did>>();
+    auto did_details = std::make_shared<std::vector<chain::blockchain_did>>();
 
     const auto raw_memory_vec = lookup_map_.finds(hash);
     for(const auto& raw_memory : raw_memory_vec) {
         if (raw_memory){
             const auto memory = REMAP_ADDRESS(raw_memory);
             auto deserial = make_deserializer_unsafe(memory);
-            did_details->emplace_back(blockchain_did::factory_from_data(deserial));
+            did_details->emplace_back(chain::blockchain_did::factory_from_data(deserial));
         }
     }
 
@@ -146,9 +146,9 @@ std::shared_ptr<std::vector<blockchain_did>> blockchain_did_database::get_histor
 }
 
 ///
-std::shared_ptr<std::vector<blockchain_did>> blockchain_did_database::get_blockchain_dids() const
+std::shared_ptr<std::vector<chain::blockchain_did>> blockchain_did_database::get_blockchain_dids() const
 {
-    auto vec_acc = std::make_shared<std::vector<blockchain_did>>();
+    auto vec_acc = std::make_shared<std::vector<chain::blockchain_did>>();
     uint64_t i = 0;
     for( i = 0; i < number_buckets; i++ ) {
         auto memo = lookup_map_.find(i);
@@ -159,7 +159,7 @@ std::shared_ptr<std::vector<blockchain_did>> blockchain_did_database::get_blockc
             {
                 const auto memory = REMAP_ADDRESS(elem);
                 auto deserial = make_deserializer_unsafe(memory);
-                vec_acc->push_back(blockchain_did::factory_from_data(deserial));
+                vec_acc->push_back(chain::blockchain_did::factory_from_data(deserial));
             };
             std::for_each(memo->begin(), memo->end(), action);
         }
@@ -168,16 +168,16 @@ std::shared_ptr<std::vector<blockchain_did>> blockchain_did_database::get_blockc
 }
 
 ///
-std::shared_ptr<blockchain_did> blockchain_did_database::get_register_history(const std::string & did_symbol) const
+std::shared_ptr<chain::blockchain_did> blockchain_did_database::get_register_history(const std::string & did_symbol) const
 {
-    std::shared_ptr<blockchain_did> blockchain_did_ = nullptr;
+    std::shared_ptr<chain::blockchain_did> blockchain_did_ = nullptr;
     data_chunk data(did_symbol.begin(), did_symbol.end());
     auto key = sha256_hash(data);
 
     auto memo = lookup_map_.rfind(key);
     if(memo)
     {
-        blockchain_did_ = std::make_shared<blockchain_did>();
+        blockchain_did_ = std::make_shared<chain::blockchain_did>();
         const auto memory = REMAP_ADDRESS(memo);
         auto deserial = make_deserializer_unsafe(memory);
         blockchain_did_->from_data(deserial);
@@ -188,21 +188,21 @@ std::shared_ptr<blockchain_did> blockchain_did_database::get_register_history(co
 
  uint64_t blockchain_did_database::get_register_height(const std::string & did_symbol) const
  {
-    std::shared_ptr<blockchain_did> blockchain_did_ = get_register_history(did_symbol);
+    std::shared_ptr<chain::blockchain_did> blockchain_did_ = get_register_history(did_symbol);
     if(blockchain_did_)
         return blockchain_did_->get_height();
-        
+
     return max_uint64;
  }
 
 
-void blockchain_did_database::store(const hash_digest& hash, const blockchain_did& sp_detail)
+void blockchain_did_database::store(const hash_digest& hash, const chain::blockchain_did& sp_detail)
 {
     // Write block data.
     const auto key = hash;
 
     //cannot remove old address,instead of update its status
-    update_address_status(key,blockchain_did::address_history);
+    update_address_status(key,chain::blockchain_did::address_history);
 
     const auto sp_size = sp_detail.serialized_size();
 #ifdef MVS_DEBUG
@@ -219,14 +219,14 @@ void blockchain_did_database::store(const hash_digest& hash, const blockchain_di
     lookup_map_.store(key, write, value_size);
 }
 
-std::shared_ptr<blockchain_did> blockchain_did_database::update_address_status(const hash_digest &hash,uint32_t status )
+std::shared_ptr<chain::blockchain_did> blockchain_did_database::update_address_status(const hash_digest &hash,uint32_t status )
 {
-    std::shared_ptr<blockchain_did>  detail = nullptr;
+    std::shared_ptr<chain::blockchain_did>  detail = nullptr;
 
     const auto raw_memory = lookup_map_.find(hash);
     if (raw_memory)
     {
-        detail = std::make_shared<blockchain_did>();
+        detail = std::make_shared<chain::blockchain_did>();
         if(detail)
         {
             const auto memory = REMAP_ADDRESS(raw_memory);
@@ -246,10 +246,10 @@ std::shared_ptr<blockchain_did> blockchain_did_database::update_address_status(c
     return detail;
 }
 
-std::shared_ptr<std::vector<blockchain_did> > blockchain_did_database::getdids_from_address_history(const std::string &address,
+std::shared_ptr<std::vector<chain::blockchain_did> > blockchain_did_database::getdids_from_address_history(const std::string &address,
  const uint64_t &fromheight, const uint64_t &toheight) const
 {
-    auto vec_acc = std::make_shared<std::vector<blockchain_did>>();
+    auto vec_acc = std::make_shared<std::vector<chain::blockchain_did>>();
     uint64_t i = 0;
     for( i = 0; i < number_buckets; i++ ) {
         auto sp_memo = lookup_map_.find(i);
@@ -257,7 +257,7 @@ std::shared_ptr<std::vector<blockchain_did> > blockchain_did_database::getdids_f
         {
             const auto memory = REMAP_ADDRESS(elem);
             auto deserial = make_deserializer_unsafe(memory);
-            blockchain_did blockchain_did_ = blockchain_did::factory_from_data(deserial);
+            chain::blockchain_did blockchain_did_ = chain::blockchain_did::factory_from_data(deserial);
 
             const auto height = blockchain_did_.get_height();
             const auto did_address = blockchain_did_.get_did().get_address();
@@ -271,18 +271,18 @@ std::shared_ptr<std::vector<blockchain_did> > blockchain_did_database::getdids_f
         }
     }
 
-    std::sort(vec_acc->begin(), vec_acc->end(), []( blockchain_did & first, blockchain_did & second)
+    std::sort(vec_acc->begin(), vec_acc->end(), []( chain::blockchain_did & first, chain::blockchain_did & second)
     {
         return first.get_height() < second.get_height();
     });
     return vec_acc;
-    
+
 }
 
-std::shared_ptr<blockchain_did> blockchain_did_database::pop_did_transfer(const hash_digest &hash)
+std::shared_ptr<chain::blockchain_did> blockchain_did_database::pop_did_transfer(const hash_digest &hash)
 {
     lookup_map_.unlink(hash);
-    return update_address_status(hash, blockchain_did::address_current);
+    return update_address_status(hash, chain::blockchain_did::address_current);
 }
 
 } // namespace database

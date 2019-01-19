@@ -73,7 +73,7 @@ public:
     transaction& operator=(const transaction& other) /*= delete*/;
 
     bool from_data_t(reader& source);
-    void to_data_t(writer& sink, bool for_merkle=false) const;
+    void to_data_t(writer& sink) const;
     std::string to_string(uint32_t flags) const;
     bool is_valid() const;
     void reset();
@@ -90,6 +90,10 @@ public:
     uint64_t total_output_value() const;
     uint64_t serialized_size() const;
     uint64_t total_output_transfer_amount() const;
+
+    uint64_t legacy_sigops_count(bool accurate=true) const;
+    static uint64_t legacy_sigops_count(const transaction::list& txs, bool accurate=true);
+
     bool has_asset_issue() const;
     bool has_asset_secondary_issue() const;
     bool has_asset_transfer() const;
@@ -114,8 +118,5 @@ private:
 
 } // namespace chain
 } // namespace libbitcoin
-
-using transaction = libbitcoin::chain::transaction;
-using transaction_version = libbitcoin::chain::transaction_version;
 
 #endif

@@ -38,7 +38,7 @@ console_result gettx::invoke(Json::Value& jv_output,
     bc::chain::transaction tx;
     uint64_t tx_height = 0;
     auto& blockchain = node.chain_impl();
-    auto exist = blockchain.get_transaction(argument_.hash, tx, tx_height);
+    auto exist = blockchain.get_transaction_consider_pool(tx, tx_height, argument_.hash);
     if (!exist) {
         throw tx_notfound_exception{"transaction does not exist!"};
     }

@@ -23,70 +23,115 @@
 
 namespace libbitcoin {
 
-const uint64_t pos_genesis_reward        = 50000000 * 100000000ul;
+//==============================================================================
+//
+//==============================================================================
 
-#ifndef PRIVATE_CHAIN
+#ifdef PRIVATE_CHAIN
 
-uint32_t coinbase_maturity = 1000;
-const uint64_t future_blocktime_fork_height = 1030000;
+uint32_t coinbase_maturity                      = 10;
+uint64_t pos_enabled_height                     = 5000;
 
-const size_t relative_locktime_min_version = 5;
-
-// PoS
-const uint64_t pos_enabled_height        = max_uint64;
-const uint32_t pos_coinstake_max_utxos   = 10;
-const uint64_t pos_lock_min_value        = 10000 * 100000000ul;
-const uint64_t pos_lock_min_height       = 100000;
-const uint64_t pos_lock_gap_height       = 10000;
-const uint64_t pos_stake_min_value       = 10000 * 100000000ul;
-const uint64_t pos_stake_min_height      = 1000;
-const double   pos_stake_factor          = 1;
-const uint32_t block_timespan_window     = 28;
+const uint64_t future_blocktime_fork_height     = 0;
+const uint64_t nova_enabled_height              = 0;
 
 #else //PRIVATE_CHAIN
 
-uint32_t coinbase_maturity = 10;
-const uint64_t future_blocktime_fork_height = 10;
+uint32_t coinbase_maturity                      = 1000;
+uint64_t pos_enabled_height                     = 1924000; // hard-fork-of-MPC1
 
-const size_t relative_locktime_min_version = 2;
-
-// PoS
-const uint64_t pos_enabled_height        = 350;
-const uint32_t pos_coinstake_max_utxos   = 10;
-const uint64_t pos_lock_min_value        = 10 * 100000000ul;
-const uint64_t pos_lock_min_height       = 100000;
-const uint64_t pos_lock_gap_height       = 10000;
-const uint64_t pos_stake_min_value       = 100 * 100000000ul;
-const uint64_t pos_stake_min_height      = 100;
-const double   pos_stake_factor          = 10;
-const uint32_t block_timespan_window     = 28;
+const uint64_t future_blocktime_fork_height     = 1030000;
+const uint64_t nova_enabled_height              = 1270000;
 
 #endif //PRIVATE_CHAIN
 
-hash_number max_target()
+
+//==============================================================================
+// constants
+//==============================================================================
+
+const size_t relative_locktime_min_version      = 2;
+
+// POS
+const bool enable_max_successive_height         = true;
+const uint32_t pow_max_successive_height        = 60;
+const uint32_t pos_max_successive_height        = 24;
+
+const uint64_t pos_genesis_reward               = coin_price(0X1076F8E);
+const uint32_t pos_coinstake_max_utxos          = 10;
+const uint64_t pos_lock_min_value               = coin_price(1000);
+const uint64_t pos_lock_min_height              = 100000;
+const uint64_t pos_lock_gap_height              = 10000;
+const uint64_t pos_stake_min_value              = coin_price(1000);
+const double   pos_stake_factor                 = 30;
+const uint32_t block_timespan_window            = 38;
+
+const std::string witness_cert_prefix("MVS.WITNESS.");
+const uint32_t witness_cert_mars_value          = 30;
+const uint32_t witness_cert_count               = 23;
+const uint32_t secondary_witness_cert_min       = 23;
+const uint32_t secondary_witness_cert_max       = 46;
+const uint32_t secondary_witness_cert_expiration    = 2000000;
+
+
+//==============================================================================
+// functions
+//==============================================================================
+
+bool is_relative_locktime_time_locked(uint32_t raw_value)
 {
-    hash_number max_target;
-    max_target.set_compact(max_work_bits);
-    return max_target;
+    return (raw_value & relative_locktime_time_locked) != 0;
 }
 
-std::string get_developer_community_address(bool is_testnet)
+uint32_t get_relative_locktime_locked_heights(uint32_t raw_value)
 {
-    std::string address("MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh");  // developer-community address for mainnet
-    if (is_testnet) {
-        address = "tJNo92g6DavpaCZbYjrH45iQ8eAKnLqmms";         // developer-community address for testnet
+    if (is_relative_locktime_time_locked(raw_value)) {
+        return 0;
     }
-    return address;
+    return raw_value & relative_locktime_mask;
+}
+
+uint32_t get_relative_locktime_locked_seconds(uint32_t raw_value)
+{
+    if (!is_relative_locktime_time_locked(raw_value)) {
+        return 0;
+    }
+    return (raw_value & relative_locktime_mask) << relative_locktime_seconds_shift;
+}
+
+std::string get_genesis_address(bool is_testnet)
+{
+    if (is_testnet) {
+        return "tPd41bKLJGf1C5RRvaiV2mytqZB6WfM1vR";            // for testnet
+    }
+
+#ifdef PRIVATE_CHAIN
+    return "MCCu9WmXuTooSEoMHX1aN82b7syaJD65XM";                // for private net
+#else
+    return "MGqHvbaH9wzdr6oUDFz4S1HptjoKQcjRve";                // for mainnet
+#endif
 }
 
 std::string get_foundation_address(bool is_testnet)
 {
-    std::string address("MSCHL3unfVqzsZbRVCJ3yVp7RgAmXiuGN3");  // foundation address for mainnet
     if (is_testnet) {
-        address = "tF9pfqY8p6cfjuhDVZu9aXBY1CBprgrpKm";         // foundation address for testnet
+        return "tBELxsiiaMVGQcY2Apf7hmzAaipD4YWTTj";            // for testnet
     }
-    return address;
+
+#ifdef PRIVATE_CHAIN
+    return "MCCu9WmXuTooSEoMHX1aN82b7syaJD65XM";                // for private net
+#else
+    return "MSCHL3unfVqzsZbRVCJ3yVp7RgAmXiuGN3";                // for mainnet
+#endif
 }
 
+std::string get_developer_community_address(bool is_testnet)
+{
+    if (is_testnet) {
+        return "tBELxsiiaMVGQcY2Apf7hmzAaipD4YWTTj";            // for testnet
+    }
+
+    return "MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh";                // for mainnet
+}
 
 } // namespace libbitcoin

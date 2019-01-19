@@ -233,6 +233,37 @@ bool operation::read_opcode_data_size(uint32_t& count, opcode code,
     }
 }
 
+uint64_t operation::count_script_sigops(const operation::stack& operations, bool accurate)
+{
+    uint64_t total_sigs = 0;
+    opcode last_opcode = opcode::bad_operation;
+    for (const auto& op : operations)
+    {
+        if (op.code == opcode::checksig ||
+            op.code == opcode::checksigverify)
+        {
+            total_sigs++;
+        }
+        else if (op.code == opcode::checkmultisig ||
+                 op.code == opcode::checkmultisigverify)
+        {
+            if (accurate && within_op_n(last_opcode))
+            {
+                total_sigs += decode_op_n(last_opcode);
+            }
+            else
+            {
+                constexpr uint32_t multisig_default_sigops = 20;
+                total_sigs += multisig_default_sigops;
+            }
+        }
+
+        last_opcode = op.code;
+    }
+
+    return total_sigs;
+}
+
 uint64_t operation::count_non_push(const operation::stack& ops)
 {
     const auto found = [](const operation& op)

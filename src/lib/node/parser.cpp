@@ -214,11 +214,11 @@ options_metadata parser::load_settings()
         value<bool>(&configured.network.relay_transactions),
         "Request that peers relay transactions, defaults to true."
     )
-            (
-                    "network.enable_re_seeding",
-                    value<bool>(&configured.network.enable_re_seeding),
-                    "Re-connect the seed nodes to refresh local hosts cache, when the actual number of outgoing network connection <= 1. defaults to true."
-            )
+    (
+            "network.enable_re_seeding",
+            value<bool>(&configured.network.enable_re_seeding),
+            "Re-connect the seed nodes to refresh local hosts cache, when the actual number of outgoing network connection <= 1. defaults to true."
+    )
     (
         "network.hosts_file",
         value<path>(&configured.network.hosts_file),
@@ -307,6 +307,11 @@ options_metadata parser::load_settings()
         "blockchain.checkpoint",
         value<config::checkpoint::list>(&configured.chain.checkpoints),
         "A hash:height checkpoint, multiple entries allowed."
+    )
+    (
+        "blockchain.collect_split_stake",
+        value<bool>(&configured.chain.collect_split_stake),
+        "Use testnet rules for determination of work required, defaults to false."
     )
 
     /* [node] */

@@ -65,7 +65,7 @@ public:
         (
             "type,t",
             value<uint16_t>(&option_.type)->required(),
-            "Transaction type. 0 -- transfer etp, 1 -- deposit etp, 3 -- transfer asset"
+            "Transaction type. 0 -- transfer etp, 3 -- transfer asset"
         )
         (
             "utxos,u",
@@ -86,11 +86,6 @@ public:
             "symbol,n",
             value<std::string>(&option_.symbol)->default_value(""),
             "asset name, not specify this option for etp tx"
-        )
-        (
-            "deposit,d",
-            value<uint16_t>(&option_.deposit)->default_value(7),
-            "Deposits support [7, 30, 90, 182, 365] days. defaluts to 7 days"
         )
         (
             "mychange,m",
@@ -141,7 +136,6 @@ public:
         std::string symbol;
         std::string mychange_address;
         std::string message;
-        uint16_t deposit;
         uint64_t fee;
         uint32_t locktime;
 

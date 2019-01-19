@@ -59,12 +59,12 @@ public:
     /// Call to unload the memory map.
     bool close();
 
-    std::shared_ptr<asset_cert> get(const hash_digest& hash) const;
+    std::shared_ptr<chain::asset_cert> get(const hash_digest& hash) const;
 
     /// Get all asset certs
-    std::shared_ptr<std::vector<asset_cert>> get_blockchain_asset_certs() const;
+    std::shared_ptr<std::vector<chain::asset_cert>> get_blockchain_asset_certs() const;
 
-    void store(const asset_cert& sp_cert);
+    void store(const chain::asset_cert& sp_cert);
 
     /// Delete a transaction from database.
     void remove(const hash_digest& hash);

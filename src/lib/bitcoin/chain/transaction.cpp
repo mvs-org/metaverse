@@ -171,22 +171,13 @@ bool transaction::from_data_t(reader& source)
     return result;
 }
 
-void transaction::to_data_t(writer& sink, bool for_merkle) const
+void transaction::to_data_t(writer& sink) const
 {
     sink.write_4_bytes_little_endian(version);
     sink.write_variable_uint_little_endian(inputs.size());
 
-    if (for_merkle && consensus::witness::is_dpos_enabled() && is_coinbase()) {
-        auto input = inputs[0];
-        operation::stack ops;
-        ops.swap(input.script.operations);
-        input.script.operations.emplace_back(operation::factory_from_data(ops.front().to_data()));
+    for (const auto& input: inputs)
         input.to_data(sink);
-    }
-    else {
-        for (const auto& input: inputs)
-            input.to_data(sink);
-    }
 
     sink.write_variable_uint_little_endian(outputs.size());
 
@@ -241,7 +232,7 @@ hash_digest transaction::hash() const
     {
         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         mutex_.unlock_upgrade_and_lock();
-        hash_.reset(new hash_digest(bitcoin_hash(to_data(true))));
+        hash_.reset(new hash_digest(bitcoin_hash(to_data())));
         mutex_.unlock_and_lock_upgrade();
         //---------------------------------------------------------------------
     }
@@ -267,17 +258,46 @@ bool transaction::is_coinbase() const
 
 bool transaction::is_pos_genesis_tx(bool is_testnet) const
 {
-    if (!is_coinbase() || outputs.size() != 1) {
+    if (!is_coinbase() || outputs.size() != (1 + witness_cert_count)) {
+        return false;
+    }
+
+    // check etp reward
+    const auto & out = outputs[0];
+    if (!out.is_etp() || out.value != pos_genesis_reward) {
         return false;
     }
 
     chain::script script;
-    wallet::payment_address pay_address(get_foundation_address(is_testnet));
-    script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(pay_address));
+    std::string foundation_address = get_foundation_address(is_testnet);
+    wallet::payment_address pay_address(foundation_address);
+    script.operations = chain::operation::to_pay_key_hash_pattern(pay_address.hash());
+    const auto expected = script.to_data(false);
 
-    const auto & out = outputs[0];
-    return out.is_etp() && out.value == pos_genesis_reward &&
-        out.script.operations == script.operations;
+    const auto actual = out.script.to_data(false);
+    if (!std::equal(expected.begin(), expected.end(), actual.begin())) {
+        return false;
+    }
+
+    // check witness cert
+    for (uint32_t i = 0; i < witness_cert_count; ++i) {
+        const auto& out = outputs[i + 1];
+        if (!out.is_asset_cert_autoissue()) {
+            return false;
+        }
+
+        const auto cert = out.get_asset_cert();
+        if (cert.get_address() != foundation_address || !cert.is_primary_witness()) {
+            return false;
+        }
+
+        const auto actual = out.script.to_data(false);
+        if (!std::equal(expected.begin(), expected.end(), actual.begin())) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool transaction::is_coinstake() const
@@ -287,7 +307,6 @@ bool transaction::is_coinstake() const
         && (outputs.size() >= 2)
         && (outputs[0].is_null()) //the coin stake transaction is marked with the first output empty
         && (inputs[0].get_script_address() == outputs[1].get_script_address());
-
 }
 
 bool transaction::all_inputs_final() const
@@ -345,6 +364,33 @@ uint64_t transaction::total_output_transfer_amount() const
         return total + output.get_asset_amount();
     };
     return std::accumulate(outputs.begin(), outputs.end(), uint64_t(0), value);
+}
+
+uint64_t transaction::legacy_sigops_count(bool accurate) const
+{
+    uint64_t total_sigs = 0;
+    for (const auto& input : inputs)
+    {
+        const auto& operations = input.script.operations;
+        total_sigs += operation::count_script_sigops(operations, accurate);
+    }
+
+    for (const auto& output : outputs)
+    {
+        const auto& operations = output.script.operations;
+        total_sigs += operation::count_script_sigops(operations, accurate);
+    }
+
+    return total_sigs;
+}
+
+uint64_t transaction::legacy_sigops_count(const transaction::list& txs, bool accurate)
+{
+    uint64_t total_sigs = 0;
+    for (const auto& tx : txs) {
+        total_sigs += tx.legacy_sigops_count(accurate);
+    }
+    return total_sigs;
 }
 
 bool transaction::has_asset_issue() const

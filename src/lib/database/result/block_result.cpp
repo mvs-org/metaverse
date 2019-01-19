@@ -83,16 +83,31 @@ hash_digest block_result::transaction_hash(size_t index) const
 
 ec_signature block_result::blocksig() const
 {
+    if (!(header().is_proof_of_stake() || header().is_proof_of_dpos()))
+        return ec_signature();
+
     BITCOIN_ASSERT(slab_);
     const auto memory = REMAP_ADDRESS(slab_);
-
-    if (!header().is_proof_of_stake())
-        return ec_signature();
 
     const auto offset = header_size + height_size + count_size;
     const auto first = memory + offset + transaction_count() * hash_size;
     auto deserial = make_deserializer_unsafe(first);
-    return deserial.read_bytes<sizeof(ec_signature)>();
+    return deserial.read_bytes<ec_signature_size>();
 }
+
+ec_compressed block_result::public_key() const
+{
+    if (!header().is_proof_of_dpos())
+        return ec_compressed();
+
+    BITCOIN_ASSERT(slab_);
+    const auto memory = REMAP_ADDRESS(slab_);
+
+    const auto offset = header_size + height_size + count_size;
+    const auto first = memory + offset + transaction_count() * hash_size + ec_signature_size;
+    auto deserial = make_deserializer_unsafe(first);
+    return deserial.read_bytes<ec_compressed_size>();
+}
+
 } // namespace database
 } // namespace libbitcoin

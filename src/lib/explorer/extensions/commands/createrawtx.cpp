@@ -74,16 +74,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
 
     auto type = static_cast<utxo_attach_type>(option_.type);
 
-    if (type == utxo_attach_type::deposit) {
-        if (!option_.symbol.empty()) {
-            throw argument_legality_exception{"not deposit asset " + option_.symbol};
-        }
-
-        if (option_.receivers.size() != 1) {
-            throw argument_legality_exception{"only support deposit on one address!"};
-        }
-    }
-    else if (type == utxo_attach_type::asset_transfer) {
+    if (type == utxo_attach_type::asset_transfer) {
         blockchain.uppercase_symbol(option_.symbol);
 
         // check asset symbol
@@ -95,7 +86,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
     for ( auto& each : option_.receivers) {
         colon_delimited2_item<std::string, uint64_t> item(each);
 
-        attachment attach;
+        chain::attachment attach;
         auto addr = get_address(item.first(), attach, false, blockchain);
         if (!from_did.empty()) {
             attach.set_from_did(from_did);
@@ -142,24 +133,14 @@ console_result createrawtx::invoke(Json::Value& jv_output,
         break;
     }
 
-    case utxo_attach_type::deposit: {
-        sp_send_helper = std::make_shared<depositing_etp_transaction>(
-                             blockchain, type,
-                             std::move(senders), std::move(receivers),
-                             option_.deposit, std::move(change_address),
-                             std::move(option_.message),
-                             option_.fee, option_.locktime);
-        break;
-    }
-
     default: {
         throw argument_legality_exception{"invalid transaction type."};
         break;
     }
     }
 
-    history::list utxo_list;
-    std::unordered_map<input_point, uint32_t> utxo_seq_map; //((hash, index), sequence)
+    chain::history::list utxo_list;
+    std::unordered_map<chain::input_point, uint32_t> utxo_seq_map; //((hash, index), sequence)
     for (const std::string utxo : option_.utxos) {
         const auto utxo_stru = bc::split(utxo, ":");
         if ((utxo_stru.size() != 2) && (utxo_stru.size() != 3)) {
@@ -170,7 +151,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
 
         uint64_t tx_height = 0;
         bc::chain::transaction tx;
-        auto exist = blockchain.get_transaction(hash, tx, tx_height);
+        auto exist = blockchain.get_transaction_consider_pool(tx, tx_height, hash);
         if (!exist) {
             throw tx_notfound_exception{"transaction[" + utxo_stru[0] + "] does not exist!"};
         }
@@ -183,7 +164,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
             if ((chain::get_script_context() & chain::script_context::bip112_enabled) == 0) {
                 throw argument_legality_exception{"invalid utxo: " + utxo + ", lock sequence(bip112) is not enabled"};
             }
-            input_point utxo_point(hash, utxo_index);
+            chain::input_point utxo_point(hash, utxo_index);
             if (utxo_seq_map.count(utxo_point)) {
                 throw argument_legality_exception{"duplicate utxo: " + utxo};
             }
@@ -191,7 +172,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
             utxo_seq_map[utxo_point] = utxo_sequence;
         }
 
-        history h;
+        chain::history h;
         h.output.hash = tx.hash();
         h.output.index = utxo_index;
         h.output_height = tx_height;
@@ -214,8 +195,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
                 continue;
             }
             if ((input.sequence & bc::relative_locktime_disabled) ||
-                input.sequence == 0 ||
-                input.sequence == bc::max_input_sequence) {
+                (input.sequence & bc::relative_locktime_mask) == 0) {
                 input.sequence = utxo_seq_map[input.previous_output];
             }
         }

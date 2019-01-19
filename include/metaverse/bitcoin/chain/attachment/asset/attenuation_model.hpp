@@ -103,7 +103,5 @@ private:
 } // namespace chain
 } // namespace libbitcoin
 
-using attenuation_model = libbitcoin::chain::attenuation_model;
-
 #endif
 

@@ -57,7 +57,7 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     }
 
     auto secondaryissue_threshold = asset->get_secondaryissue_threshold();
-    if (!asset_detail::is_secondaryissue_legal(secondaryissue_threshold))
+    if (!chain::asset_detail::is_secondaryissue_legal(secondaryissue_threshold))
         throw asset_secondaryissue_threshold_exception{"asset is not allowed to do secondary issue, or the threshold is illegal."};
 
     if (blockchain.is_asset_cert_exist(argument_.symbol, asset_cert_ns::issue)) {
@@ -79,23 +79,23 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
         throw asset_amount_exception{"secondaryissue volume cannot exceed maximum value"};
 
     uint64_t asset_volume_of_threshold = 0;
-    if (!asset_detail::is_secondaryissue_freely(secondaryissue_threshold)) {
+    if (!chain::asset_detail::is_secondaryissue_freely(secondaryissue_threshold)) {
         asset_volume_of_threshold = (uint64_t)(((double)total_volume) / 100 * secondaryissue_threshold);
     }
 
     // receiver
     std::vector<receiver_record> receiver{
         {to_address, argument_.symbol, 0, asset_volume_of_threshold,
-            utxo_attach_type::asset_secondaryissue, attachment("", to_did)},
+            utxo_attach_type::asset_secondaryissue, chain::attachment("", to_did)},
         {to_address, argument_.symbol, 0, 0, asset_cert_ns::issue,
-            utxo_attach_type::asset_cert, attachment("", to_did)}
+            utxo_attach_type::asset_cert, chain::attachment("", to_did)}
     };
 
     if (!option_.memo.empty()) {
         check_message(option_.memo);
 
         receiver.push_back({to_address, "", 0, 0, utxo_attach_type::message,
-            attachment(0, 0, chain::blockchain_message(option_.memo))});
+            chain::attachment(0, 0, chain::blockchain_message(option_.memo))});
     }
 
     auto issue_helper = secondary_issuing_asset(*this, blockchain,

@@ -54,7 +54,7 @@ console_result swaptoken::invoke(Json::Value& jv_output,
     // check asset symbol
     check_asset_symbol(argument_.symbol);
 
-    attachment attach_asset, attach_fee;
+    chain::attachment attach_asset, attach_fee;
     const std::string&& to_address = get_address(argument_.to, attach_asset, false, blockchain);
     const std::string&& swapfee_address = bc::get_developer_community_address(
         blockchain.chain_settings().use_testnet_rules);
@@ -83,7 +83,7 @@ console_result swaptoken::invoke(Json::Value& jv_output,
         check_message(option_.memo);
 
         receiver.push_back({to_address, "", 0, 0, utxo_attach_type::message,
-            attachment(0, 0, chain::blockchain_message(option_.memo))});
+            chain::attachment(0, 0, chain::blockchain_message(option_.memo))});
     }
 
     std::string message("{\"type\":\"ETH\",\"address\":\""+ argument_.foreign_addr + "\"}");

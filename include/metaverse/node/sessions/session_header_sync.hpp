@@ -44,7 +44,7 @@ public:
         blockchain::simple_chain& blockchain,
         const config::checkpoint::list& checkpoints);
 
-    virtual void start(result_handler handler);
+    virtual void start(result_handler handler) override;
 
 protected:
     /// Overridden to attach and start specialized handshake.

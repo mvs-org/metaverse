@@ -67,16 +67,22 @@ private:
         block->header = header;
 
         const auto& hash = block->header.hash();
-        if (block->header.is_proof_of_stake())
-        {
+
+        if (block->header.is_proof_of_stake() || block->header.is_proof_of_dpos()) {
             blockchain_.fetch_block_signature(hash,
                                               std::bind(&block_fetcher::handle_fetch_signature,
                                                         shared_from_this(), _1, _2, block, handler));
-        } else {
-            blockchain_.fetch_block_transaction_hashes(hash,
-                                                       std::bind(&block_fetcher::fetch_transactions,
-                                                                 shared_from_this(), _1, _2, block, handler));
         }
+
+        if (block->header.is_proof_of_dpos()) {
+            blockchain_.fetch_block_public_key(hash,
+                                              std::bind(&block_fetcher::handle_fetch_public_key,
+                                                        shared_from_this(), _1, _2, block, handler));
+        }
+
+        blockchain_.fetch_block_transaction_hashes(hash,
+                                                   std::bind(&block_fetcher::fetch_transactions,
+                                                             shared_from_this(), _1, _2, block, handler));
     }
 
     void handle_fetch_signature(const code& ec, const ec_signature& sig,
@@ -87,14 +93,18 @@ private:
             return;
         }
 
-        // Set the block header.
         block->blocksig = sig;
+    }
 
-        const auto& hash = block->header.hash();
+    void handle_fetch_public_key(const code& ec, const ec_compressed& pubkey,
+                             block::ptr block, block_chain::block_fetch_handler handler){
 
-        blockchain_.fetch_block_transaction_hashes(hash,
-            std::bind(&block_fetcher::fetch_transactions,
-                shared_from_this(), _1, _2, block, handler));
+        if (ec) {
+            handler(ec, nullptr);
+            return;
+        }
+
+        block->public_key = pubkey;
     }
 
     void fetch_transactions(const code& ec, const hash_list& hashes,

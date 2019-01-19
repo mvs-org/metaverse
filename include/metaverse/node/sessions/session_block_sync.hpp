@@ -45,7 +45,7 @@ public:
     session_block_sync(network::p2p& network, header_queue& hashes,
         blockchain::simple_chain& chain, const settings& settings);
 
-    virtual void start(result_handler handler);
+    virtual void start(result_handler handler) override;
 
 protected:
     /// Overridden to attach and start specialized handshake.

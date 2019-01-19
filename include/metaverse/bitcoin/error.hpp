@@ -187,12 +187,15 @@ enum error_code_t
 
     proof_of_stake,
     miss_coinstake,
-    illegal_coinstake,
+    illegal_coinstake,              // 100
     extra_coinstakes,
     coinstake_version_invalid,
-    cointstake_signature_invalid,
-    check_pos_genesis_error
-
+    block_signature_invalid,
+    check_pos_genesis_error,
+    mst_coinbase_too_large,         // 105
+    mst_coinbase_invalid,
+    invalid_output_script_lock_sequence,
+    block_intermix_interval_error,
 };
 
 enum error_condition_t

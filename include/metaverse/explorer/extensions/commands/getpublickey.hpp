@@ -78,8 +78,14 @@ public:
         (
             "ADDRESS",
             value<std::string>(&argument_.address)->required(),
-            "Did/Address/Publickey."
-        );
+            "Did/Address/Publickey/PrivateKey(WIF)."
+        )
+        (
+            "did",
+            value<bool>(&option_.check_did)->default_value(false)->zero_tokens(),
+            "Explicitly specify that DID is used as 'ADDRESS' argument"
+        )
+        ;
 
         return options;
     }
@@ -98,6 +104,7 @@ public:
 
     struct option
     {
+        bool check_did;
     } option_;
 
 };

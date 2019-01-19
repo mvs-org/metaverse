@@ -78,13 +78,15 @@ console_result issue::invoke (Json::Value& jv_output,
         throw address_invalid_exception{"invalid asset issuer " + to_did};
     }
 
+    check_mining_subsidy_param(option_.mining_subsidy_param);
+
     std::string cert_symbol;
-    asset_cert_type cert_type = asset_cert_ns::none;
+    chain::asset_cert_type cert_type = asset_cert_ns::none;
     bool is_domain_cert_exist = false;
 
     // domain cert check
-    auto&& domain = asset_cert::get_domain(argument_.symbol);
-    if (asset_cert::is_valid_domain(domain)) {
+    auto&& domain = chain::asset_cert::get_domain(argument_.symbol);
+    if (chain::asset_cert::is_valid_domain(domain)) {
         bool exist = blockchain.is_asset_cert_exist(domain, asset_cert_ns::domain);
         if (!exist) {
             // domain cert does not exist, issue new domain cert to this address
@@ -123,7 +125,7 @@ console_result issue::invoke (Json::Value& jv_output,
 
     // receiver
     std::vector<receiver_record> receiver{
-        {to_address, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment("", to_did)}
+        {to_address, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, chain::attachment("", to_did)}
     };
 
     // asset_cert utxo
@@ -132,26 +134,35 @@ console_result issue::invoke (Json::Value& jv_output,
         for (auto each_cert_type : certs) {
             receiver.push_back(
             {   to_address, argument_.symbol, 0, 0,
-                each_cert_type, utxo_attach_type::asset_cert_autoissue, attachment("", to_did)
+                each_cert_type, utxo_attach_type::asset_cert_autoissue, chain::attachment("", to_did)
             });
         }
     }
 
     // domain cert or naming cert
-    if (asset_cert::is_valid_domain(domain)) {
+    if (chain::asset_cert::is_valid_domain(domain)) {
         receiver.push_back(
         {   to_address, cert_symbol, 0, 0, cert_type,
             (is_domain_cert_exist ? utxo_attach_type::asset_cert : utxo_attach_type::asset_cert_autoissue),
-            attachment("", to_did)
+            chain::attachment("", to_did)
+        });
+    }
+
+    if (!option_.mining_subsidy_param.empty()) {
+        receiver.push_back(
+        {   to_address, argument_.symbol, 0, 0, asset_cert_ns::mining,
+            utxo_attach_type::asset_cert_autoissue,
+            chain::attachment("", to_did)
         });
     }
 
     auto issue_helper = issuing_asset(
-                            *this, blockchain,
-                            std::move(auth_.name), std::move(auth_.auth),
-                            "", std::move(argument_.symbol),
-                            std::move(option_.attenuation_model_param),
-                            std::move(receiver), argument_.fee, argument_.percentage);
+        *this, blockchain,
+        std::move(auth_.name), std::move(auth_.auth),
+        "", std::move(argument_.symbol),
+        std::move(option_.attenuation_model_param),
+        std::move(option_.mining_subsidy_param),
+        std::move(receiver), argument_.fee, argument_.percentage);
 
     issue_helper.exec();
 

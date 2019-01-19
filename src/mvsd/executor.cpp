@@ -143,10 +143,17 @@ bool executor::do_initchain()
         log::info(LOG_SERVER) << BS_INITCHAIN_COMPLETE;
         return true;
     }
-    else if (MVS_DATABASE_VERSION_NUMBER >= 63)
-    {
-        if (!data_base::upgrade_version_63(data_path)) {
-            throw std::runtime_error{ " upgrade database to version 63 failed!" };
+    else {
+        if (MVS_DATABASE_VERSION_NUMBER >= 63) {
+            if (!data_base::upgrade_version_63(data_path)) {
+                throw std::runtime_error{ " upgrade database to version 63 failed!" };
+            }
+        }
+
+        if (MVS_DATABASE_VERSION_NUMBER >= 64) {
+            if (!data_base::upgrade_version_64(data_path)) {
+                throw std::runtime_error{ " upgrade database to version 63 failed!" };
+            }
         }
     }
 
@@ -187,7 +194,12 @@ bool executor::menu()
 
     try
     {
-        log::info(LOG_SERVER) << "mvsd version " << MVS_VERSION;
+#ifdef NDEBUG
+        std::string running_mode = " (release mode) ";
+#else
+        std::string running_mode = " (debug mode) ";
+#endif
+        log::info(LOG_SERVER) << "mvsd version " << MVS_VERSION << running_mode;
         // set block data absolute path
         const auto& directory = metadata_.configured.database.directory ;
         if (!directory.is_absolute()) {
@@ -234,10 +246,10 @@ bool executor::run()
     node_ = std::make_shared<server_node>(metadata_.configured);
 
 #ifdef PRIVATE_CHAIN
-    log::info(LOG_SERVER) << "running prinet";
+    log::info(LOG_SERVER) << "running (private net)";
 #else
     log::info(LOG_SERVER)
-        << (!node_->is_use_testnet_rules() ? "running mainnet" : "running testnet");
+        << (!node_->is_use_testnet_rules() ? "running (mainnet)" : "running (testnet)");
 #endif
 
     // The callback may be returned on the same thread.
@@ -337,11 +349,11 @@ void executor::stop(const code& ec)
 // Set up logging.
 void executor::initialize_output()
 {
-    log::debug(LOG_SERVER) << BS_LOG_HEADER;
+    // log::debug(LOG_SERVER) << BS_LOG_HEADER;
     log::info(LOG_SERVER) << BS_LOG_HEADER;
-    log::warning(LOG_SERVER) << BS_LOG_HEADER;
-    log::error(LOG_SERVER) << BS_LOG_HEADER;
-    log::fatal(LOG_SERVER) << BS_LOG_HEADER;
+    // log::warning(LOG_SERVER) << BS_LOG_HEADER;
+    // log::error(LOG_SERVER) << BS_LOG_HEADER;
+    // log::fatal(LOG_SERVER) << BS_LOG_HEADER;
 
     auto file = default_data_path() / metadata_.configured.file;
 

@@ -83,8 +83,16 @@ public:
         )
         (
             "model,m",
-            value<std::string>(&option_.attenuation_model_param),
+            value<std::string>(&option_.attenuation_model_param)->default_value(""),
             BX_MST_OFFERING_CURVE
+        )
+        (
+            "subsidy,s",
+            value<std::string>(&option_.mining_subsidy_param)->default_value(""),
+            "The block subsidy parameters for mining."
+            " The format is \"initial:unit32,interval:unit32,base:float\"."
+            " The subsidy of block is calcuted by: initial * pow(base, (block_height/interval))"
+            " Default is empty which means mining is not allowed."
         )
         (
             "fee,f",
@@ -117,6 +125,7 @@ public:
     struct option
     {
         std::string attenuation_model_param;
+        std::string mining_subsidy_param;
     } option_;
 
 };

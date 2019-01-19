@@ -24,6 +24,7 @@
 #include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/consensus/libdevcore/SHA3.h>
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 #include <regex>
 
 namespace libbitcoin {
@@ -122,7 +123,7 @@ bool is_ETH_Address(const string& address)
 
 void check_did_symbol(const std::string& symbol, bool check_sensitive)
 {
-    if (!chain::output::is_valid_did_symbol(symbol, check_sensitive)) {
+    if (!bc::blockchain::block_chain_impl::is_valid_did_symbol(symbol, check_sensitive)) {
         throw did_symbol_name_exception{"Did symbol " + symbol + " is not valid."};
     }
 
@@ -142,6 +143,18 @@ void check_asset_symbol(const std::string& symbol, bool check_sensitive)
     if (symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE) {
         throw asset_symbol_length_exception{"Asset symbol length must be less than "
             + std::to_string(ASSET_DETAIL_SYMBOL_FIX_SIZE) + "."};
+    }
+
+    // char check
+    for (const auto& i : symbol) {
+        if (!(std::isalnum(i) || i=='.')) {
+            throw asset_symbol_name_exception{"Asset symbol " + symbol + " contains invalid character."};
+        }
+    }
+
+    // upper char check
+    if (symbol != boost::to_upper_copy(symbol)) {
+        throw asset_symbol_name_exception{"Asset symbol " + symbol + " must be uppercase."};
     }
 
     if (check_sensitive) {
@@ -166,7 +179,7 @@ void check_mit_symbol(const std::string& symbol, bool check_sensitive)
     for (const auto& i : symbol) {
         if (!(std::isalnum(i) || i == '.'|| i == '@' || i == '_' || i == '-'))
             throw asset_symbol_name_exception(
-                "MIT symbol " + symbol + " has invalid character.");
+                "MIT symbol " + symbol + " contains invalid character.");
     }
 
     if (check_sensitive) {
@@ -181,6 +194,18 @@ void check_message(const std::string& message, bool check_sensitive)
 {
     if (!message.empty() && message.size() >= 0xfd/* 253, see serializer.ipp */) {
         throw argument_size_invalid_exception{"message length out of bounds."};
+    }
+}
+
+void check_mining_subsidy_param(const std::string& param)
+{
+    if (param.empty()) {
+        return;
+    }
+
+    auto parameters = asset_cert::parse_mining_subsidy_param(param);
+    if (parameters == nullptr) {
+        throw asset_mining_subsidy_parameter_exception{"invalid parameters: " + param};
     }
 }
 
@@ -200,6 +225,7 @@ asset_cert_type check_cert_type_name(const string& cert_name, bool all)
     auto certs_create = asset_cert_ns::none;
     std::map <std::string, asset_cert_type> cert_map = {
         {"naming",      asset_cert_ns::naming},
+        {"witness",     asset_cert_ns::witness},
         {"marriage",    asset_cert_ns::marriage},
         {"kyc",         asset_cert_ns::kyc}
     };
@@ -207,6 +233,7 @@ asset_cert_type check_cert_type_name(const string& cert_name, bool all)
     if (all) {
         cert_map["issue"] = asset_cert_ns::issue;
         cert_map["domain"] = asset_cert_ns::domain;
+        cert_map["mining"] = asset_cert_ns::mining;
     }
 
     auto iter = cert_map.find(cert_name);
@@ -276,6 +303,25 @@ asset_cert_type check_issue_cert(bc::blockchain::block_chain_impl& blockchain,
         }
     }
 
+    else if (certs_create == asset_cert_ns::mining) {
+        // check asset exist.
+        if (!blockchain.is_asset_exist(symbol, false)) {
+            throw asset_symbol_existed_exception(
+                "asset symbol '" + symbol + "' does not exist on the blockchain!");
+        }
+
+        // check domain cert belong to this account.
+        bool exist = blockchain.is_asset_cert_exist(symbol, asset_cert_ns::issue);
+        if (!exist) {
+            throw asset_cert_notfound_exception("no issue cert '" + symbol + "' found!");
+        }
+
+        auto cert = blockchain.get_account_asset_cert(account, symbol, asset_cert_ns::issue);
+        if (!cert) {
+            throw asset_cert_notowned_exception("no issue cert '" + symbol + "' owned by " + account);
+        }
+    }
+
     return certs_create;
 }
 
@@ -295,7 +341,7 @@ std::string get_address(const std::string& did_or_address,
 }
 
 std::string get_address(const std::string& did_or_address,
-    attachment& attach, bool is_from,
+    chain::attachment& attach, bool is_from,
     bc::blockchain::block_chain_impl& blockchain)
 {
     std::string address;
@@ -371,7 +417,7 @@ void sync_fetch_asset_cert_balance(const std::string& address, const string& sym
     {
         // spend unconfirmed (or no spend attempted)
         if ((row.spend.hash == null_hash)
-                && blockchain.get_transaction(row.output.hash, tx_temp, tx_height))
+                && blockchain.get_transaction(tx_temp, tx_height, row.output.hash))
         {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             const auto& output = tx_temp.outputs.at(row.output.index);
@@ -409,7 +455,7 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
     {
         // spend unconfirmed (or no spend attempted)
         if ((row.spend.hash == null_hash)
-                && blockchain.get_transaction(row.output.hash, tx_temp, tx_height))
+                && blockchain.get_transaction(tx_temp, tx_height, row.output.hash))
         {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             const auto& output = tx_temp.outputs.at(row.output.index);
@@ -443,10 +489,8 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
                 }
                 else if (asset_amount
                     && chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-                    uint64_t lock_sequence = chain::operation::
-                        get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
-                    // use any kind of blocks
-                    if (row.output_height + lock_sequence > height) {
+                    auto is_spendable = blockchain.is_utxo_spendable(tx_temp, row.output.index, tx_height, height);
+                    if (!is_spendable) {
                         // utxo already in block but is locked with sequence and not mature
                         locked_amount = asset_amount;
                     }
@@ -487,7 +531,7 @@ void sync_fetch_locked_balance(const std::string& address,
     {
         // spend unconfirmed (or no spend attempted)
         if ((row.spend.hash == null_hash)
-            && blockchain.get_transaction(row.output.hash, tx_temp, tx_height))
+            && blockchain.get_transaction(tx_temp, tx_height, row.output.hash))
         {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             const auto& output = tx_temp.outputs.at(row.output.index);
@@ -504,22 +548,39 @@ void sync_fetch_locked_balance(const std::string& address,
                 continue;
             }
 
-            uint64_t lock_sequence = chain::operation::
-                get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
-            // use any kind of blocks
-            if ((tx_height + lock_sequence <= height) ||
-                (expiration > height && tx_height + lock_sequence <= expiration)) {
-                continue;
-            }
-
             uint64_t locked_value = is_asset ? output.get_asset_amount() : row.value;
             if (locked_value == 0) {
                 continue;
             }
 
-            uint64_t locked_height = lock_sequence;
-            uint64_t expiration_height = tx_height + lock_sequence;
-            locked_balance locked{address, locked_value, locked_height, expiration_height};
+            uint64_t locked_height = 0;
+            uint64_t expiration_height = 0;
+
+            auto raw_value = output.get_lock_sequence();
+            auto is_time_locked = is_relative_locktime_time_locked(raw_value);
+            if (is_time_locked) {
+                auto locked_seconds = get_relative_locktime_locked_seconds(raw_value);
+                auto prev_timestamp = blockchain.get_block_timestamp(tx_height);
+                auto curr_timestamp = blockchain.get_block_timestamp(height);
+                if ((prev_timestamp + locked_seconds <= curr_timestamp) ||
+                    (expiration > curr_timestamp && prev_timestamp + locked_seconds <= expiration)) {
+                    continue;
+                }
+                locked_height = locked_seconds;
+                expiration_height = prev_timestamp + locked_seconds;
+            }
+            else {
+                auto locked_heights = get_relative_locktime_locked_heights(raw_value);
+                // use any kind of blocks
+                if ((tx_height + locked_heights <= height) ||
+                    (expiration > height && tx_height + locked_heights <= expiration)) {
+                    continue;
+                }
+                locked_height = locked_heights;
+                expiration_height = tx_height + locked_heights;
+            }
+
+            locked_balance locked{address, locked_value, locked_height, expiration_height, tx_height, is_time_locked};
             sh_vec->emplace_back(locked);
         }
     }
@@ -540,7 +601,7 @@ void sync_fetch_asset_deposited_balance(const std::string& address,
     {
         // spend unconfirmed (or no spend attempted)
         if ((row.spend.hash == null_hash)
-                && blockchain.get_transaction(row.output.hash, tx_temp, tx_height))
+            && blockchain.get_transaction(tx_temp, tx_height, row.output.hash))
         {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             const auto& output = tx_temp.outputs.at(row.output.index);
@@ -600,7 +661,7 @@ void sync_unspend_output(bc::blockchain::block_chain_impl& blockchain, const inp
     std::shared_ptr<chain::transaction> tx = blockchain.get_spends_output(input);
     uint64_t tx_height;
     chain::transaction tx_temp;
-    if (tx == nullptr && blockchain.get_transaction(input.hash, tx_temp, tx_height))
+    if (tx == nullptr && blockchain.get_transaction(tx_temp, tx_height, input.hash))
     {
         const auto& output = tx_temp.outputs.at(input.index);
 
@@ -657,7 +718,7 @@ auto sync_fetch_asset_deposited_view(const std::string& symbol,
     for (auto &out : *output_list)
     {
         // spend unconfirmed (or no spend attempted)
-        if (blockchain.get_transaction(out.hash, tx_temp, tx_height))
+        if (blockchain.get_transaction(tx_temp, tx_height, out.hash))
         {
             BITCOIN_ASSERT(out.index < tx_temp.outputs.size());
             const auto &output = tx_temp.outputs.at(out.index);
@@ -721,7 +782,7 @@ auto sync_fetch_asset_view(const std::string& symbol,
     for (auto &out : *output_list)
     {
         // spend unconfirmed (or no spend attempted)
-        if (blockchain.get_transaction(out.hash, tx_temp, tx_height))
+        if (blockchain.get_transaction(tx_temp, tx_height, out.hash))
         {
             BITCOIN_ASSERT(out.index < tx_temp.outputs.size());
             const auto &output = tx_temp.outputs.at(out.index);
@@ -751,10 +812,8 @@ auto sync_fetch_asset_view(const std::string& symbol,
                 }
                 else if (asset_amount
                     && chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-                    uint64_t lock_sequence = chain::operation::
-                        get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
-                    // use any kind of blocks
-                    if (tx_height + lock_sequence > height) {
+                    auto is_spendable = blockchain.is_utxo_spendable(tx_temp, out.index, tx_height, height);
+                    if (!is_spendable) {
                         // utxo already in block but is locked with sequence and not mature
                         locked_amount = asset_amount;
                     }
@@ -795,13 +854,9 @@ void sync_fetch_deposited_balance(wallet::payment_address& address,
     auto&& address_str = address.encoded();
     auto&& rows = blockchain.get_address_history(address, false);
     for (auto& row: rows) {
-        if (row.output_height == 0) {
-            continue;
-        }
-
         // spend unconfirmed (or no spend attempted)
         if ((row.spend.hash == null_hash)
-                && blockchain.get_transaction(row.output.hash, tx_temp, tx_height)) {
+            && blockchain.get_transaction(tx_temp, tx_height, row.output.hash)) {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             auto output = tx_temp.outputs.at(row.output.index);
             if (output.get_script_address() != address.encoded()) {
@@ -865,44 +920,18 @@ void sync_fetchbalance(wallet::payment_address& address,
     blockchain.get_last_height(height);
 
     for (auto& row: rows) {
-        bool tx_ready = (row.spend.hash == null_hash)
-            && blockchain.get_transaction(row.output.hash, tx_temp, tx_height);
-        // include genesis block whose height is zero.
-        if (row.output_height == 0 && tx_height != 0) {
-            continue;
-        }
-
         // spend unconfirmed (or no spend attempted)
-        if (tx_ready) {
+        if ((row.spend.hash == null_hash)
+            && blockchain.get_transaction(tx_temp, tx_height, row.output.hash)) {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             auto output = tx_temp.outputs.at(row.output.index);
             if (output.get_script_address() != address.encoded()) {
                 continue;
             }
 
-            if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
-                // deposit utxo in block
-                uint64_t lock_height = chain::operation::
-                    get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-                if (lock_height > blockchain.calc_number_of_blocks(row.output_height, height)) {
-                    // utxo already in block but deposit not expire
-                    frozen_balance += row.value;
-                }
-            }
-            else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-                uint64_t lock_sequence = chain::operation::
-                    get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
-                // use any kind of blocks
-                if (row.output_height + lock_sequence > height) {
-                    // utxo already in block but is locked with sequence and not mature
-                    frozen_balance += row.value;
-                }
-            }
-            else if (tx_temp.is_coinbase()) { // coin base etp maturity etp check
-                // add not coinbase_maturity etp into frozen
-                if (coinbase_maturity > blockchain.calc_number_of_blocks(row.output_height, height)) {
-                    frozen_balance += row.value;
-                }
+            auto is_spendable = blockchain.is_utxo_spendable(tx_temp, row.output.index, tx_height, height);
+            if (!is_spendable) {
+                frozen_balance += row.value;
             }
 
             unspent_balance += row.value;
@@ -942,11 +971,7 @@ void sync_fetchbalance(wallet::payment_address& address,
         }
 
         bool tx_ready = (row.spend.hash == null_hash)
-            && blockchain.get_transaction(row.output.hash, tx_temp, tx_height);
-        // include genesis block whose height is zero.
-        if (row.output_height == 0 && tx_height != 0) {
-            continue;
-        }
+            && blockchain.get_transaction(tx_temp, tx_height, row.output.hash);
 
         // spend unconfirmed (or no spend attempted)
         if (!tx_ready) {
@@ -959,29 +984,9 @@ void sync_fetchbalance(wallet::payment_address& address,
             continue;
         }
 
-        if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
-            // deposit utxo in block
-            uint64_t lock_height = chain::operation::
-                get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-            if (lock_height > blockchain.calc_number_of_blocks(row.output_height, height)) {
-                // utxo already in block but deposit not expire
-                frozen_balance += row.value;
-            }
-        }
-        else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-            uint64_t lock_sequence = chain::operation::
-                get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
-            // use any kind of blocks
-            if (row.output_height + lock_sequence > height) {
-                // utxo already in block but is locked with sequence and not mature
-                frozen_balance += row.value;
-            }
-        }
-        else if (tx_temp.is_coinbase()) { // coin base etp maturity etp check
-            // add not coinbase_maturity etp into frozen
-            if (coinbase_maturity > blockchain.calc_number_of_blocks(row.output_height, height)) {
-                frozen_balance += row.value;
-            }
+        auto is_spendable = blockchain.is_utxo_spendable(tx_temp, row.output.index, tx_height, height);
+        if (!is_spendable) {
+            frozen_balance += row.value;
         }
 
         unspent_balance += row.value;
@@ -1008,9 +1013,11 @@ bool base_transfer_common::get_spendable_output(
 
     chain::transaction tx_temp;
     uint64_t tx_height;
-    if (!blockchain_.get_transaction(row.output.hash, tx_temp, tx_height)) {
+    if (!blockchain_.get_transaction_consider_pool(tx_temp, tx_height, row.output.hash)) {
         return false;
     }
+
+    const auto is_in_pool = tx_height == max_uint64;
 
     BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
     output = tx_temp.outputs.at(row.output.index);
@@ -1021,45 +1028,18 @@ bool base_transfer_common::get_spendable_output(
         }
     }
 
-    if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
-        if (row.output_height == 0) {
+    if (is_in_pool) {
+        if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
             // deposit utxo in transaction pool
             return false;
-        } else {
-            // deposit utxo in block
-            auto lock_height = chain::operation::
-                get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-            if (lock_height > blockchain_.calc_number_of_blocks(row.output_height, height)) {
-                // utxo already in block but deposit not expire
-                return false;
-            }
         }
-    }
-    else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-        if (row.output_height == 0) {
+        if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
             // lock sequence utxo in transaction pool
-            return false;
-        }
-        else {
-            uint64_t lock_sequence = chain::operation::
-                get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
-            // use any kind of blocks
-            if (row.output_height + lock_sequence > height) {
-                // utxo already in block but is locked with sequence and not mature
-                return false;
-            }
-        }
-    }
-    else if (tx_temp.is_coinbase()) { // incase readd deposit
-        // coin base etp maturity etp check
-        // coinbase_maturity etp check
-        if ((row.output_height == 0) ||
-            (coinbase_maturity > blockchain_.calc_number_of_blocks(row.output_height, height))) {
             return false;
         }
     }
 
-    return true;
+    return blockchain_.is_utxo_spendable(tx_temp, row.output.index, row.output_height, height);
 }
 
 // only consider etp and asset and cert.
@@ -1155,6 +1135,11 @@ void base_transfer_common::sync_fetchutxo(
                 if (domain != asset_symbol)
                     continue;
             }
+            else if (cert_type == asset_cert_ns::witness) {
+                auto&& primary = asset_cert::get_primary_witness_symbol(symbol_);
+                if (primary != asset_symbol)
+                    continue;
+            }
             else {
                 if (symbol_ != asset_symbol)
                     continue;
@@ -1207,7 +1192,7 @@ void base_transfer_common::sync_fetchutxo(
 
         BITCOIN_ASSERT(asset_total_amount >= asset_amount);
 
-        auto lock_sequence = output.get_lock_sequence();
+        auto lock_sequence = output.get_lock_sequence(max_input_sequence);
 
         if (locktime_ > 0) {
             // ref. is_locktime_conflict() [BIP65]
@@ -1248,7 +1233,7 @@ void base_transfer_common::sync_fetchutxo(
             std::string model_param(new_model_param_ptr->begin(), new_model_param_ptr->end());
             receiver_list_.push_back({record.addr, record.symbol,
                                       0, locked_asset, utxo_attach_type::asset_locked_transfer,
-                                      attachment(0, 0, chain::blockchain_message(std::move(model_param))), record.output});
+                                      chain::attachment(0, 0, chain::blockchain_message(std::move(model_param))), record.output});
             // in secondary issue, locked asset can also verify threshold condition
             if (is_locked_asset_as_payment()) {
                 payment_asset_ = (payment_asset_ > locked_asset)
@@ -1285,7 +1270,8 @@ void base_transfer_common::sum_payments()
         payment_etp_ += iter.amount;
         payment_asset_ += iter.asset_amount;
 
-        if (iter.asset_cert != asset_cert_ns::none) {
+        if (iter.asset_cert != asset_cert_ns::none
+            && iter.type != utxo_attach_type::asset_cert_autoissue) {
             payment_asset_cert_.push_back(iter.asset_cert);
         }
 
@@ -1430,7 +1416,7 @@ void base_transfer_common::populate_etp_change(const std::string& address)
 
         if (blockchain_.is_valid_address(addr)) {
             receiver_list_.push_back(
-                {addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+                {addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, chain::attachment()});
         }
         else {
             if (addr.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
@@ -1444,7 +1430,7 @@ void base_transfer_common::populate_etp_change(const std::string& address)
                     "mychange did symbol " + addr + "does not exist on the blockchain"};
             }
 
-            attachment attach;
+            chain::attachment attach;
             attach.set_version(DID_ATTACH_VERIFY_VERSION);
             attach.set_to_did(addr);
             receiver_list_.push_back(
@@ -1465,7 +1451,7 @@ void base_transfer_common::populate_asset_change(const std::string& address)
 
         if (blockchain_.is_valid_address(addr)) {
             receiver_list_.push_back({addr, symbol_, 0, unspent_asset_ - payment_asset_,
-                utxo_attach_type::asset_transfer, attachment()});
+                utxo_attach_type::asset_transfer, chain::attachment()});
         }
         else {
             if (addr.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
@@ -1479,7 +1465,7 @@ void base_transfer_common::populate_asset_change(const std::string& address)
                     "mychange did symbol " + addr + "does not exist on the blockchain"};
             }
 
-            attachment attach;
+            chain::attachment attach;
             attach.set_version(DID_ATTACH_VERIFY_VERSION);
             attach.set_to_did(addr);
             receiver_list_.push_back({diddetail->get_address(), symbol_, 0, unspent_asset_ - payment_asset_,
@@ -1549,6 +1535,31 @@ base_transfer_common::get_pay_key_hash_with_attenuation_model_operations(
     throw toaddress_invalid_exception{std::string("not supported version target address ") + record.target};
 }
 
+chain::operation::stack
+base_transfer_common::get_pay_key_hash_with_lock_height_operations(
+    uint16_t lock_cycle, const receiver_record& record)
+{
+    if ((utxo_attach_type::deposit != record.type)) {
+        throw std::logic_error("record type is not 'deposit'");
+    }
+
+    const wallet::payment_address payment(record.target);
+    if (!payment) {
+        throw toaddress_invalid_exception{"invalid target address"};
+    }
+
+    if (payment.version() == wallet::payment_address::mainnet_p2kh) {
+        auto lock_height = consensus::miner::get_reward_lock_height(lock_cycle);
+        if (lock_height == 0) {
+            throw account_deposit_period_exception{"wrong deposit cycle " + std::to_string(lock_cycle)};
+        }
+        return chain::operation::to_pay_key_hash_with_lock_height_pattern(payment.hash(), lock_height);
+    }
+
+    throw toaddress_invalid_exception{std::string("not supported version target address ") + record.target};
+}
+
+
 void base_transfer_common::populate_tx_outputs()
 {
     for (const auto& iter: receiver_list_) {
@@ -1595,7 +1606,7 @@ void base_transfer_common::populate_tx_inputs()
     }
 }
 
-void base_transfer_common::set_did_verify_attachment(const receiver_record& record, attachment& attach)
+void base_transfer_common::set_did_verify_attachment(const receiver_record& record, chain::attachment& attach)
 {
     if (record.attach_elem.get_version() == DID_ATTACH_VERIFY_VERSION) {
         attach.set_version(DID_ATTACH_VERIFY_VERSION);
@@ -1604,17 +1615,17 @@ void base_transfer_common::set_did_verify_attachment(const receiver_record& reco
     }
 }
 
-attachment base_transfer_common::populate_output_attachment(const receiver_record& record)
+chain::attachment base_transfer_common::populate_output_attachment(const receiver_record& record)
 {
     if ((record.type == utxo_attach_type::etp)
         || (record.type == utxo_attach_type::deposit)
         || ((record.type == utxo_attach_type::asset_transfer)
             && ((record.amount > 0) && (!record.asset_amount)))) { // etp
-        return attachment(ETP_TYPE, attach_version, chain::etp(record.amount));
+        return chain::attachment(ETP_TYPE, ATTACH_INIT_VERSION, chain::etp(record.amount));
     }
     else if (record.type == utxo_attach_type::asset_issue
         || record.type == utxo_attach_type::asset_secondaryissue) {
-        return attachment(ASSET_TYPE, attach_version, asset(/*set on subclass*/));
+        return chain::attachment(ASSET_TYPE, ATTACH_INIT_VERSION, asset(/*set on subclass*/));
     }
     else if (record.type == utxo_attach_type::asset_transfer
             || record.type == utxo_attach_type::asset_locked_transfer
@@ -1624,7 +1635,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!ass.is_valid()) {
             throw tx_attachment_value_exception{"invalid asset transfer attachment"};
         }
-        return attachment(ASSET_TYPE, attach_version, ass);
+        return chain::attachment(ASSET_TYPE, ATTACH_INIT_VERSION, ass);
     }
     else if (record.type == utxo_attach_type::message) {
         auto msg = boost::get<blockchain_message>(record.attach_elem.get_attach());
@@ -1634,7 +1645,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!msg.is_valid()) {
             throw tx_attachment_value_exception{"invalid message attachment"};
         }
-        return attachment(MESSAGE_TYPE, attach_version, msg);
+        return chain::attachment(MESSAGE_TYPE, ATTACH_INIT_VERSION, msg);
     }
     else if (record.type == utxo_attach_type::did_register) {
         did_detail diddetail(symbol_, record.target);
@@ -1642,7 +1653,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!ass.is_valid()) {
             throw tx_attachment_value_exception{"invalid did register attachment"};
         }
-        return attachment(DID_TYPE, attach_version, ass);
+        return chain::attachment(DID_TYPE, ATTACH_INIT_VERSION, ass);
     }
     else if (record.type == utxo_attach_type::did_transfer) {
         auto sh_did = blockchain_.get_registered_did(symbol_);
@@ -1654,7 +1665,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!ass.is_valid()) {
             throw tx_attachment_value_exception{"invalid did transfer attachment"};
         }
-        return attachment(DID_TYPE, attach_version, ass);
+        return chain::attachment(DID_TYPE, ATTACH_INIT_VERSION, ass);
     }
     else if (record.type == utxo_attach_type::asset_cert
         || record.type == utxo_attach_type::asset_cert_autoissue
@@ -1684,11 +1695,11 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (!cert_info.is_valid()) {
             throw tx_attachment_value_exception{"invalid cert attachment"};
         }
-        return attachment(ASSET_CERT_TYPE, attach_version, cert_info);
+        return chain::attachment(ASSET_CERT_TYPE, ATTACH_INIT_VERSION, cert_info);
     }
     else if (record.type == utxo_attach_type::asset_mit
         || record.type == utxo_attach_type::asset_mit_transfer) {
-        return attachment(ASSET_MIT_TYPE, attach_version, asset_mit(/*set on subclass*/));
+        return chain::attachment(ASSET_MIT_TYPE, ATTACH_INIT_VERSION, asset_mit(/*set on subclass*/));
     }
 
     throw tx_attachment_value_exception{
@@ -1883,10 +1894,11 @@ void base_transfer_common::populate_tx_header()
     tx_.locktime = locktime_;
 #endif
 
-    if (validate_transaction::is_nova_feature_activated(blockchain_)) {
-        tx_.version = transaction_version::check_nova_feature;
-    }
-    else {
+    // latest version
+    tx_.version = transaction_version::check_nova_feature;
+
+    // previous version
+    if (!validate_transaction::is_nova_feature_activated(blockchain_)) {
         tx_.version = transaction_version::check_output_script;
     }
 }
@@ -1959,7 +1971,7 @@ void base_transaction_constructor::populate_change()
         auto addr = !mychange_.empty() ? mychange_ : from_list_.begin()->addr;
         receiver_list_.push_back({addr, "", 0, 0,
             utxo_attach_type::message,
-            attachment(0, 0, chain::blockchain_message(message_))});
+            chain::attachment(0, 0, chain::blockchain_message(message_))});
     }
 }
 
@@ -1983,84 +1995,16 @@ void base_transaction_constructor::populate_unspent_list()
     populate_change();
 }
 
-const std::vector<uint16_t> depositing_etp::vec_cycle{7, 30, 90, 182, 365};
-
-uint32_t depositing_etp::get_reward_lock_height() const
-{
-    int index = 0;
-    auto it = std::find(vec_cycle.begin(), vec_cycle.end(), deposit_cycle_);
-    if (it != vec_cycle.end()) { // found cycle
-        index = std::distance(vec_cycle.begin(), it);
-    }
-
-    return (uint32_t)bc::consensus::lock_heights[index];
-}
-
 chain::operation::stack
 depositing_etp::get_script_operations(const receiver_record& record) const
 {
-    chain::operation::stack payment_ops;
-
-    // complicated script and asset should be implemented in subclass
-    // generate script
-    const wallet::payment_address payment(record.target);
-    if (!payment)
-        throw toaddress_invalid_exception{"invalid target address"};
-
-    if (payment.version() == wallet::payment_address::mainnet_p2kh) {
-        const auto& hash = payment.hash();
-        if((to_ == record.target)
-            && (utxo_attach_type::deposit == record.type)) {
-            payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, get_reward_lock_height());
-        } else {
-            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
-        }
-    }
-    else {
-        throw toaddress_invalid_exception{std::string("not supported version target address ") + record.target};
-    }
-
-    return payment_ops;
-}
-
-const std::vector<uint16_t> depositing_etp_transaction::vec_cycle{7, 30, 90, 182, 365};
-
-uint32_t depositing_etp_transaction::get_reward_lock_height() const
-{
-    int index = 0;
-    auto it = std::find(vec_cycle.begin(), vec_cycle.end(), deposit_);
-    if (it != vec_cycle.end()) { // found cycle
-        index = std::distance(vec_cycle.begin(), it);
-    }
-
-    return (uint32_t)bc::consensus::lock_heights[index];
+    return get_pay_key_hash_with_lock_height_operations(deposit_cycle_, record);
 }
 
 chain::operation::stack
 depositing_etp_transaction::get_script_operations(const receiver_record& record) const
 {
-    chain::operation::stack payment_ops;
-
-    // complicated script and asset should be implemented in subclass
-    // generate script
-    const wallet::payment_address payment(record.target);
-    if (!payment)
-        throw toaddress_invalid_exception{"invalid target address"};
-
-    if (payment.version() == wallet::payment_address::mainnet_p2kh) {
-        const auto& hash = payment.hash();
-        if((utxo_attach_type::deposit == record.type)) {
-            payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(
-                hash, get_reward_lock_height());
-        } else {
-            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
-        }
-    }
-    else {
-        throw toaddress_invalid_exception{std::string("not supported version target address ") + record.target};
-    }
-
-    return payment_ops;
+    return get_pay_key_hash_with_lock_height_operations(deposit_cycle_, record);
 }
 
 void sending_multisig_tx::populate_change()
@@ -2078,28 +2022,15 @@ void issuing_asset::sum_payments()
         payment_etp_ += iter.amount;
         payment_asset_ += iter.asset_amount;
 
-        if (iter.asset_cert == asset_cert_ns::domain) {
+        if (iter.type == utxo_attach_type::asset_cert) {
             auto&& domain = asset_cert::get_domain(symbol_);
             if (!asset_cert::is_valid_domain(domain)) {
-                throw asset_cert_domain_exception{"no valid domain exists for asset : " + symbol_};
-            }
-            if (blockchain_.is_asset_cert_exist(domain, asset_cert_ns::domain)) {
-                payment_asset_cert_.clear();
-                payment_asset_cert_.push_back(asset_cert_ns::domain); // will verify by input
-            }
-        }
-        else if (iter.asset_cert == asset_cert_ns::naming) {
-            auto&& domain = asset_cert::get_domain(symbol_);
-            if (!asset_cert::is_valid_domain(domain)) {
-                throw asset_cert_domain_exception{"no valid domain exists for asset : " + symbol_};
+                throw asset_cert_domain_exception{"invalid domain for asset : " + symbol_};
             }
 
-            if (blockchain_.is_asset_cert_exist(symbol_, asset_cert_ns::naming)) {
-                payment_asset_cert_.clear();
-                payment_asset_cert_.push_back(asset_cert_ns::naming); // will verify by input
-            }
-            else {
-                throw asset_cert_notfound_exception{"no naming cert exists for asset : " + symbol_};
+            if (iter.asset_cert == asset_cert_ns::domain
+                || iter.asset_cert == asset_cert_ns::naming) {
+                payment_asset_cert_.push_back(iter.asset_cert); // will verify by input
             }
         }
     }
@@ -2129,7 +2060,7 @@ void issuing_asset::sum_payment_amount()
     if (amount > 0) {
         auto&& address = bc::get_developer_community_address(blockchain_.chain_settings().use_testnet_rules);
         auto&& did = blockchain_.get_did_from_address(address);
-        receiver_list_.push_back({address, "", amount, 0, utxo_attach_type::etp, attachment("", did)});
+        receiver_list_.push_back({address, "", amount, 0, utxo_attach_type::etp, chain::attachment("", did)});
     }
 }
 
@@ -2144,9 +2075,9 @@ issuing_asset::get_script_operations(const receiver_record& record) const
     return base_transfer_helper::get_script_operations(record);
 }
 
-attachment issuing_asset::populate_output_attachment(const receiver_record& record)
+chain::attachment issuing_asset::populate_output_attachment(const receiver_record& record)
 {
-    attachment&& attach = base_transfer_common::populate_output_attachment(record);
+    chain::attachment&& attach = base_transfer_common::populate_output_attachment(record);
 
     if (record.type == utxo_attach_type::asset_issue) {
         unissued_asset_->set_address(record.target);
@@ -2156,6 +2087,12 @@ attachment issuing_asset::populate_output_attachment(const receiver_record& reco
         }
 
         attach.set_attach(ass);
+    }
+    else if (record.type == utxo_attach_type::asset_cert_autoissue
+        && record.asset_cert == asset_cert_ns::mining) {
+        auto& cert_info = boost::get<asset_cert>(attach.get_attach());
+        cert_info.set_content(mining_sussidy_param_);
+        BITCOIN_ASSERT(cert_info.has_content());
     }
 
     return attach;
@@ -2183,7 +2120,7 @@ void sending_asset::populate_change()
         auto addr = !mychange_.empty() ? mychange_ : from_list_.begin()->addr;
         receiver_list_.push_back({addr, "", 0, 0,
             utxo_attach_type::message,
-            attachment(0, 0, chain::blockchain_message(message_))});
+            chain::attachment(0, 0, chain::blockchain_message(message_))});
     }
 }
 
@@ -2248,12 +2185,12 @@ void secondary_issuing_asset::populate_change()
     if (payment_asset_ > 0) {
         receiver_list_.push_back({target_address_, symbol_,
             0, payment_asset_,
-            utxo_attach_type::asset_transfer, attachment()});
+            utxo_attach_type::asset_transfer, chain::attachment()});
     }
     populate_asset_change(target_address_);
 }
 
-attachment secondary_issuing_asset::populate_output_attachment(const receiver_record& record)
+chain::attachment secondary_issuing_asset::populate_output_attachment(const receiver_record& record)
 {
     auto&& attach = base_transfer_common::populate_output_attachment(record);
 
@@ -2286,6 +2223,10 @@ void issuing_asset_cert::sum_payment_amount()
         payment_asset_cert_.clear();
         payment_asset_cert_.push_back(asset_cert_ns::domain);
     }
+    else if (asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::witness)) {
+        payment_asset_cert_.clear();
+        payment_asset_cert_.push_back(asset_cert_ns::witness);
+    }
     else {
         payment_asset_cert_.clear();
     }
@@ -2306,7 +2247,7 @@ void registering_did::sum_payment_amount()
     if (amount > 0) {
         auto&& address = bc::get_developer_community_address(blockchain_.chain_settings().use_testnet_rules);
         auto&& did = blockchain_.get_did_from_address(address);
-        receiver_list_.push_back({address, "", amount, 0, utxo_attach_type::etp, attachment("", did)});
+        receiver_list_.push_back({address, "", amount, 0, utxo_attach_type::etp, chain::attachment("", did)});
     }
 }
 
@@ -2430,7 +2371,7 @@ void sending_did::populate_unspent_list()
     populate_change();
 }
 
-attachment registering_mit::populate_output_attachment(const receiver_record& record)
+chain::attachment registering_mit::populate_output_attachment(const receiver_record& record)
 {
     auto&& attach = base_transfer_common::populate_output_attachment(record);
 
@@ -2452,7 +2393,7 @@ attachment registering_mit::populate_output_attachment(const receiver_record& re
     return attach;
 }
 
-attachment transferring_mit::populate_output_attachment(const receiver_record& record)
+chain::attachment transferring_mit::populate_output_attachment(const receiver_record& record)
 {
     auto&& attach = base_transfer_common::populate_output_attachment(record);
 
@@ -2481,8 +2422,11 @@ chain::operation::stack lock_sending::get_script_operations(const receiver_recor
         }
 
         if (payment.version() == wallet::payment_address::mainnet_p2kh) {
-            const auto& hash = payment.hash();
-            return chain::operation::to_pay_key_hash_with_sequence_lock_pattern(hash, sequence_);
+            // only support block height sequence lock for this pattern
+            if (sequence_ & relative_locktime_time_locked) {
+                throw tx_lock_sequence_exception{"wrong lock sequence " + std::to_string(sequence_)};
+            }
+            return chain::operation::to_pay_key_hash_with_sequence_lock_pattern(payment.hash(), sequence_);
         }
         else {
             throw toaddress_invalid_exception{"not supported target address " + record.target};

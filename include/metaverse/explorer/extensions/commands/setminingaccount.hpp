@@ -54,7 +54,7 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(auth_.auth, "PAYMENT_ADDRESS", variables, input, raw);
+        load_input(argument_.payment_address, "PAYMENT_ADDRESS", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -79,9 +79,15 @@ public:
         )
         (
             "PAYMENT_ADDRESS",
-            value<bc::wallet::payment_address>(&argument_.payment_address)->required(),
-            "the payment address of this account."
-        );
+            value<std::string>(&argument_.payment_address)->required(),
+            "the payment did/address of this account."
+        )
+        (
+            "symbol,s",
+            value<std::string>(&option_.symbol),
+            "Mine Asset with specified symbol. Defaults to empty."
+        )
+        ;
 
         return options;
     }
@@ -95,11 +101,12 @@ public:
 
     struct argument
     {
-        bc::wallet::payment_address payment_address;
+        std::string payment_address;
     } argument_;
 
     struct option
     {
+        std::string symbol;
     } option_;
 
 };

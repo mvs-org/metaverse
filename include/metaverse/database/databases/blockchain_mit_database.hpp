@@ -52,17 +52,17 @@ public:
     /// Call to unload the memory map.
     bool close();
 
-    std::shared_ptr<asset_mit_info> get(const hash_digest& hash) const;
+    std::shared_ptr<chain::asset_mit_info> get(const hash_digest& hash) const;
 
     /// Get all asset certs
-    std::shared_ptr<asset_mit_info::list> get_blockchain_mits() const;
+    std::shared_ptr<chain::asset_mit_info::list> get_blockchain_mits() const;
 
     /// 
-    std::shared_ptr<asset_mit_info> get_register_history(const std::string & mit_symbol) const;
+    std::shared_ptr<chain::asset_mit_info> get_register_history(const std::string & mit_symbol) const;
     ///
     uint64_t get_register_height(const std::string & mit_symbol) const;
 
-    void store(const asset_mit_info& mit_info);
+    void store(const chain::asset_mit_info& mit_info);
 
     /// Delete a transaction from database.
     void remove(const hash_digest& hash);

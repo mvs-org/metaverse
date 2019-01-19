@@ -246,13 +246,5 @@ private:
 
 } // namespace chain
 } // namespace libbitcoin
-
-using account_status = libbitcoin::chain::account_status;
-using account_priority = libbitcoin::chain::account_priority;
-using account_type = libbitcoin::chain::account_type;
-using account_script = libbitcoin::chain::account_script;
-using account = libbitcoin::chain::account;
-using account_multisig = libbitcoin::chain::account_multisig;
-
 #endif
 

@@ -38,7 +38,7 @@ public:
     account_asset_result(const memory_ptr slab);
 
     /// The asset account relationship.
-    asset_transfer get_account_asset_transfer() const;
+    chain::asset_transfer get_account_asset_transfer() const;
 };
 
 } // namespace database

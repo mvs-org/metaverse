@@ -46,7 +46,7 @@ console_result sendasset::invoke(Json::Value& jv_output,
         throw asset_amount_exception{"invalid asset amount parameter!"};
     }
 
-    attachment attach;
+    chain::attachment attach;
     std::string to_address = get_address(argument_.to, attach, false, blockchain);
     std::string change_address = get_address(option_.change, blockchain);
 

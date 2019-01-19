@@ -48,10 +48,7 @@ BC_CONSTEXPR uint64_t max_size_t = BC_MAX_SIZE;
 BC_CONSTEXPR uint8_t byte_bits = 8;
 
 // Consensus constants.
-BC_CONSTEXPR uint32_t reward_interval = 210000;
 extern uint32_t coinbase_maturity;
-BC_CONSTEXPR uint32_t initial_block_reward = 50;
-BC_CONSTEXPR uint32_t max_work_bits = 0x1d00ffff;
 BC_CONSTEXPR uint32_t max_input_sequence = max_uint32;
 
 BC_CONSTEXPR uint32_t total_reward = 100000000;
@@ -92,13 +89,24 @@ BC_CONSTEXPR uint32_t relative_locktime_mask = 0x000fffff;
  * 5 bits. */
 BC_CONSTEXPR size_t relative_locktime_seconds_shift = 5;
 
+BC_API bool is_relative_locktime_time_locked(uint32_t raw_value);
+BC_API uint32_t get_relative_locktime_locked_heights(uint32_t raw_value);
+BC_API uint32_t get_relative_locktime_locked_seconds(uint32_t raw_value);
+
 // Future blocktime fork constants.
 //-----------------------------------------------------------------------------
 extern const uint64_t future_blocktime_fork_height;
 
-// Relative PoS constants.
+extern const uint64_t nova_enabled_height;
+
+// Relative PoS & DPoS constants.
 //-----------------------------------------------------------------------------
-extern const uint64_t pos_enabled_height;
+extern uint64_t pos_enabled_height;
+
+extern const bool enable_max_successive_height;
+extern const uint32_t pow_max_successive_height;
+extern const uint32_t pos_max_successive_height;
+
 extern const uint32_t pos_coinstake_max_utxos;
 
 extern const uint64_t pos_lock_min_value;
@@ -106,10 +114,16 @@ extern const uint64_t pos_lock_min_height;
 extern const uint64_t pos_lock_gap_height;
 
 extern const uint64_t pos_stake_min_value;
-extern const uint64_t pos_stake_min_height;
 extern const double   pos_stake_factor;
 extern const uint32_t block_timespan_window;
 extern const uint64_t pos_genesis_reward;
+
+extern const std::string witness_cert_prefix;
+extern const uint32_t witness_cert_mars_value;
+extern const uint32_t witness_cert_count;
+extern const uint32_t secondary_witness_cert_min;
+extern const uint32_t secondary_witness_cert_max;
+extern const uint32_t secondary_witness_cert_expiration;
 
 // price
 //-----------------------------------------------------------------------------
@@ -168,12 +182,10 @@ BC_CONSTEXPR message::network_address unspecified_network_address
     unspecified_ip_port
 };
 
-// TODO: make static.
-BC_API hash_number max_target();
-
+BC_API std::string get_genesis_address(bool is_testnet);
+BC_API std::string get_foundation_address(bool is_testnet);
 BC_API std::string get_developer_community_address(bool is_testnet);
 
-BC_API std::string get_foundation_address(bool is_testnet);
 
 } // namespace libbitcoin
 

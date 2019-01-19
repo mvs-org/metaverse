@@ -67,6 +67,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\importaddress.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\lock.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\popblock.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\registerwitness.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\send.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendassetfrom.hpp" />
@@ -88,6 +89,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getinfo.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getmemorypool.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getmininginfo.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getstakeinfo.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getmit.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getnewaccount.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getnewaddress.hpp" />
@@ -194,6 +196,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\importaddress.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\lock.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\popblock.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\registerwitness.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\send.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendassetfrom.cpp" />
@@ -214,6 +217,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getinfo.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getmemorypool.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getmininginfo.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getstakeinfo.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getmit.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getnewaccount.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getnewaddress.cpp" />

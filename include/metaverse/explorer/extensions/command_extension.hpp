@@ -48,7 +48,7 @@ struct prikey_etp_amount
     std::string key;
     uint64_t    value;
     uint64_t    asset_amount;
-    output_point output;
+    chain::output_point output;
 };
 
 struct utxo_attach_info
@@ -213,6 +213,7 @@ private:
 
 class command_extension: public command
 {
+    using command::invoke;
 public:
     virtual console_result invoke(Json::Value& jv_output,
         libbitcoin::server::server_node& node)

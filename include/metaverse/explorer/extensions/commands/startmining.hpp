@@ -39,7 +39,7 @@ public:
     static const char* symbol(){ return "startmining";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "start CPU solo mining. You have to setminingaccount firstly."; }
+    const char* description() override { return "start CPU solo mining."; }
 
     arguments_metadata& load_arguments() override
     {
@@ -86,13 +86,16 @@ public:
             value<uint16_t>(&option_.number)->default_value(0),
             "The number of mining blocks, useful for testing. Defaults to 0, means no limit."
         )
-#ifdef PRIVATE_CHAIN
+        (
+            "symbol,s",
+            value<std::string>(&option_.symbol),
+            "Mine Asset with specified symbol. Defaults to empty."
+        )
         (
             "consensus,c",
             value<std::string>(&option_.consensus)->default_value("pow"),
-            "Accept block with the specified consensus, eg. pow, pos, dpos, defaults to pow."
+            "Accept block with the specified consensus, eg. pow, pos, defaults to pow."
         )
-#endif
         ;
 
         return options;
@@ -114,6 +117,7 @@ public:
         std::string address;
         uint16_t number;
         std::string consensus = "pow";
+        std::string symbol = "";
     } option_;
 
 };

@@ -59,9 +59,7 @@ public:
     typedef std::vector<output> list;
 
     static uint64_t satoshi_fixed_size();
-    static bool is_valid_symbol(const std::string& symbol, uint32_t tx_version);
-    static bool is_valid_did_symbol(const std::string& symbol,  bool check_sensitive = false);
-    static bool is_valid_mit_symbol(const std::string& symbol,  bool check_sensitive = false);
+
     bool from_data_t(reader& source);
     void to_data_t(writer& sink) const;
     std::string to_string(uint32_t flags) const;
@@ -81,7 +79,9 @@ public:
     std::string get_asset_cert_address() const;
     asset_cert_type get_asset_cert_type() const;
     const data_chunk& get_attenuation_model_param() const;
-    uint32_t get_lock_sequence() const;
+    uint32_t get_lock_sequence(uint32_t default_value=0) const;
+    uint32_t get_lock_heights_sequence(uint32_t default_value=0) const;
+    uint32_t get_lock_seconds_sequence(uint32_t default_value=0) const;
     bool is_asset() const;
     bool is_asset_transfer() const;
     bool is_asset_issue() const;
@@ -115,7 +115,5 @@ public:
 
 } // namespace chain
 } // namespace libbitcoin
-
-using output = libbitcoin::chain::output;
 
 #endif

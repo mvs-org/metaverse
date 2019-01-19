@@ -97,6 +97,11 @@ public:
             "Cert type name can be: naming, marriage or KYC"
         )
         (
+            "description,d",
+            value<std::string>(&option_.description)->default_value(""),
+            "Cert description, default is empty."
+        )
+        (
             "memo,m",
             value<std::string>(&option_.memo)->default_value(""),
             "Attached memo for this transaction."
@@ -128,7 +133,12 @@ public:
     struct option
     {
         std::string memo;
+        std::string description;
     } option_;
+
+private:
+    std::string get_available_primary_witness_cert(
+        bc::blockchain::block_chain_impl& blockchain) const;
 
 };
 

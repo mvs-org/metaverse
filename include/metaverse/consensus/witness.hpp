@@ -44,23 +44,19 @@ namespace consensus {
 class witness
 {
 public:
-    using p2p_node = libbitcoin::node::p2p_node;
-    using settings = blockchain::settings;
-    using validate_block = blockchain::validate_block;
-
     using public_key_t = data_chunk;
-    using witness_id = data_chunk;
+    using witness_id = data_chunk; // hex encoded
     using list = std::vector<witness_id>;
     using iterator = list::iterator;
     using const_iterator = list::const_iterator;
 
-    static uint32_t pow_check_point_height;
     static uint64_t witness_enable_height;
     static uint32_t witness_number;
     static uint32_t epoch_cycle_height;
     static uint32_t register_witness_lock_height;
     static uint64_t witness_lock_threshold;
     static uint32_t vote_maturity;
+    static uint64_t witness_register_enable_height;
 
     static const uint32_t max_candidate_count;
     static const uint32_t witness_register_fee;
@@ -70,7 +66,7 @@ public:
     ~witness();
 
     // singleton
-    static witness& create(p2p_node& node);
+    static witness& create(node::p2p_node& node);
     static witness& get();
 
     const witness_id& get_witness(uint32_t slot) const;
@@ -84,69 +80,76 @@ public:
 
     bool is_witness(const witness_id& id) const;
 
+    static std::shared_ptr<witness::list> get_block_witnesses(const chain::block& block);
+    std::shared_ptr<witness::list> get_block_witnesses(uint64_t height) const;
+    std::shared_ptr<std::vector<std::string>> get_inactive_witnesses(uint64_t height);
+
     // generate a new epoch witness list
     bool calc_witness_list(uint64_t height);
-    bool calc_witness_list(list& witness_list, uint64_t height) const;
+    bool calc_witness_list(list& witness_list, uint64_t height);
     bool init_witness_list();
     bool update_witness_list(uint64_t height);
     bool update_witness_list(const chain::block& block);
     chain::output create_witness_vote_result(uint64_t height);
     bool add_witness_vote_result(chain::transaction& coinbase_tx, uint64_t block_height);
-    chain::block::ptr fetch_vote_result_block(uint64_t height);
+    static bool is_vote_result_output(const chain::output&);
 
     uint32_t get_slot_num(const witness_id& id) const;
-    uint32_t calc_slot_num(uint64_t height) const;
-    size_t get_witness_number();
+    std::pair<uint32_t, uint32_t> calc_slot_num(uint64_t height) const;
+    size_t get_witness_number() const;
 
     static public_key_t witness_to_public_key(const witness_id& id);
+    static std::string witness_to_address(const witness_id& witness);
     static std::string witness_to_string(const witness_id& id);
-    static std::string endorse_to_string(const endorsement& endorse);
-    static witness_id to_witness_id(const public_key_t& public_key);
-    static std::string to_string(const public_key_t& public_key);
+    static witness_id to_witness_id(const data_slice& public_key);
+    static std::string to_string(const data_slice& public_key);
 
     static bool is_witness_enabled(uint64_t height);
     static bool is_dpos_enabled();
     static uint64_t get_height_in_epoch(uint64_t height);
-    static uint64_t get_vote_result_height(uint64_t height);
+    static uint64_t get_epoch_begin_height(uint64_t height);
     static uint64_t get_round_begin_height(uint64_t height);
 
     static bool is_begin_of_epoch(uint64_t height);
-    static bool is_between_vote_maturity_interval(uint64_t height);
     static bool is_in_same_epoch(uint64_t height1, uint64_t height2);
 
+    chain::block::ptr get_epoch_begin_block(uint64_t height) const;
+
     // signature
-    static bool sign(endorsement& out, const ec_secret& secret, const chain::header& h);
-    static bool verify_sign(const endorsement& out, const public_key_t& public_key, const chain::header& h);
-    bool verify_signer(const public_key_t& public_key, uint64_t height) const;
+    bool verify_signer(const data_slice& public_key, uint64_t height) const;
     bool verify_signer(uint32_t witness_slot_num, uint64_t height) const;
-    bool verify_vote_result(const chain::block& block, list& witness_list) const;
 
     static u256 calc_mixhash(const list& witness_list);
 
-    void set_validate_block(const validate_block*);
+    void set_validate_block(const blockchain::validate_block*);
     bool get_header(chain::header& out_header, uint64_t height) const;
 
+    static std::string get_miner_address(const chain::block& block);
+
+    bool is_testnet();
 private:
-    witness(p2p_node& node);
-    static void init(p2p_node& node);
+    witness(node::p2p_node& node);
+
+    static void init(node::p2p_node& node);
     static bool exists(const list&, const witness_id&);
     static const_iterator finds(const list&, const witness_id&);
     static iterator finds(list&, const witness_id&);
 
+    chain::block::ptr fetch_block(uint64_t height) const;
+
 private:
     static witness* instance_;
-    p2p_node& node_;
-    const settings& setting_;
+    node::p2p_node& node_;
+    const blockchain::settings& setting_;
     list witness_list_;
-    const validate_block* validate_block_;
+    const blockchain::validate_block* validate_block_;
     mutable upgrade_mutex mutex_;
 };
 
 struct witness_with_validate_block_context
 {
-    using validate_block = blockchain::validate_block;
     witness& witness_;
-    witness_with_validate_block_context(witness& w, const validate_block* v);
+    witness_with_validate_block_context(witness& w, const blockchain::validate_block* v);
     ~witness_with_validate_block_context();
 };
 
