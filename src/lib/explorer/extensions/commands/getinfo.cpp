@@ -46,9 +46,10 @@ console_result getinfo::invoke(Json::Value& jv_output,
 
     uint64_t height;
     uint64_t rate;
+    uint32_t stake_utxos = 0;
     std::string difficulty;
     bool is_solo_mining;
-    node.miner().get_state(height, rate, difficulty, is_solo_mining);
+    node.miner().get_state(height, rate, difficulty, is_solo_mining, stake_utxos);
 
     auto& jv = jv_output;
     if (get_api_version() <= 2) {
@@ -80,6 +81,9 @@ console_result getinfo::invoke(Json::Value& jv_output,
         jv["difficulty"] = difficulty;
         jv["is_mining"] = is_solo_mining;
         jv["hash_rate"] = rate;
+        if (stake_utxos != 0) {
+            jv_output["stake_utxo_count"] = stake_utxos;
+        }
     }
 
     return console_result::okay;

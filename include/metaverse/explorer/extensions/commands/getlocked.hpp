@@ -36,7 +36,7 @@ public:
     static const char* symbol(){ return "getlocked";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "Get any valid target address ETP balance."; }
+    const char* description() override { return "Get locked balance of target address."; }
 
     arguments_metadata& load_arguments() override
     {

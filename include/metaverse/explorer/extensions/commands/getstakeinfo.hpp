@@ -89,7 +89,7 @@ public:
     } option_;
 
 private:
-    u256 get_last_bits(libbitcoin::server::server_node& node);
+    u256 get_last_pos_bits(libbitcoin::server::server_node& node);
 };
 
 
