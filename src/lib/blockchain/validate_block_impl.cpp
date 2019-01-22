@@ -233,22 +233,9 @@ chain::header::ptr validate_block_impl::get_last_block_header(const chain::heade
 {
     uint64_t height = parent_header.number;
     if (parent_header.version == version) {
-        // log::info(LOG_BLOCKCHAIN) << "validate_block_impl::get_last_block_header: prev: "
-        //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
         return std::make_shared<chain::header>(parent_header);
     }
-
-    bool isPoW = (version == chain::block_version_pow);
-    while ((!isPoW && height > pos_enabled_height) || (isPoW && height > 2)) {
-        chain::header prev_header = fetch_block(--height);
-        if (prev_header.version == version) {
-            // log::info(LOG_BLOCKCHAIN) << "validate_block_impl::get_last_block_header: prev: "
-            //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
-            return std::make_shared<chain::header>(prev_header);
-        }
-    }
-
-    return nullptr;
+    return get_prev_block_header(parent_header.number, static_cast<chain::block_version>(version));
 }
 
 bool tx_after_fork(uint64_t tx_height, uint64_t fork_index)
