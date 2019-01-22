@@ -83,8 +83,13 @@ public:
         )
         (
             "mychange,m",
-            value<std::string>(&option_.change),
+            value<std::string>(&option_.change)->default_value(""),
             "Change to this did/address"
+        )
+        (
+            "from,s",
+            value<std::string>(&option_.from)->default_value(""),
+            "Send from this did/address"
         )
         (
             "memo,i",
@@ -114,10 +119,11 @@ public:
 
     struct option
     {
-        option():fee(10000), change(""), memo("")
+        option():fee(10000), from(""), change(""), memo("")
         {};
 
         uint64_t fee;
+        std::string from;
         std::string change;
         std::string memo;
     } option_;

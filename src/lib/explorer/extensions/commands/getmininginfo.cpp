@@ -65,8 +65,8 @@ console_result getmininginfo::invoke(Json::Value& jv_output,
         std::string block_version = chain::get_block_version(miner.get_accept_block_version());
 
         jv_output["payment_address"] = payment_address;
-        jv_output["asset_symbol"] = asset_symbol;
-        jv_output["block_version"] = block_version;
+        jv_output["mining_mst"] = asset_symbol;
+        jv_output["block_type"] = block_version;
 
         if (stake_utxos != 0) {
             jv_output["stake_utxo_count"] = stake_utxos;

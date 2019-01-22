@@ -37,7 +37,14 @@ console_result sendmore::invoke (Json::Value& jv_output,
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
+    std::string change_address = get_address(option_.change, blockchain);
+    std::string from_address = get_address(option_.from, blockchain);
+
     std::string msg_address;
+    std::string from_did;
+    if (!from_address.empty() && !blockchain.is_valid_address(option_.from)) {
+        from_did = option_.from;
+    }
 
     // receiver
     std::vector<receiver_record> receiver;
@@ -46,20 +53,23 @@ console_result sendmore::invoke (Json::Value& jv_output,
         colon_delimited2_item<std::string, uint64_t> item(each);
 
         chain::attachment attach;
-        std::string address = get_address(item.first(), attach, false, blockchain);
+        std::string to_address = get_address(item.first(), attach, false, blockchain);
+        if (!from_did.empty()) {
+            attach.set_version(DID_ATTACH_VERIFY_VERSION);
+            attach.set_from_did(from_did);
+        }
+
         if (item.second() <= 0) {
             throw argument_legality_exception("invalid amount parameter for " + item.first());
         }
 
-        receiver.push_back({address,"", item.second(), 0, utxo_attach_type::etp, attach});
+        receiver.push_back({to_address,"", item.second(), 0, utxo_attach_type::etp, attach});
 
         if (msg_address.empty()) {
-            msg_address = address;
+            msg_address = to_address;
         }
     }
 
-    // change address
-    std::string change_address = get_address(option_.change, blockchain);
 
     // memo
     if (!option_.memo.empty()) {
@@ -75,7 +85,7 @@ console_result sendmore::invoke (Json::Value& jv_output,
 
     auto send_helper = sending_etp(*this, blockchain,
         std::move(auth_.name), std::move(auth_.auth),
-        "", std::move(receiver),
+        std::move(from_address), std::move(receiver),
         std::move(change_address), option_.fee);
 
     send_helper.exec();
