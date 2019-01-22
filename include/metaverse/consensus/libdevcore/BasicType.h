@@ -37,6 +37,7 @@ public:
         const chain::header::ptr prev,
         const chain::header::ptr pprev);
 
+    static bigint get_minimum_difficulty(uint64_t block_height, uint32_t block_version);
     static bigint adjust_difficulty(uint32_t timespan, bigint & result);
     static uint32_t limit_timespan(uint32_t timespan);
 
