@@ -185,7 +185,7 @@ bool block_chain_impl::check_pos_utxo_height_and_value(
     }
 #endif
 
-    return (value >= pos_stake_min_value) && (out_height + maturity_height <= curr_height);
+    return out_height + maturity_height <= curr_height;
 }
 
 bool block_chain_impl::check_pos_utxo_capability(

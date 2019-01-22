@@ -1514,8 +1514,7 @@ void miner::get_state(uint64_t &height, uint64_t &rate, std::string& difficulty,
     blockchain::block_chain_impl& block_chain = node_.chain_impl();
     block_chain.get_last_height(height);
 
-    // same as HeaderAux::calculate_difficulty_v2
-    u256 pos_bits = setting_.use_testnet_rules ? u256(1000000) : u256(100000000);
+    u256 pos_bits = (u256)HeaderAux::get_minimum_difficulty(height, chain::block_version_pos);
     auto version = get_accept_block_version();
     if (version == chain::block_version_pow || version == chain::block_version_pos) {
         auto header = block_chain.get_prev_block_header(height + 1, version, true);
