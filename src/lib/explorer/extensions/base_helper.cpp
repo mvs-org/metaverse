@@ -1246,7 +1246,7 @@ void base_transfer_common::sync_fetchutxo(
 void base_transfer_common::check_fee_in_valid_range(uint64_t fee)
 {
     if ((fee < minimum_fee) || (fee > maximum_fee)) {
-        throw asset_exchange_poundage_exception{"fee must in ["
+        throw asset_exchange_poundage_exception{"fee is " + std::to_string(fee) + ", is not in range ["
             + std::to_string(minimum_fee) + ", " + std::to_string(maximum_fee) + "]"};
     }
 }
