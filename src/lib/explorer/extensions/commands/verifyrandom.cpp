@@ -19,33 +19,31 @@
  */
 
 
-#include <metaverse/explorer/extensions/commands/getrandom.hpp>
+#include <metaverse/explorer/extensions/commands/verifyrandom.hpp>
 #include <metaverse/node/p2p_node.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-/************************ getrandom *************************/
+/************************ verifyrandom *************************/
 
-console_result getrandom::invoke(Json::Value& jv_output,
+console_result verifyrandom::invoke(Json::Value& jv_output,
                                    libbitcoin::server::server_node& node)
 {
-    Json::Value result;
-
-    auto r = std::minmax(argument_.point1, argument_.point2);
-    auto begin = r.first;
-    auto end = r.second;
-
-    auto rand_num = pseudo_random(begin, end);
+    auto rand_hash = argument_.random_hash;
+    auto rand_num = argument_.random_num;
 
     auto chunk = to_chunk(std::to_string(rand_num));
-    auto rand_hash = sha3(chunk).hex();
+    auto calc_hash = sha3(chunk).hex();
 
-    result["begin"] = begin;
-    result["end"] = end;
+    auto is_valid = calc_hash == rand_hash;
+
+    Json::Value result;
+
     result["random_num"] = rand_num;
     result["random_hash"] = rand_hash;
+    result["is_valid"] = is_valid;
 
     jv_output = result;
 
