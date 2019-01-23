@@ -34,6 +34,7 @@
 #include <metaverse/explorer/extensions/commands/getinfo.hpp>
 #include <metaverse/explorer/extensions/commands/getheight.hpp>
 #include <metaverse/explorer/extensions/commands/getpeerinfo.hpp>
+#include <metaverse/explorer/extensions/commands/getrandom.hpp>
 #include <metaverse/explorer/extensions/commands/getaddressetp.hpp>
 #include <metaverse/explorer/extensions/commands/addnode.hpp>
 #include <metaverse/explorer/extensions/commands/getmininginfo.hpp>
@@ -132,6 +133,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<getinfo>());
     func(make_shared<addnode>());
     func(make_shared<getpeerinfo>());
+    func(make_shared<getrandom>());
 
     // miming
     func(make_shared<startmining>());
@@ -253,6 +255,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<addnode>();
     if (symbol == getpeerinfo::symbol())
         return make_shared<getpeerinfo>();
+    if (symbol == getrandom::symbol())
+        return make_shared<getrandom>();
 
     // mining
     if (symbol == stopmining::symbol() || symbol == "stop")
