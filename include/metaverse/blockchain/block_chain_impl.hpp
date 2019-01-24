@@ -431,9 +431,20 @@ public:
         std::shared_ptr<std::vector<std::string>> excluded_addresses);
 
     bool can_use_dpos(uint64_t height) const;
-    bool check_max_successive_height(uint64_t last_height, chain::block_version version) const;
+    bool can_use_dpos_impl(
+        uint64_t height,
+        std::function<bool(chain::header&, uint64_t)> const &get_header_func) const;
+
     chain::header::ptr get_prev_block_header(
         uint64_t height, chain::block_version ver, bool same_version=true) const;
+    chain::header::ptr get_prev_block_header_impl(
+        uint64_t height, chain::block_version ver, bool same_version,
+        std::function<bool(chain::header&, uint64_t)> const &get_header_func) const;
+
+    bool check_max_successive_height(uint64_t last_height, chain::block_version version) const;
+    bool check_max_successive_height_impl(
+        uint64_t height, chain::block_version version,
+        std::function<chain::header::ptr(uint64_t, chain::block_version, bool)> const &get_prev_header_func) const;
 
     uint32_t get_median_time_past(uint64_t height) const;
     bool is_utxo_spendable(const chain::transaction& tx, uint32_t index,

@@ -521,120 +521,34 @@ bool validate_block_impl::check_get_coinage_reward_transaction(const chain::tran
 
 bool validate_block_impl::check_max_successive_height(uint64_t height, chain::block_version version) const
 {
-    if (!enable_max_successive_height) {
-        return true;
-    }
+    using namespace std::placeholders;
+    typedef std::function<chain::header::ptr(uint64_t, chain::block_version, bool)> FuncType;
+    FuncType func = std::bind(&validate_block_impl::get_prev_block_header, this, _1, _2, _3);
 
-    if (height <= pos_enabled_height + 10000) {
-        return true;
-    }
-
-    if (version == chain::block_version_pow) {
-        using namespace consensus;
-        if (height >= witness::witness_enable_height) {
-            // consider the beginning of dpos epoch
-            uint64_t height_in_epoch = witness::get_height_in_epoch(height);
-            if (height_in_epoch <= witness::vote_maturity) {
-                return true;
-            }
-            if (height_in_epoch > witness::epoch_cycle_height - witness::vote_maturity) {
-                return true;
-            }
-        }
-
-        auto header = get_prev_block_header(height, version, false);
-        if (header && height - header->number > pow_max_successive_height) {
-            log::warning(LOG_BLOCKCHAIN) << "Failed to check pow max successive height: "
-                << (height - header->number);
-            return false;
-        }
-    }
-    else if (version == chain::block_version_pos) {
-        auto header = get_prev_block_header(height, version, false);
-        if (header && height - header->number > pos_max_successive_height) {
-            log::warning(LOG_BLOCKCHAIN) << "Failed to check pos max successive height: "
-                << (height - header->number);
-            return false;
-        }
-    }
-    else if (version == chain::block_version_dpos) {
-        if (height <= consensus::witness::witness_enable_height) {
-            return true;
-        }
-        // TODO
-    }
-
-    return true;
+    return chain_.check_max_successive_height_impl(height, version, func);
 }
 
 bool validate_block_impl::can_use_dpos(uint64_t height) const
 {
-    using namespace consensus;
-
-    if (!witness::is_witness_enabled(height)) {
-        return false;
-    }
-
-    // ensure the vote is maturity
+    auto get_header = [this](chain::header& out_header, uint64_t height) -> bool
     {
-        uint64_t height_in_epoch = witness::get_height_in_epoch(height);
-        // [0 .. vote_maturity)
-        if (height_in_epoch < witness::vote_maturity) {
-            return false;
-        }
+        out_header = this->fetch_block(height);
+        return true;
+    };
 
-        // [epoch_cycle_height - vote_maturity .. epoch_cycle_height)
-        if (height_in_epoch >= witness::epoch_cycle_height - witness::vote_maturity) {
-            return false;
-        }
-    }
-
-    // a dpos must followed by a non dpos block.
-    chain::header header = fetch_block(height - 1);
-    if (header.is_proof_of_dpos()) {
-        return false;
-    }
-
-    return true;
+    return chain_.can_use_dpos_impl(height, get_header);
 }
 
 chain::header::ptr validate_block_impl::get_prev_block_header(
     uint64_t height, chain::block_version ver, bool same_version) const
 {
-    if (height < 2) {
-        return nullptr;
-    }
+    auto get_header = [this](chain::header& out_header, uint64_t height) -> bool
+    {
+        out_header = this->fetch_block(height);
+        return true;
+    };
 
-    chain::header header;
-    while (--height > 0) {
-        if (same_version) {
-            if (ver == chain::block_version_pos && height < pos_enabled_height) {
-                return nullptr;
-            }
-            else if (ver == chain::block_version_dpos && height < consensus::witness::witness_enable_height) {
-                return nullptr;
-            }
-        }
-        else {
-            if (ver == chain::block_version_pow && height < pos_enabled_height) {
-                return nullptr;
-            }
-        }
-
-        header = fetch_block(height);
-        if (same_version) {
-            if (header.version == ver) {
-                return std::make_shared<chain::header>(header);
-            }
-        }
-        else {
-            if (header.version != ver) {
-                return std::make_shared<chain::header>(header);
-            }
-        }
-    }
-
-    return nullptr;
+    return chain_.get_prev_block_header_impl(height, ver, same_version, get_header);
 }
 
 
