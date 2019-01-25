@@ -158,7 +158,7 @@ bool MinerAux::verify_stake(const chain::header& header, const chain::output_inf
     // Base target
     h256 boundary = HeaderAux::boundary(header);
     uint64_t amount = std::max<uint64_t>(1, (stake_output.data.value / coin_price()));
-    uint64_t s = (uint64_t)log2l(amount);
+    uint64_t s = std::round(log2l(amount));
     uint64_t stake = (s * s * s * pos_stake_factor);
 
     // Calculate hash

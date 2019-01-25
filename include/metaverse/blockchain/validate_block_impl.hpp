@@ -52,6 +52,8 @@ public:
         const chain::transaction& coinage_reward_coinbase, const chain::output& output) const override;
 
     virtual std::string get_did_from_address_consider_orphan_chain(const std::string& address, const std::string& did_symbol) const override;
+
+    bool is_in_orphan_chain_outputs(std::function<bool(const chain::output&)> const& condition_func) const;
     virtual bool is_did_match_address_in_orphan_chain(const std::string& symbol, const std::string& address) const override;
     virtual bool is_did_in_orphan_chain(const std::string& symbol) const override;
     virtual bool is_asset_in_orphan_chain(const std::string& symbol) const override;

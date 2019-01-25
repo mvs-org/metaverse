@@ -349,6 +349,22 @@ std::string validate_block_impl::get_did_from_address_consider_orphan_chain(
     return did_symbol;
 }
 
+bool validate_block_impl::is_in_orphan_chain_outputs(std::function<bool(const chain::output&)> const& condition_func) const
+{
+    for (uint64_t orphan = 0; orphan < orphan_index_; ++orphan) {
+        const auto& orphan_block = orphan_chain_[orphan]->actual();
+        for (const auto& orphan_tx : orphan_block->transactions) {
+            for (auto& output : orphan_tx.outputs) {
+                if (condition_func(output)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
 bool validate_block_impl::is_did_match_address_in_orphan_chain(const std::string& did, const std::string& address) const
 {
     BITCOIN_ASSERT(!did.empty());
@@ -359,100 +375,65 @@ bool validate_block_impl::is_did_match_address_in_orphan_chain(const std::string
         return false;
     }
 
-    auto orphan = orphan_index_;
-    while (orphan > 0) {
-        const auto& orphan_block = orphan_chain_[--orphan]->actual();
-        for (const auto& orphan_tx : orphan_block->transactions) {
-            for (auto& output : orphan_tx.outputs) {
-                if (output.is_did_register() || output.is_did_transfer()) {
-                    if (did == output.get_did_symbol()) {
-                        return address == output.get_did_address();
-                    }
-                }
-            }
+    auto cond_func = [&did, &address](const chain::output& output) -> bool
+    {
+        if (output.is_did_register() || output.is_did_transfer()) {
+            return did == output.get_did_symbol() && address == output.get_did_address();
         }
-    }
 
-    return false;
+        return false;
+    };
+
+    return is_in_orphan_chain_outputs(cond_func);
 }
 
 bool validate_block_impl::is_did_in_orphan_chain(const std::string& did) const
 {
     BITCOIN_ASSERT(!did.empty());
 
-    for (uint64_t orphan = 0; orphan < orphan_index_; ++orphan) {
-        const auto& orphan_block = orphan_chain_[orphan]->actual();
-        for (const auto& orphan_tx : orphan_block->transactions) {
-            for (auto& output : orphan_tx.outputs) {
-                if (output.is_did_register()) {
-                    if (did == output.get_did_symbol()) {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
+    auto cond_func = [&did](const chain::output& output) -> bool
+    {
+        return output.is_did_register() && did == output.get_did_symbol();
+    };
 
-    return false;
+    return is_in_orphan_chain_outputs(cond_func);
 }
 
 bool validate_block_impl::is_asset_in_orphan_chain(const std::string& symbol) const
 {
     BITCOIN_ASSERT(!symbol.empty());
 
-    for (uint64_t orphan = 0; orphan < orphan_index_; ++orphan) {
-        const auto& orphan_block = orphan_chain_[orphan]->actual();
-        for (const auto& orphan_tx : orphan_block->transactions) {
-            for (const auto& output : orphan_tx.outputs) {
-                if (output.is_asset_issue()) {
-                    if (symbol == output.get_asset_symbol()) {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
+    auto cond_func = [&symbol](const chain::output& output) -> bool
+    {
+        return output.is_asset_issue() && symbol == output.get_asset_symbol();
+    };
 
-    return false;
+    return is_in_orphan_chain_outputs(cond_func);
 }
 
 bool validate_block_impl::is_asset_cert_in_orphan_chain(const std::string& symbol, chain::asset_cert_type cert_type) const
 {
     BITCOIN_ASSERT(!symbol.empty());
 
-    for (uint64_t orphan = 0; orphan < orphan_index_; ++orphan) {
-        const auto& orphan_block = orphan_chain_[orphan]->actual();
-        for (const auto& orphan_tx : orphan_block->transactions) {
-            for (const auto& output : orphan_tx.outputs) {
-                if (symbol == output.get_asset_cert_symbol() &&
-                    cert_type == output.get_asset_cert_type()) {
-                    return true;
-                }
-            }
-        }
-    }
+    auto cond_func = [&symbol, cert_type](const chain::output& output) -> bool
+    {
+        return output.is_asset_cert() && symbol == output.get_asset_cert_symbol()
+            && cert_type == output.get_asset_cert_type();
+    };
 
-    return false;
+    return is_in_orphan_chain_outputs(cond_func);
 }
 
 bool validate_block_impl::is_asset_mit_in_orphan_chain(const std::string& symbol) const
 {
     BITCOIN_ASSERT(!symbol.empty());
 
-    for (uint64_t orphan = 0; orphan < orphan_index_; ++orphan) {
-        const auto& orphan_block = orphan_chain_[orphan]->actual();
-        for (const auto& orphan_tx : orphan_block->transactions) {
-            for (const auto& output : orphan_tx.outputs) {
-                if (output.is_asset_mit_register()) {
-                    if (symbol == output.get_asset_mit_symbol()) {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
+    auto cond_func = [&symbol](const chain::output& output) -> bool
+    {
+        return output.is_asset_mit_register() && symbol == output.get_asset_mit_symbol();
+    };
 
-    return false;
+    return is_in_orphan_chain_outputs(cond_func);
 }
 
 bool validate_block_impl::is_output_spent(
