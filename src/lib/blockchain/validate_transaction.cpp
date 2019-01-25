@@ -125,19 +125,23 @@ void validate_transaction::start(validate_handler handler)
 
 code validate_transaction::basic_checks() const
 {
-    if (tx_->is_coinbase())
+    if (tx_->is_coinbase()) {
         return error::coinbase_transaction;
+    }
 
     const auto ec = check_transaction();
 
-    if (ec)
+    if (ec) {
         return ec;
+    }
 
-    if (!is_standard())
+    if (!is_standard()) {
         return error::is_not_standard;
+    }
 
-    if (pool_->is_in_pool(tx_hash_))
+    if (pool_->is_in_pool(tx_hash_)) {
         return error::duplicate;
+    }
 
     // Check for blockchain duplicates in start (after this returns).
     return error::success;
@@ -148,8 +152,7 @@ bool validate_transaction::is_standard() const
     return true;
 }
 
-void validate_transaction::handle_duplicate_check(
-    const code& ec)
+void validate_transaction::handle_duplicate_check(const code& ec)
 {
     if (ec.value() != error::not_found)
     {
@@ -185,11 +188,9 @@ void validate_transaction::reset(uint64_t last_height)
     old_cert_symbol_in_ = "";
 }
 
-void validate_transaction::set_last_height(const code& ec,
-        uint64_t last_height)
+void validate_transaction::set_last_height(const code& ec, uint64_t last_height)
 {
-    if (ec)
-    {
+    if (ec) {
         handle_validate_(ec, tx_, {});
         return;
     }
@@ -217,8 +218,7 @@ void validate_transaction::next_previous_transaction()
 void validate_transaction::previous_tx_index(const code& ec,
         uint64_t parent_height)
 {
-    if (ec)
-    {
+    if (ec) {
         search_pool_previous_tx();
         return;
     }
@@ -388,7 +388,8 @@ static bool check_same(std::string& dest, const std::string& src)
 {
     if (dest.empty()) {
         dest = src;
-    } else if (dest != src) {
+    }
+    else if (dest != src) {
         log::debug(LOG_BLOCKCHAIN) << "check_same: " << dest << " != " << src;
         return false;
     }
@@ -407,6 +408,7 @@ code validate_transaction::check_secondaryissue_transaction() const
             break;
         }
     }
+
     if (!is_asset_secondaryissue) {
         return error::success;
     }
@@ -428,7 +430,6 @@ code validate_transaction::check_secondaryissue_transaction() const
         {
             ++num_asset_secondaryissue;
             if (num_asset_secondaryissue > 1) {
-                log::debug(LOG_BLOCKCHAIN) << "secondaryissue: num of secondaryissue output > 1, " << asset_symbol;
                 return error::asset_secondaryissue_error;
             }
 
@@ -472,7 +473,6 @@ code validate_transaction::check_secondaryissue_transaction() const
         {
             ++num_asset_cert;
             if (num_asset_cert > 1) {
-                log::debug(LOG_BLOCKCHAIN) << "secondaryissue: cert numbers > 1, " << asset_symbol;
                 return error::asset_secondaryissue_error;
             }
             auto&& asset_cert = output.get_asset_cert();

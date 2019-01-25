@@ -2970,7 +2970,7 @@ uint64_t block_chain_impl::get_witness_stake_mars(const std::string& address, ui
         return 0;
     }
 
-    auto stake = (uint64_t)(std::log10(locked_balance.first) * 6.18);
+    auto stake = std::round(std::log10(locked_balance.first) * 6.18);
     return stake;
 }
 
