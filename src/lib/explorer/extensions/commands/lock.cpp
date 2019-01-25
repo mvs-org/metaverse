@@ -43,10 +43,17 @@ console_result lock::invoke(Json::Value& jv_output,
         check_asset_symbol(option_.asset_symbol);
     }
 
+
     chain::attachment attach;
-    std::string to_address = get_address_from_did(argument_.to, blockchain);
+    std::string from_address("");
+    if (!option_.from.empty()) {
+        from_address = get_address(option_.from, attach, true, blockchain);
+    }
+
     std::string change_address = get_address(option_.change, blockchain);
+    std::string to_address = get_address_from_did(argument_.to, blockchain);
     attach.set_to_did(argument_.to);
+    attach.set_version(DID_ATTACH_VERIFY_VERSION);
 
     bc::wallet::payment_address addr(to_address);
     if (addr.version() == bc::wallet::payment_address::mainnet_p2sh) { // for multisig address
@@ -92,7 +99,7 @@ console_result lock::invoke(Json::Value& jv_output,
 
     lock_sending send_helper(*this, blockchain,
                              std::move(auth_.name), std::move(auth_.auth),
-                             "", std::move(receiver),
+                             std::move(from_address), std::move(receiver),
                              std::move(change_address),
                              option_.fee, argument_.sequence);
     send_helper.exec();
