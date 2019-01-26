@@ -81,7 +81,7 @@ public:
         const std::string& header_hash, const uint64_t &nounce_mask);
     const wallet::payment_address& get_miner_payment_address() const;
     bool set_miner_payment_address(const wallet::payment_address& address);
-    void get_state(uint64_t &height,  uint64_t &rate, std::string& difficulty, bool& is_mining);
+    void get_state(uint64_t &height, uint64_t &rate, std::string& difficulty, bool& is_mining, uint32_t& stake_utxos);
     bool get_block_header(chain::header& block_header, const std::string& para);
 
     static chain::operation::stack to_script_operation(

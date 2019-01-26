@@ -89,7 +89,8 @@ console_result getlocked::invoke(Json::Value& jv_output,
         if (balance.is_time_locked) {
             json_balance["locked_seconds"] = balance.locked_height;
             json_balance["expiration_timestamp"] = balance.expiration_height;
-        } else {
+        }
+        else {
             json_balance["locked_height"] = balance.locked_height;
             json_balance["expiration_height"] = balance.expiration_height;
         }
@@ -100,6 +101,10 @@ console_result getlocked::invoke(Json::Value& jv_output,
         }
 
         balances.append(json_balance);
+    }
+
+    if (balances.isNull()) {
+        balances.resize(0);
     }
 
     jv_output = balances;

@@ -131,13 +131,17 @@ code organizer::verify(uint64_t fork_point,
         return ec;
     }
 
-    // Start strict validation if past last checkpoint.
-    if (!strict(fork_point)) {
-        return ec;
-    }
-
     const auto total_inputs = count_inputs(*current_block);
     const auto total_transactions = current_block->transactions.size();
+
+    // Start strict validation if past last checkpoint.
+    if (!strict(fork_point)) {
+        log::info(LOG_BLOCKCHAIN)
+            << get_block_version(current_block->header)
+            << " block [" << height << "] synced (" << total_transactions
+            << ") txs and (" << total_inputs << ") inputs";
+        return ec;
+    }
 
     log::info(LOG_BLOCKCHAIN)
         << get_block_version(current_block->header)

@@ -35,7 +35,7 @@ public:
     static const char* symbol(){ return "lock";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "lock etp or asset to a target did/address."; }
+    const char* description() override { return "lock etp to a target did."; }
 
     arguments_metadata& load_arguments() override
     {
@@ -94,9 +94,9 @@ public:
             "Lock sequence value, max value is 1048575 for block height unit"
         )
         (
-            "symbol,s",
-            value<std::string>(&option_.asset_symbol)->default_value(DEFAULT_INVALID_ASSET_SYMBOL),
-            "Lock asset of this symbol"
+            "from,s",
+            value<std::string>(&option_.from)->default_value(""),
+            "Send from this did/address"
         )
         (
             "change,c",
@@ -126,6 +126,11 @@ public:
 
     struct argument
     {
+        argument()
+            : amount(0)
+            , sequence(0)
+        {}
+
         std::string to;
         uint64_t amount;
         uint32_t sequence;
@@ -133,10 +138,16 @@ public:
 
     struct option
     {
+        option()
+            : fee(0)
+            , asset_symbol(DEFAULT_INVALID_ASSET_SYMBOL)
+        {}
+
         uint64_t fee;
-        std::string memo;
+        std::string from;
         std::string change;
         std::string asset_symbol;
+        std::string memo;
     } option_;
 
 };

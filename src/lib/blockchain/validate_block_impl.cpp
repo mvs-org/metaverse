@@ -233,22 +233,9 @@ chain::header::ptr validate_block_impl::get_last_block_header(const chain::heade
 {
     uint64_t height = parent_header.number;
     if (parent_header.version == version) {
-        // log::info(LOG_BLOCKCHAIN) << "validate_block_impl::get_last_block_header: prev: "
-        //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
         return std::make_shared<chain::header>(parent_header);
     }
-
-    bool isPoW = (version == chain::block_version_pow);
-    while ((!isPoW && height > pos_enabled_height) || (isPoW && height > 2)) {
-        chain::header prev_header = fetch_block(--height);
-        if (prev_header.version == version) {
-            // log::info(LOG_BLOCKCHAIN) << "validate_block_impl::get_last_block_header: prev: "
-            //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
-            return std::make_shared<chain::header>(prev_header);
-        }
-    }
-
-    return nullptr;
+    return get_prev_block_header(parent_header.number, static_cast<chain::block_version>(version));
 }
 
 bool tx_after_fork(uint64_t tx_height, uint64_t fork_index)
@@ -362,6 +349,22 @@ std::string validate_block_impl::get_did_from_address_consider_orphan_chain(
     return did_symbol;
 }
 
+bool validate_block_impl::is_in_orphan_chain_outputs(std::function<bool(const chain::output&)> const& condition_func) const
+{
+    for (uint64_t orphan = 0; orphan < orphan_index_; ++orphan) {
+        const auto& orphan_block = orphan_chain_[orphan]->actual();
+        for (const auto& orphan_tx : orphan_block->transactions) {
+            for (auto& output : orphan_tx.outputs) {
+                if (condition_func(output)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
 bool validate_block_impl::is_did_match_address_in_orphan_chain(const std::string& did, const std::string& address) const
 {
     BITCOIN_ASSERT(!did.empty());
@@ -372,100 +375,65 @@ bool validate_block_impl::is_did_match_address_in_orphan_chain(const std::string
         return false;
     }
 
-    auto orphan = orphan_index_;
-    while (orphan > 0) {
-        const auto& orphan_block = orphan_chain_[--orphan]->actual();
-        for (const auto& orphan_tx : orphan_block->transactions) {
-            for (auto& output : orphan_tx.outputs) {
-                if (output.is_did_register() || output.is_did_transfer()) {
-                    if (did == output.get_did_symbol()) {
-                        return address == output.get_did_address();
-                    }
-                }
-            }
+    auto cond_func = [&did, &address](const chain::output& output) -> bool
+    {
+        if (output.is_did_register() || output.is_did_transfer()) {
+            return did == output.get_did_symbol() && address == output.get_did_address();
         }
-    }
 
-    return false;
+        return false;
+    };
+
+    return is_in_orphan_chain_outputs(cond_func);
 }
 
 bool validate_block_impl::is_did_in_orphan_chain(const std::string& did) const
 {
     BITCOIN_ASSERT(!did.empty());
 
-    for (uint64_t orphan = 0; orphan < orphan_index_; ++orphan) {
-        const auto& orphan_block = orphan_chain_[orphan]->actual();
-        for (const auto& orphan_tx : orphan_block->transactions) {
-            for (auto& output : orphan_tx.outputs) {
-                if (output.is_did_register()) {
-                    if (did == output.get_did_symbol()) {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
+    auto cond_func = [&did](const chain::output& output) -> bool
+    {
+        return output.is_did_register() && did == output.get_did_symbol();
+    };
 
-    return false;
+    return is_in_orphan_chain_outputs(cond_func);
 }
 
 bool validate_block_impl::is_asset_in_orphan_chain(const std::string& symbol) const
 {
     BITCOIN_ASSERT(!symbol.empty());
 
-    for (uint64_t orphan = 0; orphan < orphan_index_; ++orphan) {
-        const auto& orphan_block = orphan_chain_[orphan]->actual();
-        for (const auto& orphan_tx : orphan_block->transactions) {
-            for (const auto& output : orphan_tx.outputs) {
-                if (output.is_asset_issue()) {
-                    if (symbol == output.get_asset_symbol()) {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
+    auto cond_func = [&symbol](const chain::output& output) -> bool
+    {
+        return output.is_asset_issue() && symbol == output.get_asset_symbol();
+    };
 
-    return false;
+    return is_in_orphan_chain_outputs(cond_func);
 }
 
 bool validate_block_impl::is_asset_cert_in_orphan_chain(const std::string& symbol, chain::asset_cert_type cert_type) const
 {
     BITCOIN_ASSERT(!symbol.empty());
 
-    for (uint64_t orphan = 0; orphan < orphan_index_; ++orphan) {
-        const auto& orphan_block = orphan_chain_[orphan]->actual();
-        for (const auto& orphan_tx : orphan_block->transactions) {
-            for (const auto& output : orphan_tx.outputs) {
-                if (symbol == output.get_asset_cert_symbol() &&
-                    cert_type == output.get_asset_cert_type()) {
-                    return true;
-                }
-            }
-        }
-    }
+    auto cond_func = [&symbol, cert_type](const chain::output& output) -> bool
+    {
+        return output.is_asset_cert() && symbol == output.get_asset_cert_symbol()
+            && cert_type == output.get_asset_cert_type();
+    };
 
-    return false;
+    return is_in_orphan_chain_outputs(cond_func);
 }
 
 bool validate_block_impl::is_asset_mit_in_orphan_chain(const std::string& symbol) const
 {
     BITCOIN_ASSERT(!symbol.empty());
 
-    for (uint64_t orphan = 0; orphan < orphan_index_; ++orphan) {
-        const auto& orphan_block = orphan_chain_[orphan]->actual();
-        for (const auto& orphan_tx : orphan_block->transactions) {
-            for (const auto& output : orphan_tx.outputs) {
-                if (output.is_asset_mit_register()) {
-                    if (symbol == output.get_asset_mit_symbol()) {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
+    auto cond_func = [&symbol](const chain::output& output) -> bool
+    {
+        return output.is_asset_mit_register() && symbol == output.get_asset_mit_symbol();
+    };
 
-    return false;
+    return is_in_orphan_chain_outputs(cond_func);
 }
 
 bool validate_block_impl::is_output_spent(
@@ -534,120 +502,34 @@ bool validate_block_impl::check_get_coinage_reward_transaction(const chain::tran
 
 bool validate_block_impl::check_max_successive_height(uint64_t height, chain::block_version version) const
 {
-    if (!enable_max_successive_height) {
-        return true;
-    }
+    using namespace std::placeholders;
+    typedef std::function<chain::header::ptr(uint64_t, chain::block_version, bool)> FuncType;
+    FuncType func = std::bind(&validate_block_impl::get_prev_block_header, this, _1, _2, _3);
 
-    if (height <= pos_enabled_height + 10000) {
-        return true;
-    }
-
-    if (version == chain::block_version_pow) {
-        using namespace consensus;
-        if (height >= witness::witness_enable_height) {
-            // consider the beginning of dpos epoch
-            uint64_t height_in_epoch = witness::get_height_in_epoch(height);
-            if (height_in_epoch <= witness::vote_maturity) {
-                return true;
-            }
-            if (height_in_epoch > witness::epoch_cycle_height - witness::vote_maturity) {
-                return true;
-            }
-        }
-
-        auto header = get_prev_block_header(height, version, false);
-        if (header && height - header->number > pow_max_successive_height) {
-            log::warning(LOG_BLOCKCHAIN) << "Failed to check pow max successive height: "
-                << (height - header->number);
-            return false;
-        }
-    }
-    else if (version == chain::block_version_pos) {
-        auto header = get_prev_block_header(height, version, false);
-        if (header && height - header->number > pos_max_successive_height) {
-            log::warning(LOG_BLOCKCHAIN) << "Failed to check pos max successive height: "
-                << (height - header->number);
-            return false;
-        }
-    }
-    else if (version == chain::block_version_dpos) {
-        if (height <= consensus::witness::witness_enable_height) {
-            return true;
-        }
-        // TODO
-    }
-
-    return true;
+    return chain_.check_max_successive_height_impl(height, version, func);
 }
 
 bool validate_block_impl::can_use_dpos(uint64_t height) const
 {
-    using namespace consensus;
-
-    if (!witness::is_witness_enabled(height)) {
-        return false;
-    }
-
-    // ensure the vote is maturity
+    auto get_header = [this](chain::header& out_header, uint64_t height) -> bool
     {
-        uint64_t height_in_epoch = witness::get_height_in_epoch(height);
-        // [0 .. vote_maturity)
-        if (height_in_epoch < witness::vote_maturity) {
-            return false;
-        }
+        out_header = this->fetch_block(height);
+        return true;
+    };
 
-        // [epoch_cycle_height - vote_maturity .. epoch_cycle_height)
-        if (height_in_epoch >= witness::epoch_cycle_height - witness::vote_maturity) {
-            return false;
-        }
-    }
-
-    // a dpos must followed by a non dpos block.
-    chain::header header = fetch_block(height - 1);
-    if (header.is_proof_of_dpos()) {
-        return false;
-    }
-
-    return true;
+    return chain_.can_use_dpos_impl(height, get_header);
 }
 
 chain::header::ptr validate_block_impl::get_prev_block_header(
     uint64_t height, chain::block_version ver, bool same_version) const
 {
-    if (height < 2) {
-        return nullptr;
-    }
+    auto get_header = [this](chain::header& out_header, uint64_t height) -> bool
+    {
+        out_header = this->fetch_block(height);
+        return true;
+    };
 
-    chain::header header;
-    while (--height > 0) {
-        if (same_version) {
-            if (ver == chain::block_version_pos && height < pos_enabled_height) {
-                return nullptr;
-            }
-            else if (ver == chain::block_version_dpos && height < consensus::witness::witness_enable_height) {
-                return nullptr;
-            }
-        }
-        else {
-            if (ver == chain::block_version_pow && height < pos_enabled_height) {
-                return nullptr;
-            }
-        }
-
-        header = fetch_block(height);
-        if (same_version) {
-            if (header.version == ver) {
-                return std::make_shared<chain::header>(header);
-            }
-        }
-        else {
-            if (header.version != ver) {
-                return std::make_shared<chain::header>(header);
-            }
-        }
-    }
-
-    return nullptr;
+    return chain_.get_prev_block_header_impl(height, ver, same_version, get_header);
 }
 
 

@@ -30,29 +30,29 @@ namespace explorer {
 namespace commands {
 
 
-/************************ getmininginfo *************************/
+/************************ verifyrandom *************************/
 
-class getmininginfo: public command_extension
+class verifyrandom: public command_extension
 {
 public:
-    static const char* symbol(){ return "getmininginfo";}
+    static const char* symbol(){ return "verifyrandom";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
-    const char* description() override { return "getmininginfo "; }
+    const char* description() override { return "verifyrandom "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("ADMINNAME", 1)
-            .add("ADMINAUTH", 1);
+            .add("RANDOM_HASH", 1)
+            .add("RANDOM_NUM", 1);
     }
 
     void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        load_input(auth_.name, "ADMINNAME", variables, input, raw);
-        load_input(auth_.auth, "ADMINAUTH", variables, input, raw);
+        load_input(argument_.random_hash, "RANDOM_HASH", variables, input, raw);
+        load_input(argument_.random_num, "RANDOM_NUM", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -66,14 +66,14 @@ public:
             "Get a description and instructions for this command."
         )
         (
-            "ADMINNAME",
-            value<std::string>(&auth_.name),
-            BX_ADMIN_NAME
+            "RANDOM_HASH",
+            value<std::string>(&argument_.random_hash)->required(),
+            "random number's hash (use SHA3 algorithmn)"
         )
         (
-            "ADMINAUTH",
-            value<std::string>(&auth_.auth),
-            BX_ADMIN_AUTH
+            "RANDOM_NUM",
+            value<uint64_t>(&argument_.random_num)->required(),
+            "random number"
         );
 
         return options;
@@ -84,17 +84,20 @@ public:
     }
 
     console_result invoke (Json::Value& jv_output,
-             libbitcoin::server::server_node& node) override;
+         libbitcoin::server::server_node& node) override;
 
     struct argument
     {
+        std::string random_hash;
+        uint64_t random_num;
     } argument_;
 
     struct option
     {
     } option_;
-
 };
+
+
 
 
 } // namespace commands

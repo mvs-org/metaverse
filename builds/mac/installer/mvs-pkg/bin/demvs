@@ -11,5 +11,5 @@ if [ -f "$PLIST" ]; then
     su $SUDO_USER -c "launchctl stop mvsd"
     su $SUDO_USER -c "launchctl unload $PLIST"
 fi
-rm -f /usr/local/bin/mvsd /usr/local/bin/mvs-cli /usr/local/bin/demvs $PLIST
+su $SUDO_USER -c "rm -f /usr/local/bin/mvsd /usr/local/bin/mvs-cli /usr/local/bin/demvs $PLIST"
 

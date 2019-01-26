@@ -34,6 +34,8 @@
 #include <metaverse/explorer/extensions/commands/getinfo.hpp>
 #include <metaverse/explorer/extensions/commands/getheight.hpp>
 #include <metaverse/explorer/extensions/commands/getpeerinfo.hpp>
+#include <metaverse/explorer/extensions/commands/getrandom.hpp>
+#include <metaverse/explorer/extensions/commands/verifyrandom.hpp>
 #include <metaverse/explorer/extensions/commands/getaddressetp.hpp>
 #include <metaverse/explorer/extensions/commands/addnode.hpp>
 #include <metaverse/explorer/extensions/commands/getmininginfo.hpp>
@@ -57,7 +59,6 @@
 #include <metaverse/explorer/extensions/commands/listbalances.hpp>
 #include <metaverse/explorer/extensions/commands/getbalance.hpp>
 #include <metaverse/explorer/extensions/commands/listtxs.hpp>
-// #include <metaverse/explorer/extensions/commands/deposit.hpp>
 #include <metaverse/explorer/extensions/commands/listassets.hpp>
 #include <metaverse/explorer/extensions/commands/getasset.hpp>
 #include <metaverse/explorer/extensions/commands/secondaryissue.hpp>
@@ -77,7 +78,6 @@
 #include <metaverse/explorer/extensions/commands/sendassetfrom.hpp>
 #include <metaverse/explorer/extensions/commands/sendmoreasset.hpp>
 #include <metaverse/explorer/extensions/commands/swaptoken.hpp>
-// #include <metaverse/explorer/extensions/commands/swapmit.hpp>
 #include <metaverse/explorer/extensions/commands/listdids.hpp>
 #include <metaverse/explorer/extensions/commands/deletelocalasset.hpp>
 #include <metaverse/explorer/extensions/commands/issue.hpp>
@@ -134,6 +134,8 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<getinfo>());
     func(make_shared<addnode>());
     func(make_shared<getpeerinfo>());
+    func(make_shared<getrandom>());
+    func(make_shared<verifyrandom>());
 
     // miming
     func(make_shared<startmining>());
@@ -176,7 +178,6 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<send>());
     func(make_shared<sendmore>());
     func(make_shared<sendfrom>());
-    // func(make_shared<deposit>());
     func(make_shared<lock>());
     func(make_shared<listbalances>());
     func(make_shared<getbalance>());
@@ -212,7 +213,6 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<transfermit>());
     func(make_shared<listmits>());
     func(make_shared<getmit>());
-    // func(make_shared<swapmit>());
 
     os <<"\r\n";
     //did
@@ -257,6 +257,10 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<addnode>();
     if (symbol == getpeerinfo::symbol())
         return make_shared<getpeerinfo>();
+    if (symbol == getrandom::symbol())
+        return make_shared<getrandom>();
+    if (symbol == verifyrandom::symbol())
+        return make_shared<verifyrandom>();
 
     // mining
     if (symbol == stopmining::symbol() || symbol == "stop")
@@ -331,8 +335,6 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getbalance>();
     if (symbol == getaddressetp::symbol() || symbol == "fetch-balance")
         return make_shared<getaddressetp>();
-    // if (symbol == deposit::symbol())
-    //     return make_shared<deposit>();
     if (symbol == lock::symbol())
         return make_shared<lock>();
     if (symbol == getlocked::symbol())
@@ -391,8 +393,6 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<listmits>();
     if (symbol == getmit::symbol())
         return make_shared<getmit>();
-    // if (symbol == swapmit::symbol())
-    //     return make_shared<swapmit>();
 
     // did
     if (symbol == registerdid::symbol())

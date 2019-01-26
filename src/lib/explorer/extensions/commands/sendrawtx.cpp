@@ -125,11 +125,29 @@ bool sort_multi_sigs(tx_type& tx_) {
     return true;
 }
 
+void check_forbidden_transaction(blockchain::block_chain_impl& blockchain, chain::transaction& tx)
+{
+    uint64_t last_height = 0;
+    if (!blockchain.get_last_height(last_height)) {
+        throw block_last_height_get_exception{"query last height failure."};
+    }
+
+    if (last_height >= pos_enabled_height) {
+        for (auto& output : tx.outputs) {
+            if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
+                throw tx_validate_exception{"deposit is forbidden after PoS enabled."};
+            }
+        }
+    }
+}
+
 console_result sendrawtx::invoke(Json::Value& jv_output,
                                  libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     tx_type tx_ = argument_.transaction;
+
+    check_forbidden_transaction(blockchain, tx_);
 
     uint64_t outputs_etp_val = tx_.total_output_value();
     uint64_t inputs_etp_val = 0;

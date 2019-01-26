@@ -32,23 +32,6 @@ using namespace bc::explorer::config;
 
 /************************ getmininginfo *************************/
 
-
-u256 getmininginfo::get_last_bits(libbitcoin::server::server_node& node)
-{
-    auto& blockchain = node.chain_impl();
-    uint64_t height = 0;
-    if (!blockchain.get_last_height(height)) {
-        throw block_last_height_get_exception{"query last height failure."};
-    }
-
-    chain::header header;
-    if (!blockchain.get_header(header, height)) {
-        throw block_header_get_exception{"query last block header failure."};
-    }
-
-    return header.bits;
-}
-
 console_result getmininginfo::invoke(Json::Value& jv_output,
                                      libbitcoin::server::server_node& node)
 {
@@ -57,9 +40,10 @@ console_result getmininginfo::invoke(Json::Value& jv_output,
     uint64_t height, rate;
     std::string difficulty;
     bool is_mining;
+    uint32_t stake_utxos = 0;
 
     auto& miner = node.miner();
-    miner.get_state(height, rate, difficulty, is_mining);
+    miner.get_state(height, rate, difficulty, is_mining, stake_utxos);
 
     if (get_api_version() <= 2) {
         Json::Value info;
@@ -79,17 +63,13 @@ console_result getmininginfo::invoke(Json::Value& jv_output,
         std::string payment_address = waddr ? waddr.encoded() : "";
         std::string asset_symbol = miner.get_mining_asset_symbol();
         std::string block_version = chain::get_block_version(miner.get_accept_block_version());
-        boost::trim(block_version);
 
         jv_output["payment_address"] = payment_address;
-        jv_output["asset_symbol"] = asset_symbol;
-        jv_output["block_version"] = block_version;
+        jv_output["mining_mst"] = asset_symbol;
+        jv_output["block_type"] = block_version;
 
-        if (waddr && (miner.get_accept_block_version() == chain::block_version_pos)) {
-            auto bits = get_last_bits(node);
-            auto& blockchain = node.chain_impl();
-            auto stake_utxo_count = blockchain.select_utxo_for_staking(bits, height, waddr);
-            jv_output["stake_utxo_count"] = stake_utxo_count;
+        if (stake_utxos != 0) {
+            jv_output["stake_utxo_count"] = stake_utxos;
         }
     }
 

@@ -36,7 +36,7 @@ public:
     static const char* symbol(){ return "getlocked";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "Get any valid target address ETP balance."; }
+    const char* description() override { return "Get locked balance of target address."; }
 
     arguments_metadata& load_arguments() override
     {
@@ -72,11 +72,6 @@ public:
             "expiration height, should be still locked at this height."
         )
         (
-            "symbol,s",
-            value<std::string>(&option_.asset_symbol)->default_value(DEFAULT_INVALID_ASSET_SYMBOL),
-            "asset symbol"
-        )
-        (
             "stake,k",
             value<bool>(&option_.dpos_stake)->default_value(false)->zero_tokens(),
             "If specified, then sum effective locked values for DPoS stake. Defaults to false."
@@ -104,6 +99,12 @@ public:
 
     struct option
     {
+        option()
+            : asset_symbol(DEFAULT_INVALID_ASSET_SYMBOL)
+            , expiration(0)
+            , dpos_stake(false)
+        {}
+
         std::string asset_symbol;
         uint64_t expiration;
         colon_delimited2_item<uint64_t, uint64_t> range = {0, 0};

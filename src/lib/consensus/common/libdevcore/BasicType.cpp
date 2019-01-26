@@ -164,11 +164,44 @@ uint64_t HeaderAux::dataSize(uint64_t _blockNumber)
     return ethash_get_datasize(_blockNumber);
 }
 
+bigint HeaderAux::get_minimum_difficulty(uint64_t block_height, uint32_t block_version)
+{
+    switch (block_version) {
+        case chain::block_version_pow:
+        {
+#ifdef PRIVATE_CHAIN
+            return (block_height < 10000) ? bigint(10) : bigint(300000);
+#endif
+            return is_testnet ? bigint(300000) : bigint(914572800);
+        }
+        break;
+        case chain::block_version_pos:
+        {
+            return is_testnet ? bigint(1000000) : bigint(100000000);
+        }
+        break;
+        case chain::block_version_dpos:
+        {
+            return bigint(0);
+        }
+        break;
+        default:
+        {
+            throw std::invalid_argument("unknow block version " + std::to_string(block_version));
+        }
+        break;
+    }
+}
+
 u256 HeaderAux::calculate_difficulty(
     const chain::header& current,
     const chain::header::ptr prev,
     const chain::header::ptr pprev)
 {
+    if (!current.number) {
+        throw GenesisBlockCannotBeCalculated();
+    }
+
     if (current.number < pos_enabled_height) {
         return calculate_difficulty_v1(current, prev, pprev);
     }
@@ -182,11 +215,7 @@ u256 HeaderAux::calculate_difficulty_v1(
     const chain::header::ptr prev,
     const chain::header::ptr pprev)
 {
-    if (!current.number) {
-        throw GenesisBlockCannotBeCalculated();
-    }
-
-    auto minimumDifficulty = is_testnet ? bigint(300000) : bigint(914572800);
+    auto minimumDifficulty = get_minimum_difficulty(current.number, current.version);
     bigint target(minimumDifficulty);
 
     // DO NOT MODIFY time_config in release
@@ -213,19 +242,13 @@ u256 HeaderAux::calculate_difficulty_v2(
     const chain::header::ptr prev,
     const chain::header::ptr pprev)
 {
-    bigint minimumDifficulty, result;
+    bigint result;
     int32_t interval;
+
+    auto minimumDifficulty = get_minimum_difficulty(current.number, current.version);
 
     if (current.version == chain::block_version_pow) {
         //////////// PoW ///////////////
-        minimumDifficulty = is_testnet ? bigint(300000) : bigint(914572800);
-#ifdef PRIVATE_CHAIN
-        minimumDifficulty = bigint(300000);
-        if (current.number < 10000) {
-            return u256(bigint(10));
-        }
-#endif
-
         if (nullptr == prev) {
             return u256(minimumDifficulty);
         }
@@ -239,7 +262,6 @@ u256 HeaderAux::calculate_difficulty_v2(
     }
     else {
         //////////// PoS ///////////////
-        minimumDifficulty = is_testnet ? bigint(1000000) : bigint(100000000);
         if (nullptr == prev || nullptr == pprev) {
             return u256(minimumDifficulty);
         }

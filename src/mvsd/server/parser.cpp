@@ -325,6 +325,11 @@ options_metadata parser::load_settings()
         value<config::checkpoint::list>(&configured.chain.checkpoints),
         "A hash:height checkpoint, multiple entries allowed."
     )
+    (
+        "blockchain.collect_split_stake",
+        value<bool>(&configured.chain.collect_split_stake),
+        "Use testnet rules for determination of work required, defaults to false."
+    )
 
     /* [node] */
     (

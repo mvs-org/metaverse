@@ -64,6 +64,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deposit.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didchangeaddress.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getlocked.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getrandom.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\importaddress.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\lock.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\popblock.hpp" />
@@ -113,6 +114,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listtxs.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\registermit.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\secondaryissue.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\swapmit.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\swaptoken.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\transfercert.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendrawtx.hpp" />
@@ -126,6 +128,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\transfermit.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\validateaddress.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\validatesymbol.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\verifyrandom.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\command_assistant.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\command_extension.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\command_extension_func.hpp" />
@@ -193,6 +196,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deposit.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didchangeaddress.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getlocked.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getrandom.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\importaddress.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\lock.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\popblock.cpp" />
@@ -242,6 +246,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\registermit.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\secondaryissue.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendmoreasset.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\swapmit.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\swaptoken.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\transfercert.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendrawtx.cpp" />
@@ -255,6 +260,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\transfermit.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\validateaddress.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\validatesymbol.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\verifyrandom.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\command_assistant.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\command_extension_func.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\exception.cpp" />

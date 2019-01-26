@@ -185,7 +185,7 @@ bool block_chain_impl::check_pos_utxo_height_and_value(
     }
 #endif
 
-    return (value >= pos_stake_min_value) && (out_height + maturity_height <= curr_height);
+    return out_height + maturity_height <= curr_height;
 }
 
 bool block_chain_impl::check_pos_utxo_capability(
@@ -2970,7 +2970,7 @@ uint64_t block_chain_impl::get_witness_stake_mars(const std::string& address, ui
         return 0;
     }
 
-    auto stake = (uint64_t)(std::log10(locked_balance.first) * 6.18);
+    auto stake = std::round(std::log10(locked_balance.first) * 6.18);
     return stake;
 }
 
@@ -3136,8 +3136,9 @@ block_chain_impl::get_address_witness_certs(const std::string& address, uint64_t
     return sh_vec;
 }
 
-chain::header::ptr block_chain_impl::get_prev_block_header(
-    uint64_t height, chain::block_version ver, bool same_version) const
+chain::header::ptr block_chain_impl::get_prev_block_header_impl(
+    uint64_t height, chain::block_version ver, bool same_version,
+    std::function<bool(chain::header&, uint64_t)> const &get_header_func) const
 {
     if (height < 2) {
         return nullptr;
@@ -3154,7 +3155,7 @@ chain::header::ptr block_chain_impl::get_prev_block_header(
             }
         }
 
-        if (!get_header(header, height)) {
+        if (!get_header_func(header, height)) {
             return nullptr;
         }
 
@@ -3173,7 +3174,19 @@ chain::header::ptr block_chain_impl::get_prev_block_header(
     return nullptr;
 }
 
-bool block_chain_impl::can_use_dpos(uint64_t height) const
+chain::header::ptr block_chain_impl::get_prev_block_header(
+    uint64_t height, chain::block_version ver, bool same_version) const
+{
+    using namespace std::placeholders;
+    typedef std::function<bool(chain::header&, uint64_t)> FuncType;
+    FuncType func = std::bind(&block_chain_impl::get_header, this, _1, _2);
+
+    return get_prev_block_header_impl(height, ver, same_version, func);
+}
+
+bool block_chain_impl::can_use_dpos_impl(
+    uint64_t height,
+    std::function<bool(chain::header&, uint64_t)> const &get_header_func) const
 {
     using namespace consensus;
 
@@ -3197,14 +3210,26 @@ bool block_chain_impl::can_use_dpos(uint64_t height) const
 
     // a dpos must followed by non dpos.
     chain::header header;
-    if (!get_header(header, height - 1) || header.is_proof_of_dpos()) {
+    if (!get_header_func(header, height - 1) || header.is_proof_of_dpos()) {
         return false;
     }
 
     return true;
 }
 
-bool block_chain_impl::check_max_successive_height(uint64_t height, chain::block_version version) const
+bool block_chain_impl::can_use_dpos(uint64_t height) const
+{
+    using namespace std::placeholders;
+    typedef std::function<bool(chain::header&, uint64_t)> FuncType;
+    FuncType func = std::bind(&block_chain_impl::get_header, this, _1, _2);
+
+    return can_use_dpos_impl(height, func);
+}
+
+bool block_chain_impl::check_max_successive_height_impl(
+    uint64_t height,
+    chain::block_version version,
+    std::function<chain::header::ptr(uint64_t, chain::block_version, bool)> const &get_prev_header_func) const
 {
     if (!enable_max_successive_height) {
         return true;
@@ -3215,13 +3240,13 @@ bool block_chain_impl::check_max_successive_height(uint64_t height, chain::block
     }
 
     if (version == chain::block_version_pow) {
-        auto header = get_prev_block_header(height, version, false);
+        auto header = get_prev_header_func(height, version, false);
         if (header && height - header->number > pow_max_successive_height) {
             return false;
         }
     }
     else if (version == chain::block_version_pos) {
-        auto header = get_prev_block_header(height, version, false);
+        auto header = get_prev_header_func(height, version, false);
         if (header && height - header->number > pos_max_successive_height) {
             return false;
         }
@@ -3234,6 +3259,15 @@ bool block_chain_impl::check_max_successive_height(uint64_t height, chain::block
     }
 
     return true;
+}
+
+bool block_chain_impl::check_max_successive_height(uint64_t height, chain::block_version version) const
+{
+    using namespace std::placeholders;
+    typedef std::function<chain::header::ptr(uint64_t, chain::block_version, bool)> FuncType;
+    FuncType func = std::bind(&block_chain_impl::get_prev_block_header, this, _1, _2, _3);
+
+    return check_max_successive_height_impl(height, version, func);
 }
 
 bool block_chain_impl::get_signature(ec_signature& blocksig, uint64_t height) const

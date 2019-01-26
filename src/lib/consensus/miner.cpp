@@ -1504,15 +1504,32 @@ bool miner::put_result(const std::string& nonce, const std::string& mix_hash,
     return ret;
 }
 
-void miner::get_state(uint64_t &height, uint64_t &rate, std::string& difficulty, bool& is_mining)
+void miner::get_state(uint64_t &height, uint64_t &rate, std::string& difficulty, bool& is_mining, uint32_t& stake_utxos)
 {
     rate = MinerAux::getRate();
-    blockchain::block_chain_impl& block_chain = node_.chain_impl();
-    chain::header prev_header;
-    block_chain.get_last_height(height);
-    block_chain.get_header(prev_header, height);
-    difficulty = to_string((u256)prev_header.bits);
     is_mining = thread_ ? true : false;
+    difficulty = "";
+    stake_utxos = 0;
+
+    blockchain::block_chain_impl& block_chain = node_.chain_impl();
+    block_chain.get_last_height(height);
+
+    u256 pos_bits = (u256)HeaderAux::get_minimum_difficulty(height, chain::block_version_pos);
+    auto version = get_accept_block_version();
+    if (version == chain::block_version_pow || version == chain::block_version_pos) {
+        auto header = block_chain.get_prev_block_header(height + 1, version, true);
+        if (header) {
+            difficulty = to_string((u256)header->bits);
+            if (version == chain::block_version_pos) {
+                pos_bits = header->bits;
+            }
+        }
+    }
+
+    auto pay_address = get_miner_payment_address();
+    if (pay_address && version == chain::block_version_pos) {
+        stake_utxos = block_chain.select_utxo_for_staking(pos_bits, height, pay_address);
+    }
 }
 
 bool miner::get_block_header(chain::header& block_header, const std::string& para)
