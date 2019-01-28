@@ -56,12 +56,8 @@ settings::settings(bc::settings context)
             basic_checkpoints.push_back({ "b81848ef9ae86e84c3da26564bc6ab3a79efc628239d11471ab5cd25c0684c2d", 0 });
 
             // validate_block, This is for each single node validate
-            checkpoints.reserve(7);
+            checkpoints.reserve(3);
             checkpoints.push_back({ "b81848ef9ae86e84c3da26564bc6ab3a79efc628239d11471ab5cd25c0684c2d", 0 });
-            checkpoints.push_back({ "d4f84eb9acb52cbfb003bd4fb88f4b5cf1f6328f193097d42b9403d7030abb8e", 3800 });
-            checkpoints.push_back({ "e989e4b2d60ae2f8fbaa1cdb69d05afa63e7f1f99cf715589a93e4877c92fa8b", 100000 });
-            checkpoints.push_back({ "d120edf7e14d8f426b7390e94ae7bfd746f9fc247b28e336db052295177ac9d3", 410000 }); //0.6.9 fix
-            checkpoints.push_back({ "9a0efd7b41cfc1cbeb1bfbd2ab3cb7989314611608cc4236b80a540444fbfb36", 800000 });
             checkpoints.push_back({ "ed11a074ce80cbf82b5724bea0d74319dc6f180198fa1bbfb562bcbd50089e63", 1030000 }); //future time attack
             checkpoints.push_back({ "a18a5aa5270835dd720a561c20230435e0508e8339ee30998da6dd79eee83b29", 1270000 }); //super nova
 
