@@ -196,6 +196,8 @@ enum error_code_t
     mst_coinbase_invalid,
     invalid_output_script_lock_sequence,
     block_intermix_interval_error,
+    pos_feature_not_activated,
+    dpos_feature_not_activated,     // 110
 };
 
 enum error_condition_t

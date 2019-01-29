@@ -657,6 +657,12 @@ code validate_transaction::check_asset_issue_transaction() const
                 }
             }
             else if (cur_cert_type == asset_cert_ns::mining) {
+                uint64_t current_blockheight = 0;
+                chain.get_last_height(current_blockheight);
+                if (current_blockheight < pos_enabled_height) {
+                    return error::pos_feature_not_activated;
+                }
+
                 ++num_cert_mining;
                 if (num_cert_mining > 1) {
                     return error::asset_issue_error;
@@ -1452,6 +1458,10 @@ code validate_transaction::check_final_tx() const
         ++height; // the next block's height
     }
 
+    if (height < pos_enabled_height) {
+        return error::success;
+    }
+
     return !tx_->is_final(height, median_time_past_) ? error::non_final_transaction : error::success;
 }
 
@@ -1680,6 +1690,13 @@ code validate_transaction::check_transaction_basic() const
                 if ((int)lock_height < 0
                         || consensus::miner::get_lock_heights_index(lock_height) < 0) {
                     return error::invalid_output_script_lock_height;
+                }
+            }
+            else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
+                uint64_t current_blockheight = 0;
+                chain.get_last_height(current_blockheight);
+                if (current_blockheight < pos_enabled_height) {
+                    return error::pos_feature_not_activated;
                 }
             }
         }

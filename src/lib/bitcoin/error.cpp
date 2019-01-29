@@ -250,8 +250,14 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
 
         case error::attachment_invalid:
             return "attachment is invalid";
+
+        // features
         case error::nova_feature_not_activated:
             return "nova feature is not activated, it will be activated when block height is larger than 1270000";
+        case error::pos_feature_not_activated:
+            return "pos feature is not activated, it will be activated when block height is larger than 1924000";
+        case error::dpos_feature_not_activated:
+            return "dpos feature is not activated, it will be activated when block height is larger than ...";
 
         // mit errors
         case error::mit_error:
