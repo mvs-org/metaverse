@@ -36,6 +36,7 @@ settings::settings()
     transaction_pool_consistency(false),
     use_testnet_rules(false),
     collect_split_stake(true),
+    disable_account_operations(false),
     checkpoints(),
     basic_checkpoints()
 {

@@ -71,6 +71,10 @@ public:
     config::sodium::list client_public_keys;
     config::authority::list client_addresses;
 
+    std::vector<std::string> rpc_client_addresses;
+    std::vector<std::string> allow_rpc_methods;
+    std::vector<std::string> forbid_rpc_methods;
+
     /// Helpers.
     asio::duration heartbeat_interval() const;
     asio::duration subscription_expiration() const;

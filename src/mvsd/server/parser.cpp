@@ -328,7 +328,7 @@ options_metadata parser::load_settings()
     (
         "blockchain.collect_split_stake",
         value<bool>(&configured.chain.collect_split_stake),
-        "Use testnet rules for determination of work required, defaults to false."
+        "Automatically collect or split utxos for pos stake, defaults to true."
     )
 
     /* [node] */
@@ -478,6 +478,26 @@ options_metadata parser::load_settings()
         "server.client_address",
         value<config::authority::list>(&configured.server.client_addresses),
         "Allowed client IP address, multiple entries allowed."
+    )
+    (
+        "server.rpc_client_addresses",
+        value<std::vector<std::string>>(&configured.server.rpc_client_addresses),
+        "Allowed RPC client IP address, multiple entries allowed."
+    )
+    (
+        "server.disable_account_operations",
+        value<bool>(&configured.chain.disable_account_operations),
+        "Disable account related operations for server security, defaults to false."
+    )
+    (
+        "server.allow_rpc_methods",
+        value<std::vector<std::string>>(&configured.server.allow_rpc_methods),
+        "Allowed rpc calling methods (regex), multiple entries allowed. Defaults to allow all."
+    )
+    (
+        "server.forbid_rpc_methods",
+        value<std::vector<std::string>>(&configured.server.forbid_rpc_methods),
+        "Forbidden rpc calling methods (regex), multiple entries allowed. Defaults to forbid none."
     );
 
     return description;

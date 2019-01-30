@@ -1340,6 +1340,11 @@ std::shared_ptr<chain::transaction> block_chain_impl::get_spends_output(const in
 std::shared_ptr<account> block_chain_impl::is_account_passwd_valid
     (const std::string& name, const std::string& passwd)
 {
+    if (settings_.disable_account_operations) {
+        throw std::logic_error{"account related operations is forbidden "
+            "with config item server.disable_account_operations"};
+    }
+
     //added by chengzhiping to protect accounts from brute force password attacks.
     auto *ass = account_security_strategy::get_instance();
     // ass->check_locked(name);

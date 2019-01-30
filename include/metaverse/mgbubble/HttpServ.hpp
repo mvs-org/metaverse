@@ -55,6 +55,8 @@ protected:
     void on_ws_handshake_done_handler(struct mg_connection& nc) override;
     void on_ws_frame_handler(struct mg_connection& nc, struct websocket_message& msg) override;
 
+    void check_rpc_client_addresses(struct mg_connection& nc);
+
 private:
     enum : int {
       // Method values are represented as powers of two for simplicity.

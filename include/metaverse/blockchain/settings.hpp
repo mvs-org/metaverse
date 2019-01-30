@@ -42,6 +42,7 @@ public:
     bool transaction_pool_consistency;
     bool use_testnet_rules;
     bool collect_split_stake;
+    bool disable_account_operations;
     config::checkpoint::list checkpoints;
     config::checkpoint::list basic_checkpoints;
 };
