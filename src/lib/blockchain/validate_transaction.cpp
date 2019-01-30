@@ -657,6 +657,12 @@ code validate_transaction::check_asset_issue_transaction() const
                 }
             }
             else if (cur_cert_type == asset_cert_ns::mining) {
+                uint64_t current_blockheight = 0;
+                chain.get_last_height(current_blockheight);
+                if (current_blockheight < pos_enabled_height) {
+                    return error::pos_feature_not_activated;
+                }
+
                 ++num_cert_mining;
                 if (num_cert_mining > 1) {
                     return error::asset_issue_error;
@@ -1452,6 +1458,10 @@ code validate_transaction::check_final_tx() const
         ++height; // the next block's height
     }
 
+    if (height < pos_enabled_height) {
+        return error::success;
+    }
+
     return !tx_->is_final(height, median_time_past_) ? error::non_final_transaction : error::success;
 }
 
@@ -1644,6 +1654,9 @@ code validate_transaction::check_transaction_basic() const
 
     if (!tx.is_coinbase())
     {
+        uint64_t current_blockheight = 0;
+        chain.get_last_height(current_blockheight);
+
         for (const auto& input : tx.inputs)
         {
             if (input.previous_output.is_null())
@@ -1652,9 +1665,6 @@ code validate_transaction::check_transaction_basic() const
             if (chain::operation::is_sign_key_hash_with_lock_height_pattern(input.script.operations)) {
                 uint64_t prev_output_blockheight = 0;
                 chain::transaction prev_tx;
-                uint64_t current_blockheight = 0;
-
-                chain.get_last_height(current_blockheight);
                 if (!get_previous_tx(prev_tx, prev_output_blockheight, input)) {
                     log::debug(LOG_BLOCKCHAIN) << "check_transaction_basic deposit : input not found: "
                                                << encode_hash(input.previous_output.hash);
@@ -1676,10 +1686,21 @@ code validate_transaction::check_transaction_basic() const
         for (auto& output : tx.outputs)
         {
             if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
+                if (current_blockheight >= pos_enabled_height) {
+                    log::debug(LOG_BLOCKCHAIN) << "validate reward coinbase failed. invalid reward height:"
+                        << current_blockheight;
+                    return error::invalid_coinage_reward_coinbase;
+                }
+
                 uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
                 if ((int)lock_height < 0
                         || consensus::miner::get_lock_heights_index(lock_height) < 0) {
                     return error::invalid_output_script_lock_height;
+                }
+            }
+            else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
+                if (current_blockheight < pos_enabled_height) {
+                    return error::pos_feature_not_activated;
                 }
             }
         }

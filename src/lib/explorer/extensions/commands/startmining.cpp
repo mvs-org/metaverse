@@ -123,9 +123,16 @@ console_result startmining::invoke(Json::Value& jv_output,
         miner.set_accept_block_version(chain::block_version_pow);
     }
     else if (is_use_pos) {
+        if (height < pos_enabled_height) {
+            throw argument_legality_exception{"pos feature is not activated before " + std::to_string(pos_enabled_height)};
+        }
         miner.set_accept_block_version(chain::block_version_pos);
     }
     else if (is_use_dpos) {
+        auto witness_enable_height = consensus::witness::witness_enable_height;
+        if (height < witness_enable_height) {
+            throw argument_legality_exception{"dpos feature is not activated before " + std::to_string(witness_enable_height)};
+        }
         miner.set_accept_block_version(chain::block_version_dpos);
     }
     else {
