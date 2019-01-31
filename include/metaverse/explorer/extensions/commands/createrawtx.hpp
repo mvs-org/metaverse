@@ -105,6 +105,11 @@ public:
         )
 #endif
         (
+            "putscript,p",
+            value<bool>(&option_.include_input_script)->default_value(false)->zero_tokens(),
+            "If specified, the input's script will be set. Defaults to not specified."
+        )
+        (
             "fee,f",
             value<uint64_t>(&option_.fee)->default_value(10000),
             "Transaction fee. defaults to 10000 ETP bits"
@@ -138,6 +143,7 @@ public:
         std::string message;
         uint64_t fee;
         uint32_t locktime;
+        bool include_input_script;
 
     } option_;
 

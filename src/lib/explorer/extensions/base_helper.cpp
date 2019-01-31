@@ -1047,17 +1047,18 @@ bool base_transfer_common::get_spendable_output(
 void base_transfer_common::sync_fetchutxo(
         const std::string& prikey, const std::string& addr, filter filter, const history::list& spec_rows)
 {
-    auto&& waddr = wallet::payment_address(addr);
-
     uint64_t height = 0;
     blockchain_.get_last_height(height);
 
-    const auto &rows = spec_rows.empty() ? blockchain_.get_address_history(waddr, true) : spec_rows;
+    const auto use_specified_rows = !spec_rows.empty();
+    const auto &rows = use_specified_rows
+        ? spec_rows
+        : blockchain_.get_address_history(addr, true);
 
     for (auto& row: rows)
     {
         chain::output output;
-        if (!spec_rows.empty()) {
+        if (use_specified_rows) {
             if (!get_spendable_output(output, row, height)) {
                 throw std::logic_error("output spent error.");
             }
@@ -1209,6 +1210,10 @@ void base_transfer_common::sync_fetchutxo(
             record.prikey = prikey;
             record.script = output.script;
         }
+        else if (include_input_script()) {
+            record.script = output.script;
+        }
+
         record.addr = output.get_script_address();
         record.amount = etp_amount;
         record.symbol = asset_symbol;
@@ -1601,6 +1606,9 @@ void base_transfer_common::populate_tx_inputs()
         input.sequence = fromeach.sequence;
         input.previous_output.hash = fromeach.output.hash;
         input.previous_output.index = fromeach.output.index;
+        if (include_input_script()) {
+            input.script = fromeach.script;
+        }
         tx_.inputs.push_back(input);
         tx_item_idx_++;
     }
@@ -1979,10 +1987,10 @@ void base_transaction_constructor::populate_unspent_list()
 {
     // get from address balances
     for (auto& each : from_vec_) {
-        sync_fetchutxo("", each);
         if (is_payment_satisfied()) {
             break;
         }
+        sync_fetchutxo("", each);
     }
 
     if (from_list_.empty()) {
