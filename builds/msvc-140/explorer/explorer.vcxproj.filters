@@ -185,9 +185,6 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deletemultisig.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deposit.hpp">
-      <Filter>Header Files\extensions\commands</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendmore.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
@@ -541,9 +538,6 @@
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deletemultisig.cpp">
-      <Filter>Source Files\extensions\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deposit.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\dumpkeyfile.cpp">

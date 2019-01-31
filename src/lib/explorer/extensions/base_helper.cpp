@@ -1995,18 +1995,6 @@ void base_transaction_constructor::populate_unspent_list()
     populate_change();
 }
 
-chain::operation::stack
-depositing_etp::get_script_operations(const receiver_record& record) const
-{
-    return get_pay_key_hash_with_lock_height_operations(deposit_cycle_, record);
-}
-
-chain::operation::stack
-depositing_etp_transaction::get_script_operations(const receiver_record& record) const
-{
-    return get_pay_key_hash_with_lock_height_operations(deposit_cycle_, record);
-}
-
 void sending_multisig_tx::populate_change()
 {
     // etp utxo
