@@ -126,6 +126,8 @@ private:
         Json::Value& value,
         std::shared_ptr<connection_string_map> topic_map = nullptr);
 
+    std::string get_address(const std::string& did_or_address) const;
+
 private:
     libbitcoin::server::server_node& node_;
     std::unordered_map<void*, std::shared_ptr<mg_connection>> map_connections_;
