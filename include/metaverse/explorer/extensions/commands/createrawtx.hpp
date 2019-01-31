@@ -107,7 +107,7 @@ public:
         (
             "putscript,p",
             value<bool>(&option_.include_input_script)->default_value(false)->zero_tokens(),
-            "If specified, the input's script will be set. Defaults to not specified."
+            "If specified, then set input's script. Default is not specified."
         )
         (
             "fee,f",
