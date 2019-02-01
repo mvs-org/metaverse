@@ -39,6 +39,8 @@ class BCD_API memory
 public:
     typedef std::shared_ptr<memory> ptr;
 
+    virtual ~memory() {}
+
     /// Get the address indicated by the pointer.
     virtual uint8_t* buffer() = 0;
 

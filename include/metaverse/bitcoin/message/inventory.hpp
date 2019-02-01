@@ -53,6 +53,8 @@ public:
     inventory(const hash_list& hashes, type_id type);
     inventory(const std::initializer_list<inventory_vector>& values);
 
+    virtual ~inventory() {}
+
     virtual bool from_data(uint32_t version, const data_chunk& data);
     virtual bool from_data(uint32_t version, std::istream& stream);
     virtual bool from_data(uint32_t version, reader& source);

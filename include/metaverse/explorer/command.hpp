@@ -81,6 +81,7 @@ enum : int {
 class BCX_API command
 {
 public:
+    virtual ~command() {}
 
     /**
      * The symbolic (not localizable) command name, lower case.

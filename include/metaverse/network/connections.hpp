@@ -51,7 +51,7 @@ public:
     connections();
 
     /// Validate connections stopped.
-    ~connections();
+    virtual ~connections();
 
     /// This class is not copyable.
     connections(const connections&) = delete;

@@ -40,6 +40,8 @@ public:
         : callback_(std::move(handler))
     {}
 
+    virtual ~WsEvent() {}
+
     WsEvent* hook()
     {
         self_ = this->shared_from_this();

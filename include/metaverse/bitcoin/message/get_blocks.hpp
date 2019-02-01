@@ -49,6 +49,8 @@ public:
     get_blocks(const hash_list& start, const hash_digest& stop);
     get_blocks(hash_list&& start, hash_digest&& stop);
 
+    virtual ~get_blocks() {}
+
     virtual bool from_data(uint32_t version, const data_chunk& data);
     virtual bool from_data(uint32_t version, std::istream& stream);
     virtual bool from_data(uint32_t version, reader& source);

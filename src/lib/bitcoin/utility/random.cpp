@@ -20,7 +20,6 @@
  */
 #include <metaverse/bitcoin/utility/random.hpp>
 
-#include <chrono>
 #include <cstdint>
 #include <random>
 #include <boost/thread.hpp>
