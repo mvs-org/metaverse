@@ -1,7 +1,5 @@
 FILE(GLOB bitcoinmath_SOURCES "*.c")
 
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-strict-aliasing")
-
 ADD_LIBRARY(bitcoinmath_static STATIC ${bitcoinmath_SOURCES})
 SET_TARGET_PROPERTIES(bitcoinmath_static PROPERTIES OUTPUT_NAME mvs_bitcoinmath)
 TARGET_LINK_LIBRARIES(bitcoinmath_static)

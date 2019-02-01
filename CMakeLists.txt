@@ -27,11 +27,11 @@ IF(${CMAKE_CXX_COMPILER} MATCHES .*android.*)
     SET(ANDROID 1)
 ENDIF()
 
-SET(COMMON_WARN "-Wall -Wextra -Wstrict-aliasing=2 -Wno-unused-parameter -Wno-unused-variable -Wno-type-limits")
+SET(COMMON_WARN "-Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-type-limits -Wno-deprecated-declarations")
 if (NOT ANDROID) 
 		SET(COMMON_WARN "${COMMON_WARN} -Werror")
 endif()
-SET(COMMON_FLAGS "-fstrict-aliasing -fvisibility=hidden")
+SET(COMMON_FLAGS "-fvisibility=hidden")
 SET(COMMON_ARGS "${COMMON_FLAGS} ${COMMON_WARN}")
 
 IF (APPLE)
@@ -43,13 +43,13 @@ ENDIF()
 
 # GXX/Clang settings
 IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 ${COMMON_ARGS}")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
     #libbitcoin has too many ignored-qualifiers, and TODOs
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 ${COMMON_ARGS} -pthread -fno-enforce-eh-specs -fnothrow-opt -Wno-reorder -Wno-ignored-qualifiers -Wno-unused-function -Wno-unused-but-set-variable -Wno-sign-compare -Wno-unused-but-set-parameter -Wno-implicit-fallthrough")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 ${COMMON_ARGS} -pthread -fno-enforce-eh-specs -fnothrow-opt -Wno-reorder -Wno-ignored-qualifiers -Wno-unused-function -Wno-unused-but-set-variable -Wno-sign-compare -Wno-unused-but-set-parameter -Wno-implicit-fallthrough -Wno-parentheses")
 
 ELSEIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    SET(CMAKE_C_FLAGS "-std=c11 ${COMMON_ARGS}")
-    SET(CMAKE_CXX_FLAGS "-std=c++14 ${COMMON_ARGS} -Wno-reorder -Wno-ignored-qualifiers -Wno-missing-braces -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-macro-redefined -Wno-uninitialized -Wno-unused-private-field -Wno-unused-function -Wno-implicit-fallthrough")
+    SET(CMAKE_C_FLAGS "-std=c11")
+    SET(CMAKE_CXX_FLAGS "-std=c++17 ${COMMON_ARGS} -Wno-reorder -Wno-ignored-qualifiers -Wno-missing-braces -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-macro-redefined -Wno-uninitialized -Wno-unused-private-field -Wno-unused-function -Wno-implicit-fallthrough")
 ENDIF()
 
 SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fPIC")
@@ -92,7 +92,7 @@ IF(USE_UPNP)
     ENDIF()
 ENDIF()
 
-FIND_PACKAGE(Boost 1.56 REQUIRED COMPONENTS date_time filesystem system
+FIND_PACKAGE(Boost 1.64 REQUIRED COMPONENTS date_time filesystem system
 program_options regex thread)
 #set(Boost_LIBRARIES ${Boost_LIBRARIES} icui18n icuuc icudata pthread dl)
 
@@ -123,10 +123,11 @@ ENDIF()
 
 # ------------------ MVS Includes --------------------
 INCLUDE_DIRECTORIES("${Boost_INCLUDE_DIRS}")
-INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/contrib")
-INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include")
 INCLUDE_DIRECTORIES("${secp256k1_INCLUDE_DIRS}")
 INCLUDE_DIRECTORIES("${ZeroMQ_INCLUDE_DIRS}")
+INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/contrib")
+INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include")
+INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/src/lib/consensus/clone")
 
 # ------------------ MVS Libraries --------------------
 IF(ENABLE_SHARED_LIBS)
