@@ -34,7 +34,7 @@
 #include <metaverse/explorer/parser.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/bitcoin.hpp>
-#include <boost/regex.hpp>
+#include <regex>
 
 using namespace boost::filesystem;
 using namespace boost::program_options;
@@ -187,12 +187,12 @@ console_result dispatch_command(int argc, const char* argv[],
         const auto& forbidden_methods = node.server_settings().forbid_rpc_methods;
 
         if (!forbidden_methods.empty()) {
-            const boost::sregex_iterator end;
+            const std::sregex_iterator end;
             for (const auto& item : forbidden_methods) {
                 auto patterns = bc::split(item, ", ", true);
                 for (const auto& pattern : patterns) {
-                    const boost::regex reg_pattern("^" + pattern + "$");
-                    boost::sregex_iterator it(command_name.begin(), command_name.end(), reg_pattern);
+                    const std::regex reg_pattern("^" + pattern + "$");
+                    std::sregex_iterator it(command_name.begin(), command_name.end(), reg_pattern);
                     if (it != end) {
                         throw invalid_command_exception{command_name
                             + " is forbidden with config item server.forbid_rpc_methods"};
@@ -203,12 +203,12 @@ console_result dispatch_command(int argc, const char* argv[],
 
         if (!allowed_methods.empty()) {
             bool allow = false;
-            const boost::sregex_iterator end;
+            const std::sregex_iterator end;
             for (const auto& item : allowed_methods) {
                 auto patterns = bc::split(item, ", ", true);
                 for (const auto& pattern : patterns) {
-                    const boost::regex reg_pattern("^" + pattern + "$");
-                    boost::sregex_iterator it(command_name.begin(), command_name.end(), reg_pattern);
+                    const std::regex reg_pattern("^" + pattern + "$");
+                    std::sregex_iterator it(command_name.begin(), command_name.end(), reg_pattern);
                     if (it != end) {
                         allow = true;
                         break;

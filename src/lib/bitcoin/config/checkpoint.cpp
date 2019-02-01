@@ -22,7 +22,7 @@
 
 #include <cstddef>
 #include <iostream>
-#include <boost/regex.hpp>
+#include <regex>
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
@@ -119,9 +119,9 @@ std::istream& operator>>(std::istream& input, checkpoint& argument)
     std::string value;
     input >> value;
 
-    static const boost::regex regular("^([0-9a-f]{64})(:([0-9]{1,20}))?$");
+    static const std::regex regular("^([0-9a-f]{64})(:([0-9]{1,20}))?$");
 
-    boost::sregex_iterator it(value.begin(), value.end(), regular), end;
+    std::sregex_iterator it(value.begin(), value.end(), regular), end;
     if (it == end)
     {
         BOOST_THROW_EXCEPTION(invalid_option_value(value));
