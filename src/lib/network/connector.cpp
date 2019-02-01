@@ -108,7 +108,6 @@ void connector::connect(const endpoint& endpoint, connect_handler handler
 
 static std::string to_ipv4_hostname(const asio::address& ip_address)
 {
-    // std::regex requires gcc 4.9, so we are using boost::regex for now.
     static const boost::regex regular("^::ffff:([0-9\\.]+)$");
 
     const auto address = ip_address.to_string();

@@ -22,11 +22,10 @@
 
 #include <cstddef>
 #include <iostream>
-#include <regex>
+#include <boost/regex.hpp>
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
-#include <boost/regex.hpp>
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/formats/base_16.hpp>
 #include <metaverse/bitcoin/math/hash.hpp>
@@ -120,10 +119,9 @@ std::istream& operator>>(std::istream& input, checkpoint& argument)
     std::string value;
     input >> value;
 
-    // std::regex requires gcc 4.9, so we are using boost::regex for now.
-    static const regex regular("^([0-9a-f]{64})(:([0-9]{1,20}))?$");
+    static const boost::regex regular("^([0-9a-f]{64})(:([0-9]{1,20}))?$");
 
-    sregex_iterator it(value.begin(), value.end(), regular), end;
+    boost::sregex_iterator it(value.begin(), value.end(), regular), end;
     if (it == end)
     {
         BOOST_THROW_EXCEPTION(invalid_option_value(value));

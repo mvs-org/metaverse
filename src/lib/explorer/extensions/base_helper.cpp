@@ -25,7 +25,7 @@
 #include <metaverse/consensus/libdevcore/SHA3.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-#include <regex>
+#include <boost/regex.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -77,25 +77,25 @@ bool is_ETH_Address(const string& address)
 {
     // regex checking
     {
-        sregex_iterator end;
+        boost::sregex_iterator end;
 
         // check if it has the basic requirements of an address
-        static const regex reg_common("^0x[0-9a-fA-F]{40}$");
-        sregex_iterator it(address.begin(), address.end(), reg_common);
+        static const boost::regex reg_common("^0x[0-9a-fA-F]{40}$");
+        boost::sregex_iterator it(address.begin(), address.end(), reg_common);
         if (it == end) {
             return false;
         }
 
         // If it's all small caps, return true
-        static const regex reg_alllower("^0x[0-9a-f]{40}$");
-        sregex_iterator it1(address.begin(), address.end(), reg_alllower);
+        static const boost::regex reg_alllower("^0x[0-9a-f]{40}$");
+        boost::sregex_iterator it1(address.begin(), address.end(), reg_alllower);
         if (it1 != end) {
             return true;
         }
 
         // If it's all caps, return true
-        static const regex reg_allupper("^0x[0-9A-F]{40}$");
-        sregex_iterator it2(address.begin(), address.end(), reg_allupper);
+        static const boost::regex reg_allupper("^0x[0-9A-F]{40}$");
+        boost::sregex_iterator it2(address.begin(), address.end(), reg_allupper);
         if (it2 != end) {
             return true;
         }
