@@ -124,7 +124,7 @@ bool starts_with(const std::string& value, const std::string& prefix)
     {
         return boost::istarts_with(value, prefix);
     }
-    catch (boost::bad_lexical_cast)
+    catch (const boost::bad_lexical_cast&)
     {
         return false;
     }

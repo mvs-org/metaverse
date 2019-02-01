@@ -29,7 +29,6 @@
 //#include "Base64.h"
 #include <metaverse/consensus/libdevcore/Base64.h>
 
-using namespace std;
 using namespace libbitcoin;
 
 static inline bool is_base64(byte c)
@@ -47,14 +46,14 @@ static inline byte find_base64_char_index(byte c)
     else return 1 + find_base64_char_index('/');
 }
 
-string libbitcoin::toBase64(bytesConstRef _in)
+std::string libbitcoin::toBase64(bytesConstRef _in)
 {
     static const char base64_chars[] =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "abcdefghijklmnopqrstuvwxyz"
         "0123456789+/";
 
-    string ret;
+    std::string ret;
     int i = 0;
     int j = 0;
     byte char_array_3[3];
@@ -99,7 +98,7 @@ string libbitcoin::toBase64(bytesConstRef _in)
     return ret;
 }
 
-bytes libbitcoin::fromBase64(string const& encoded_string)
+bytes libbitcoin::fromBase64(std::string const& encoded_string)
 {
     auto in_len = encoded_string.size();
     int i = 0;

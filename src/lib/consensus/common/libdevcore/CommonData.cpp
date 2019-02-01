@@ -35,7 +35,6 @@
 //#include "Log.h"
 #include <metaverse/consensus/libdevcore/Exceptions.h>
 #include <metaverse/consensus/libdevcore/Log.h>
-using namespace std;
 using namespace libbitcoin;
 
 namespace
@@ -52,7 +51,7 @@ int fromHexChar(char _i) noexcept
 }
 }
 
-bool libbitcoin::isHex(string const& _s) noexcept
+bool libbitcoin::isHex(std::string const& _s) noexcept
 {
     auto it = _s.begin();
     if (_s.compare(0, 2, "0x") == 0)
@@ -62,7 +61,7 @@ bool libbitcoin::isHex(string const& _s) noexcept
 
 std::string libbitcoin::escaped(std::string const& _s, bool _all)
 {
-    static const map<char, char> prettyEscapes{{'\r', 'r'}, {'\n', 'n'}, {'\t', 't'}, {'\v', 'v'}};
+    static const std::map<char, char> prettyEscapes{{'\r', 'r'}, {'\n', 'n'}, {'\t', 't'}, {'\v', 'v'}};
     std::string ret;
     ret.reserve(_s.size() + 2);
     ret.push_back('"');
