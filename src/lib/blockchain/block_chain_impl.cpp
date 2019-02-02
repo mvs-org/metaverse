@@ -2544,7 +2544,7 @@ organizer& block_chain_impl::get_organizer()
 }
 
 bool block_chain_impl::get_transaction_consider_pool(
-    chain::transaction& tx, uint64_t& tx_height, const hash_digest& hash)
+    chain::transaction& tx, uint64_t& tx_height, const hash_digest& hash, bool* is_in_pool)
 {
 
     bool ret = false;
@@ -2573,7 +2573,10 @@ bool block_chain_impl::get_transaction_consider_pool(
         boost::unique_lock<boost::mutex> lock(mutex);
         if(tx_ptr) {
             tx = *tx_ptr;
-            tx_height = max_uint64;
+            tx_height = 0;
+            if (is_in_pool) {
+                *is_in_pool = true;
+            }
             ret = true;
         }
     }

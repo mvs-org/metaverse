@@ -402,7 +402,7 @@ public:
     void fired() override;
     organizer& get_organizer() override;
     bool get_transaction_consider_pool(
-        chain::transaction& tx, uint64_t& tx_height, const hash_digest& hash);
+        chain::transaction& tx, uint64_t& tx_height, const hash_digest& hash, bool* is_in_pool=nullptr);
     bool get_history(const wallet::payment_address& address,
         uint64_t limit, uint64_t from_height, chain::history_compact::list& history);
     code validate_transaction(const chain::transaction& tx);

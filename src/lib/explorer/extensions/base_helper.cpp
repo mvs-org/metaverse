@@ -1013,11 +1013,10 @@ bool base_transfer_common::get_spendable_output(
 
     chain::transaction tx_temp;
     uint64_t tx_height;
-    if (!blockchain_.get_transaction_consider_pool(tx_temp, tx_height, row.output.hash)) {
+    bool is_in_pool = false;
+    if (!blockchain_.get_transaction_consider_pool(tx_temp, tx_height, row.output.hash, &is_in_pool)) {
         return false;
     }
-
-    const auto is_in_pool = tx_height == max_uint64;
 
     BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
     output = tx_temp.outputs.at(row.output.index);
