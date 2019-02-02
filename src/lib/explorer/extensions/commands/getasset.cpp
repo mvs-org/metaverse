@@ -48,8 +48,13 @@ console_result getasset::invoke(Json::Value& jv_output,
     Json::Value json_value;
     auto json_helper = config::json_helper(get_api_version());
 
-    if (option_.is_cert) { // only get asset certs
+    if (option_.is_cert || !option_.cert_type.empty()) { // only get asset certs
         json_key = "assetcerts";
+
+        chain::asset_cert_type cert_type = asset_cert_ns::none;
+        if (!option_.cert_type.empty()) {
+            cert_type = check_cert_type_name(option_.cert_type, true);
+        }
 
         // get asset cert in blockchain
         auto sh_vec = blockchain.get_issued_asset_certs(address);
@@ -57,7 +62,10 @@ console_result getasset::invoke(Json::Value& jv_output,
             std::set<std::string> symbols;
             std::sort(sh_vec->begin(), sh_vec->end());
             for (auto& elem : *sh_vec) {
-               // get rid of duplicate symbols
+                if (cert_type != asset_cert_ns::none && elem.get_type() != cert_type) {
+                    continue;
+                }
+                // get rid of duplicate symbols
                 if (!symbols.count(elem.get_symbol())) {
                     symbols.insert(elem.get_symbol());
                     json_value.append(elem.get_symbol());
@@ -67,6 +75,9 @@ console_result getasset::invoke(Json::Value& jv_output,
         else {
             auto result_vec = std::make_shared<chain::asset_cert::list>();
             for (auto& cert : *sh_vec) {
+                if (cert_type != asset_cert_ns::none && cert.get_type() != cert_type) {
+                    continue;
+                }
                 if (argument_.symbol != cert.get_symbol()) {
                     continue;
                 }
