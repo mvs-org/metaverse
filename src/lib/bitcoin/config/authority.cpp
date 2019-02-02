@@ -218,7 +218,7 @@ std::istream& operator>>(std::istream& input, authority& argument)
     input >> value;
 
     static const std::regex regular(
-        "^(([0-9\\.]+)|\\[([0-9a-f:\\.]+)])(:([0-9]{1,5}))?$");
+        "^(([0-9\\.]+)|\\[([0-9a-f:\\.]+)\\])(:([0-9]{1,5}))?$");
 
     std::sregex_iterator it(value.begin(), value.end(), regular), end;
     if (it == end)
