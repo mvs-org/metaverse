@@ -187,36 +187,46 @@ console_result dispatch_command(int argc, const char* argv[],
         const auto& forbidden_methods = node.server_settings().forbid_rpc_methods;
 
         if (!forbidden_methods.empty()) {
-            const std::sregex_iterator end;
-            for (const auto& item : forbidden_methods) {
-                auto patterns = bc::split(item, ", ", true);
-                for (const auto& pattern : patterns) {
-                    const std::regex reg_pattern("^" + pattern + "$");
-                    std::sregex_iterator it(command_name.begin(), command_name.end(), reg_pattern);
-                    if (it != end) {
-                        throw invalid_command_exception{command_name
-                            + " is forbidden with config item server.forbid_rpc_methods"};
+            try {
+                const std::sregex_iterator end;
+                for (const auto& item : forbidden_methods) {
+                    auto patterns = bc::split(item, ", ", true);
+                    for (const auto& pattern : patterns) {
+                        const std::regex reg_pattern("^" + pattern + "$");
+                        std::sregex_iterator it(command_name.begin(), command_name.end(), reg_pattern);
+                        if (it != end) {
+                            throw invalid_command_exception{command_name
+                                + " is forbidden with config item server.forbid_rpc_methods"};
+                        }
                     }
                 }
+            } catch (const std::exception& e) {
+                throw std::runtime_error{command_name +
+                    " is called. when parse config item server.forbid_rpc_methods caught exception. " + e.what()};
             }
         }
 
         if (!allowed_methods.empty()) {
             bool allow = false;
-            const std::sregex_iterator end;
-            for (const auto& item : allowed_methods) {
-                auto patterns = bc::split(item, ", ", true);
-                for (const auto& pattern : patterns) {
-                    const std::regex reg_pattern("^" + pattern + "$");
-                    std::sregex_iterator it(command_name.begin(), command_name.end(), reg_pattern);
-                    if (it != end) {
-                        allow = true;
+            try {
+                const std::sregex_iterator end;
+                for (const auto& item : allowed_methods) {
+                    auto patterns = bc::split(item, ", ", true);
+                    for (const auto& pattern : patterns) {
+                        const std::regex reg_pattern("^" + pattern + "$");
+                        std::sregex_iterator it(command_name.begin(), command_name.end(), reg_pattern);
+                        if (it != end) {
+                            allow = true;
+                            break;
+                        }
+                    }
+                    if (allow) {
                         break;
                     }
                 }
-                if (allow) {
-                    break;
-                }
+            } catch (const std::exception& e) {
+                throw std::runtime_error{command_name +
+                    " is called. when parse config item server.allow_rpc_methods caught exception. " + e.what()};
             }
             if (!allow) {
                 throw invalid_command_exception{command_name
