@@ -20,7 +20,6 @@
  */
 
 #include <metaverse/consensus/libdevcore/RLP.h>
-using namespace std;
 using namespace libbitcoin;
 
 bytes libbitcoin::RLPNull = rlp("");
@@ -355,7 +354,7 @@ static void streamOut(std::ostream& _out, libbitcoin::RLP const& _d, unsigned _d
     else if (_d.isNull())
         _out << "null";
     else if (_d.isInt())
-        _out << std::showbase << std::hex << std::nouppercase << _d.toInt<bigint>(RLP::LaissezFaire) << dec;
+        _out << std::showbase << std::hex << std::nouppercase << _d.toInt<bigint>(RLP::LaissezFaire) << std::dec;
     else if (_d.isData())
         _out << escaped(_d.toString(), false);
     else if (_d.isList())

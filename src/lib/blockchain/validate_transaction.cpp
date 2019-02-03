@@ -1573,6 +1573,7 @@ code validate_transaction::check_transaction_basic() const
 {
     const chain::transaction& tx = *tx_;
     block_chain_impl& chain = blockchain_;
+    const auto is_testnet = chain.chain_settings().use_testnet_rules;
 
     if (tx.version >= transaction_version::check_output_script) {
         for (auto& i : tx.outputs) {
@@ -1632,8 +1633,7 @@ code validate_transaction::check_transaction_basic() const
             }
         }
         else if (output.is_did_register()) {
-            auto is_test = chain.chain_settings().use_testnet_rules;
-            if (!block_chain_impl::is_valid_did_symbol(output.get_did_symbol(), !is_test)) {
+            if (!block_chain_impl::is_valid_did_symbol(output.get_did_symbol(), !is_testnet)) {
                 return error::did_symbol_invalid;
             }
         }
@@ -1699,7 +1699,7 @@ code validate_transaction::check_transaction_basic() const
                 }
             }
             else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
-                if (current_blockheight < pos_enabled_height) {
+                if (current_blockheight < pos_enabled_height && !is_testnet) {
                     return error::pos_feature_not_activated;
                 }
             }

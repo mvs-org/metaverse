@@ -373,6 +373,8 @@ public:
 
     void set_did_verify_attachment(const receiver_record& record, chain::attachment& attach);
 
+    virtual bool include_input_script() const { return false; }
+
 protected:
     bc::blockchain::block_chain_impl& blockchain_;
     tx_type                           tx_; // target transaction
@@ -462,12 +464,14 @@ public:
     base_transaction_constructor(bc::blockchain::block_chain_impl& blockchain, utxo_attach_type type,
         std::vector<std::string>&& from_vec, receiver_record::list&& receiver_list,
         std::string&& symbol, std::string&& change,
-        std::string&& message, uint64_t fee, uint32_t locktime = 0)
+        std::string&& message, uint64_t fee, uint32_t locktime = 0,
+        bool include_input_script = false)
         : base_transfer_common(blockchain, std::move(receiver_list), fee,
             std::move(symbol), "", std::move(change), locktime)
         , type_{type}
         , message_{std::move(message)}
         , from_vec_{std::move(from_vec)}
+        , include_input_script_(include_input_script)
     {}
 
     virtual ~base_transaction_constructor()
@@ -483,54 +487,13 @@ public:
     void sign_tx_inputs() override {}
     void send_tx() override {}
 
+    bool include_input_script() const override { return include_input_script_; }
+
 protected:
     utxo_attach_type                  type_{utxo_attach_type::invalid};
     std::string                       message_;
     std::vector<std::string>          from_vec_; // from address vector
-};
-
-class BCX_API depositing_etp : public base_transfer_helper
-{
-public:
-    depositing_etp(command& cmd, bc::blockchain::block_chain_impl& blockchain,
-        std::string&& name, std::string&& passwd,
-        std::string&& to, receiver_record::list&& receiver_list,
-        uint16_t deposit_cycle = 7, uint64_t fee = 10000, uint32_t locktime = 0)
-        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-            std::string(""), std::move(receiver_list), fee, "", "", locktime)
-        , to_{std::move(to)}
-        , deposit_cycle_{deposit_cycle}
-    {}
-
-    ~depositing_etp(){}
-
-    chain::operation::stack get_script_operations(const receiver_record& record) const override;
-
-private:
-    std::string                       to_;
-    uint16_t                          deposit_cycle_{7}; // 7 days
-};
-
-class BCX_API depositing_etp_transaction : public base_transaction_constructor
-{
-public:
-    depositing_etp_transaction(bc::blockchain::block_chain_impl& blockchain, utxo_attach_type type,
-        std::vector<std::string>&& from_vec, receiver_record::list&& receiver_list,
-        uint16_t deposit_cycle, std::string&& change,
-        std::string&& message, uint64_t fee, uint32_t locktime = 0)
-        : base_transaction_constructor(
-            blockchain, type, std::forward<std::vector<std::string>>(from_vec),
-            std::move(receiver_list), std::string(""),
-            std::move(change), std::move(message), fee, locktime)
-        , deposit_cycle_{deposit_cycle}
-    {}
-
-    ~depositing_etp_transaction(){}
-
-    chain::operation::stack get_script_operations(const receiver_record& record) const override;
-
-private:
-    uint16_t                          deposit_cycle_{7}; // 7 days
+    bool include_input_script_; // set input's script for offline sign
 };
 
 class BCX_API sending_etp : public base_transfer_helper

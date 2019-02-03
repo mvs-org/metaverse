@@ -85,20 +85,12 @@ console_result signrawtx::invoke(Json::Value& jv_output,
     // sign tx
     {
         uint32_t index = 0;
-        chain::transaction tx_temp;
-        uint64_t tx_height;
 
-        for (auto& fromeach : tx_.inputs) {
-            if (!blockchain.get_transaction_consider_pool(
-                    tx_temp, tx_height, fromeach.previous_output.hash)) {
-                throw argument_legality_exception{
-                    "invalid transaction hash " + encode_hash(fromeach.previous_output.hash)};
-            }
-
-            auto output = tx_temp.outputs.at(fromeach.previous_output.index);
+        for (auto& input : tx_.inputs) {
+            auto prev_output_script = get_prev_output_script(blockchain, input);
 
             // get address private key
-            auto address = payment_address::extract(output.script);
+            auto address = payment_address::extract(prev_output_script);
 
             // script address : maybe multisig
             if (!address || (address.version() == payment_address::mainnet_p2sh)) {
@@ -108,7 +100,7 @@ console_result signrawtx::invoke(Json::Value& jv_output,
 
                 const auto script_vec = acc->get_script(address.encoded());
                 if (!script_vec || script_vec->empty()) {
-                    throw argument_legality_exception{"invalid script: " + config::script(output.script).to_string()};
+                    throw argument_legality_exception{"invalid script: " + config::script(prev_output_script).to_string()};
                 }
 
                 const auto& script = script_vec->begin();
@@ -116,7 +108,7 @@ console_result signrawtx::invoke(Json::Value& jv_output,
                 // watch-only address
                 const data_chunk& bin_script = script->get_script();
                 if (bin_script.empty()) {
-                    throw argument_legality_exception{"watch-only script address: " + config::script(output.script).to_string()};
+                    throw argument_legality_exception{"watch-only script address: " + config::script(prev_output_script).to_string()};
                 }
                 else {
                     bc::explorer::config::script config_contract(bin_script);
@@ -162,7 +154,7 @@ console_result signrawtx::invoke(Json::Value& jv_output,
                     prv_key_str = get_private_key(private_keys, address.encoded());
                 }
 
-                bc::explorer::config::script config_contract(output.script); // previous output script
+                bc::explorer::config::script config_contract(prev_output_script);
 
                 data_chunk public_key_data;
                 bc::endorsement&& edsig = sign(prv_key_str, tx_, index, config_contract, public_key_data);
@@ -172,7 +164,7 @@ console_result signrawtx::invoke(Json::Value& jv_output,
                 ss.operations.push_back({bc::chain::opcode::special, edsig});
                 ss.operations.push_back({bc::chain::opcode::special, public_key_data});
                 const bc::chain::script& contract = config_contract;
-                // if pre-output script is deposit tx.
+                // if prev_output_script is deposit tx.
                 if (contract.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height) {
                     uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(
                             contract.operations);
@@ -215,6 +207,30 @@ std::string signrawtx::get_private_key(blockchain::block_chain_impl& blockchain,
     }
 
     return acc_addr->get_prv_key(auth_.auth);
+}
+
+chain::script signrawtx::get_prev_output_script(
+    blockchain::block_chain_impl& blockchain, const chain::input& input) const
+{
+    if (option_.offline) {
+        if (input.script.is_valid()) {
+            return input.script;
+        }
+
+        throw argument_legality_exception{"Sign rawtx offline must specify the rawtx's input script!"};
+    }
+
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+
+    if (!blockchain.get_transaction_consider_pool(
+        tx_temp, tx_height, input.previous_output.hash)) {
+        throw argument_legality_exception{
+            "invalid transaction hash " + encode_hash(input.previous_output.hash)};
+    }
+
+    auto output = tx_temp.outputs.at(input.previous_output.index);
+    return output.script;
 }
 
 bc::endorsement signrawtx::sign(

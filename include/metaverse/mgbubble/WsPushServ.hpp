@@ -40,6 +40,8 @@ public:
         : callback_(std::move(handler))
     {}
 
+    virtual ~WsEvent() {}
+
     WsEvent* hook()
     {
         self_ = this->shared_from_this();
@@ -125,6 +127,8 @@ private:
         const std::vector<std::weak_ptr<mg_connection>>& notify_cons,
         Json::Value& value,
         std::shared_ptr<connection_string_map> topic_map = nullptr);
+
+    std::string get_address(const std::string& did_or_address) const;
 
 private:
     libbitcoin::server::server_node& node_;

@@ -65,6 +65,8 @@ protected:
     protocol(const protocol&) = delete;
     void operator=(const protocol&) = delete;
 
+    virtual ~protocol() {}
+
     /// Bind a method in the derived class.
     template <class Protocol, typename Handler, typename... Args>
     auto bind(Handler&& handler, Args&&... args) ->

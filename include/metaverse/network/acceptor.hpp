@@ -47,7 +47,7 @@ public:
     acceptor(threadpool& pool, const settings& settings);
 
     /// Validate acceptor stopped.
-    ~acceptor();
+    virtual ~acceptor();
 
     /// This class is not copyable.
     acceptor(const acceptor&) = delete;

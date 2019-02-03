@@ -463,13 +463,16 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
             std::vector<std::string> addresses;
             if (root["address"].isString()) {
                 auto short_addr = root["address"].asString();
-                auto pay_addr = wallet::payment_address(short_addr);
-                if (!short_addr.empty() && !pay_addr) {
-                    send_bad_response(nc, "invalid address.");
-                    return;
-                }
+                if (!short_addr.empty()) {
+                    auto pay_addr_str = get_address(short_addr);
+                    auto pay_addr = wallet::payment_address(pay_addr_str);
+                    if (!pay_addr) {
+                        send_bad_response(nc, ("invalid did or address " + short_addr).c_str());
+                        return;
+                    }
 
-                addresses.push_back(short_addr);
+                    addresses.push_back(pay_addr_str);
+                }
             }
             else if (root["address"].isArray()) {
                 auto array = root["address"];
@@ -477,24 +480,27 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
                 for (int i = 0; i < length; ++i) {
                     auto item = array[i];
                     if (!item.isString()) {
-                        send_bad_response(nc, "invalid address.");
+                        send_bad_response(nc, "invalid did or address (not string).");
                         return;
                     }
 
                     auto short_addr = item.asString();
-                    auto pay_addr = wallet::payment_address(short_addr);
-                    if (!short_addr.empty() && !pay_addr) {
-                        send_bad_response(nc, "invalid address.");
-                        return;
-                    }
+                    if (!short_addr.empty()) {
+                        auto pay_addr_str = get_address(short_addr);
+                        auto pay_addr = wallet::payment_address(pay_addr_str);
+                        if (!pay_addr) {
+                            send_bad_response(nc, ("invalid did or address " + short_addr).c_str());
+                            return;
+                        }
 
-                    if (addresses.end() == std::find(addresses.begin(), addresses.end(), short_addr)) {
-                        addresses.push_back(short_addr);
+                        if (addresses.end() == std::find(addresses.begin(), addresses.end(), pay_addr_str)) {
+                            addresses.push_back(pay_addr_str);
+                        }
                     }
                 }
             }
             else {
-                send_bad_response(nc, "invalid address.");
+                send_bad_response(nc, "invalid did or address (not string).");
                 return;
             }
 
@@ -658,6 +664,24 @@ void WsPushServ::on_notify_handler(struct mg_connection& nc, struct mg_event& ev
 
     auto& msg = *(WsEvent*)ev.data;
     msg(++api_call_counter);
+}
+
+std::string WsPushServ::get_address(const std::string& did_or_address) const
+{
+    auto& blockchain = node_.chain_impl();
+    if (did_or_address.empty() || blockchain.is_valid_address(did_or_address)) {
+        return did_or_address;
+    }
+
+    auto is_test = blockchain.chain_settings().use_testnet_rules;
+    if (bc::blockchain::block_chain_impl::is_valid_did_symbol(did_or_address, !is_test)) {
+        auto diddetail = blockchain.get_registered_did(did_or_address);
+        if (diddetail) {
+            return diddetail->get_address();
+        }
+    }
+
+    return "";
 }
 
 }

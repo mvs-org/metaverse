@@ -42,6 +42,8 @@ public:
     socket(const socket&) = delete;
     void operator=(const socket&) = delete;
 
+    virtual ~socket() {}
+
     /// Obtain an exclusive reference to the socket.
     locked_socket::ptr get_socket();
 

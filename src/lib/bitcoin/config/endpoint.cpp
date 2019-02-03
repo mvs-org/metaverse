@@ -26,7 +26,6 @@
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
-#include <boost/regex.hpp>
 #include <metaverse/bitcoin/config/endpoint.hpp>
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/formats/base_16.hpp>
@@ -113,11 +112,10 @@ std::istream& operator>>(std::istream& input, endpoint& argument)
     std::string value;
     input >> value;
 
-    // std::regex requires gcc 4.9, so we are using boost::regex for now.
-    static const regex regular("^((tcp|udp|http|https|inproc):\\/\\/)?"
-        "(\\[([0-9a-f:\\.]+)]|([^:]+))(:([0-9]{1,5}))?$");
+    static const std::regex regular("^((tcp|udp|http|https|inproc):\\/\\/)?"
+        "(\\[([0-9a-f:\\.]+)\\]|([^:]+))(:([0-9]{1,5}))?$");
 
-    sregex_iterator it(value.begin(), value.end(), regular), end;
+    std::sregex_iterator it(value.begin(), value.end(), regular), end;
     if (it == end)
     {
         BOOST_THROW_EXCEPTION(invalid_option_value(value));

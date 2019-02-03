@@ -51,6 +51,8 @@ public:
     connector(const connector&) = delete;
     void operator=(const connector&) = delete;
 
+    virtual ~connector() {}
+
     /// Try to connect to the endpoint.
     virtual void connect(const config::endpoint& endpoint,
         connect_handler handler, resolve_handler = nullptr);

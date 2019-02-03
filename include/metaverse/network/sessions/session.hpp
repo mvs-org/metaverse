@@ -98,7 +98,7 @@ protected:
     session(p2p& network, bool outgoing, bool persistent);
 
     /// Validate session stopped.
-    ~session();
+    virtual ~session();
 
     /// This class is not copyable.
     session(const session&) = delete;

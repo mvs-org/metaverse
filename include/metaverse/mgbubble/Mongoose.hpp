@@ -125,6 +125,8 @@ public:
         :callback_(std::move(handler))
     {}
 
+    virtual ~MgEvent() {}
+
     MgEvent* hook()
     {
         self_ = this->shared_from_this();

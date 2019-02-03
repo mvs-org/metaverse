@@ -8161,7 +8161,7 @@ static void mg_send_file_data(struct mg_connection *nc, FILE *fp) {
 static void mg_do_ssi_include(struct mg_connection *nc, struct http_message *hm,
                               const char *ssi, char *tag, int include_level,
                               const struct mg_serve_http_opts *opts) {
-  char file_name[BUFSIZ], path[MAX_PATH_SIZE], *p;
+  char file_name[MAX_PATH_SIZE], path[MAX_PATH_SIZE * 2], *p;
   FILE *fp;
 
   /*
@@ -10363,7 +10363,7 @@ int mg_dns_reply_record(struct mg_dns_reply *reply,
 
 static const char *mg_default_dns_server = "udp://" MG_DEFAULT_NAMESERVER ":53";
 
-MG_INTERNAL char mg_dns_server[256];
+MG_INTERNAL char mg_dns_server[256+16];
 
 struct mg_resolve_async_request {
   char name[1024];

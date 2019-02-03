@@ -74,6 +74,11 @@ public:
             "If specified, then only get related cert. Default is not specified."
         )
         (
+            "type,t",
+            value<std::string>(&option_.cert_type)->default_value(""),
+            "If specified, then only get related type of cert. Default is not specified."
+        )
+        (
             "issuer,i",
             value<std::string>(&option_.issuer)->default_value(""),
             "did/address. If specified, then only get asset/cert issued by issuer. Default is not specified."
@@ -103,6 +108,7 @@ public:
     struct option
     {
         bool is_cert;
+        std::string cert_type;
         std::string issuer;
     } option_;
 

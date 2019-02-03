@@ -77,25 +77,25 @@ bool is_ETH_Address(const string& address)
 {
     // regex checking
     {
-        sregex_iterator end;
+        std::sregex_iterator end;
 
         // check if it has the basic requirements of an address
-        static const regex reg_common("^0x[0-9a-fA-F]{40}$");
-        sregex_iterator it(address.begin(), address.end(), reg_common);
+        static const std::regex reg_common("^0x[0-9a-fA-F]{40}$");
+        std::sregex_iterator it(address.begin(), address.end(), reg_common);
         if (it == end) {
             return false;
         }
 
         // If it's all small caps, return true
-        static const regex reg_alllower("^0x[0-9a-f]{40}$");
-        sregex_iterator it1(address.begin(), address.end(), reg_alllower);
+        static const std::regex reg_alllower("^0x[0-9a-f]{40}$");
+        std::sregex_iterator it1(address.begin(), address.end(), reg_alllower);
         if (it1 != end) {
             return true;
         }
 
         // If it's all caps, return true
-        static const regex reg_allupper("^0x[0-9A-F]{40}$");
-        sregex_iterator it2(address.begin(), address.end(), reg_allupper);
+        static const std::regex reg_allupper("^0x[0-9A-F]{40}$");
+        std::sregex_iterator it2(address.begin(), address.end(), reg_allupper);
         if (it2 != end) {
             return true;
         }
@@ -1013,11 +1013,10 @@ bool base_transfer_common::get_spendable_output(
 
     chain::transaction tx_temp;
     uint64_t tx_height;
-    if (!blockchain_.get_transaction_consider_pool(tx_temp, tx_height, row.output.hash)) {
+    bool is_in_pool = false;
+    if (!blockchain_.get_transaction_consider_pool(tx_temp, tx_height, row.output.hash, &is_in_pool)) {
         return false;
     }
-
-    const auto is_in_pool = tx_height == max_uint64;
 
     BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
     output = tx_temp.outputs.at(row.output.index);
@@ -1047,17 +1046,18 @@ bool base_transfer_common::get_spendable_output(
 void base_transfer_common::sync_fetchutxo(
         const std::string& prikey, const std::string& addr, filter filter, const history::list& spec_rows)
 {
-    auto&& waddr = wallet::payment_address(addr);
-
     uint64_t height = 0;
     blockchain_.get_last_height(height);
 
-    const auto &rows = spec_rows.empty() ? blockchain_.get_address_history(waddr, true) : spec_rows;
+    const auto use_specified_rows = !spec_rows.empty();
+    const auto &rows = use_specified_rows
+        ? spec_rows
+        : blockchain_.get_address_history(addr, true);
 
     for (auto& row: rows)
     {
         chain::output output;
-        if (!spec_rows.empty()) {
+        if (use_specified_rows) {
             if (!get_spendable_output(output, row, height)) {
                 throw std::logic_error("output spent error.");
             }
@@ -1209,6 +1209,10 @@ void base_transfer_common::sync_fetchutxo(
             record.prikey = prikey;
             record.script = output.script;
         }
+        else if (include_input_script()) {
+            record.script = output.script;
+        }
+
         record.addr = output.get_script_address();
         record.amount = etp_amount;
         record.symbol = asset_symbol;
@@ -1601,6 +1605,9 @@ void base_transfer_common::populate_tx_inputs()
         input.sequence = fromeach.sequence;
         input.previous_output.hash = fromeach.output.hash;
         input.previous_output.index = fromeach.output.index;
+        if (include_input_script()) {
+            input.script = fromeach.script;
+        }
         tx_.inputs.push_back(input);
         tx_item_idx_++;
     }
@@ -1979,10 +1986,10 @@ void base_transaction_constructor::populate_unspent_list()
 {
     // get from address balances
     for (auto& each : from_vec_) {
-        sync_fetchutxo("", each);
         if (is_payment_satisfied()) {
             break;
         }
+        sync_fetchutxo("", each);
     }
 
     if (from_list_.empty()) {
@@ -1993,18 +2000,6 @@ void base_transaction_constructor::populate_unspent_list()
 
     // change
     populate_change();
-}
-
-chain::operation::stack
-depositing_etp::get_script_operations(const receiver_record& record) const
-{
-    return get_pay_key_hash_with_lock_height_operations(deposit_cycle_, record);
-}
-
-chain::operation::stack
-depositing_etp_transaction::get_script_operations(const receiver_record& record) const
-{
-    return get_pay_key_hash_with_lock_height_operations(deposit_cycle_, record);
 }
 
 void sending_multisig_tx::populate_change()

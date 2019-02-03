@@ -86,6 +86,11 @@ public:
             "wif,w",
             value<std::vector<std::string>>(&option_.private_keys),
             "The wif(s) or private key(s) to sign."
+        )
+        (
+            "offline,o",
+            value<bool>(&option_.offline)->default_value(false)->zero_tokens(),
+            "If specified, then sign offline. Default is not specified."
         );
 
         return options;
@@ -106,11 +111,13 @@ public:
     struct option
     {
         std::vector<std::string> private_keys;
+        bool offline;
     } option_;
 
 private:
     std::string get_private_key(blockchain::block_chain_impl& blockchain, const std::string& address);
     std::string get_private_key(const std::vector<std::string>& keys, const std::string& address);
+    chain::script get_prev_output_script(blockchain::block_chain_impl& blockchain, const chain::input& input) const;
 
     bc::endorsement sign(
         const std::string& private_key,

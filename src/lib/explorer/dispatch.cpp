@@ -34,6 +34,7 @@
 #include <metaverse/explorer/parser.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/bitcoin.hpp>
+#include <regex>
 
 using namespace boost::filesystem;
 using namespace boost::program_options;
@@ -181,6 +182,58 @@ console_result dispatch_command(int argc, const char* argv[],
             }
         }
 #endif
+        const std::string command_name = command->name();
+        const auto& allowed_methods = node.server_settings().allow_rpc_methods;
+        const auto& forbidden_methods = node.server_settings().forbid_rpc_methods;
+
+        if (!forbidden_methods.empty()) {
+            try {
+                const std::sregex_iterator end;
+                for (const auto& item : forbidden_methods) {
+                    auto patterns = bc::split(item, ", ", true);
+                    for (const auto& pattern : patterns) {
+                        const std::regex reg_pattern("^" + pattern + "$");
+                        std::sregex_iterator it(command_name.begin(), command_name.end(), reg_pattern);
+                        if (it != end) {
+                            throw invalid_command_exception{command_name
+                                + " is forbidden with config item server.forbid_rpc_methods"};
+                        }
+                    }
+                }
+            } catch (const std::exception& e) {
+                throw std::runtime_error{command_name +
+                    " is called. when parse config item server.forbid_rpc_methods caught exception. " + e.what()};
+            }
+        }
+
+        if (!allowed_methods.empty()) {
+            bool allow = false;
+            try {
+                const std::sregex_iterator end;
+                for (const auto& item : allowed_methods) {
+                    auto patterns = bc::split(item, ", ", true);
+                    for (const auto& pattern : patterns) {
+                        const std::regex reg_pattern("^" + pattern + "$");
+                        std::sregex_iterator it(command_name.begin(), command_name.end(), reg_pattern);
+                        if (it != end) {
+                            allow = true;
+                            break;
+                        }
+                    }
+                    if (allow) {
+                        break;
+                    }
+                }
+            } catch (const std::exception& e) {
+                throw std::runtime_error{command_name +
+                    " is called. when parse config item server.allow_rpc_methods caught exception. " + e.what()};
+            }
+            if (!allow) {
+                throw invalid_command_exception{command_name
+                    + " is not allowed with config item server.allow_rpc_methods"};
+            }
+        }
+
         return static_cast<commands::command_extension*>(command.get())->invoke(jv_output, node);
     }
     else {

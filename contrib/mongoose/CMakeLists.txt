@@ -1,9 +1,5 @@
 FILE(GLOB_RECURSE mongoose_SOURCES "*.c")
-#aux_source_directory(${CMAKE_CURRENT_LIST_DIR})
-#SET(mongoose_SOURCES ${CMAKE_CURRENT_LIST_DIR})
 
-# Mongoose does not compile with strict aliasing.
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-strict-aliasing")
 IF(MG_ENABLE_DEBUG)
 ADD_DEFINITIONS(-DMG_ENABLE_DEBUG)
 ELSE()

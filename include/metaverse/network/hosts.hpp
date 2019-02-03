@@ -64,6 +64,8 @@ public:
     hosts(const hosts&) = delete;
     void operator=(const hosts&) = delete;
 
+    virtual ~hosts() {}
+
     /// Load hosts file if found.
     virtual code start();
 

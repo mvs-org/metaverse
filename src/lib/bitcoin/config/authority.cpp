@@ -25,7 +25,7 @@
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
-#include <boost/regex.hpp>
+#include <regex>
 #include <metaverse/bitcoin/formats/base_16.hpp>
 #include <metaverse/bitcoin/utility/asio.hpp>
 #include <metaverse/bitcoin/utility/assert.hpp>
@@ -34,7 +34,6 @@
 namespace libbitcoin {
 namespace config {
 
-using namespace boost;
 using namespace boost::program_options;
 
 // host:    [2001:db8::2] or  2001:db8::2  or 1.2.240.1
@@ -44,7 +43,7 @@ static std::string to_host_name(const std::string& host)
     if (host.find(":") == std::string::npos || host.find("[") == 0)
         return host;
 
-    const auto hostname = format("[%1%]") % host;
+    const auto hostname = boost::format("[%1%]") % host;
     return hostname.str();
 }
 
@@ -84,11 +83,10 @@ static asio::ipv6 to_ipv6(const asio::address& ip_address)
 
 static std::string to_ipv4_hostname(const asio::address& ip_address)
 {
-    // std::regex requires gcc 4.9, so we are using boost::regex for now.
-    static const regex regular("^::ffff:([0-9\\.]+)$");
+    static const std::regex regular("^::ffff:([0-9\\.]+)$");
 
     const auto address = ip_address.to_string();
-    sregex_iterator it(address.begin(), address.end(), regular), end;
+    std::sregex_iterator it(address.begin(), address.end(), regular), end;
     if (it == end)
         return "";
 
@@ -99,7 +97,7 @@ static std::string to_ipv4_hostname(const asio::address& ip_address)
 static std::string to_ipv6_hostname(const asio::address& ip_address)
 {
     // IPv6 URLs use a bracketed IPv6 address, see rfc2732.
-    const auto hostname = format("[%1%]") % to_ipv6(ip_address);
+    const auto hostname = boost::format("[%1%]") % to_ipv6(ip_address);
     return hostname.str();
 }
 
@@ -219,11 +217,10 @@ std::istream& operator>>(std::istream& input, authority& argument)
     std::string value;
     input >> value;
 
-    // std::regex requires gcc 4.9, so we are using boost::regex for now.
-    static const regex regular(
-        "^(([0-9\\.]+)|\\[([0-9a-f:\\.]+)])(:([0-9]{1,5}))?$");
+    static const std::regex regular(
+        "^(([0-9\\.]+)|\\[([0-9a-f:\\.]+)\\])(:([0-9]{1,5}))?$");
 
-    sregex_iterator it(value.begin(), value.end(), regular), end;
+    std::sregex_iterator it(value.begin(), value.end(), regular), end;
     if (it == end)
     {
         BOOST_THROW_EXCEPTION(invalid_option_value(value));
@@ -238,7 +235,7 @@ std::istream& operator>>(std::istream& input, authority& argument)
     try
     {
         argument.ip_ = asio::ipv6::from_string(ip_address);
-        argument.port_ = port.empty() ? 0 : lexical_cast<uint16_t>(port);
+        argument.port_ = port.empty() ? 0 : boost::lexical_cast<uint16_t>(port);
     }
     catch (const boost::exception&)
     {

@@ -32,6 +32,14 @@ thread_local OStream HttpServ::out_;
 thread_local Tokeniser<'/'> HttpServ::uri_;
 thread_local int HttpServ::state_ = 0;
 
+std::string get_remote_address_from_nc(mg_connection& nc)
+{
+    char dst[60];
+    constexpr int flags = MG_SOCK_STRINGIFY_IP | MG_SOCK_STRINGIFY_REMOTE;
+    mg_conn_addr_to_str(&nc, dst, sizeof(dst), flags);
+    return dst;
+}
+
 void HttpServ::reset(HttpMessage& data) noexcept
 {
     state_ = 0;
@@ -63,6 +71,8 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
     out_.reset(200, "OK");
 
     try {
+        check_rpc_client_addresses(nc);
+
         data.data_to_arg(rpc_version);
 
         Json::Value jv_output;
@@ -131,6 +141,8 @@ void HttpServ::ws_request(mg_connection& nc, WebsocketMessage ws)
     Json::Value jv_output;
 
     try {
+        check_rpc_client_addresses(nc);
+
         ws.data_to_arg();
 
         console_result retcode = explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()), jv_output, node_);
@@ -221,6 +233,25 @@ void HttpServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message& 
     std::istringstream iss;
     iss.str(std::string((const char*)msg.data, msg.size));
     ws_request(nc, WebsocketMessage(&msg));
+}
+
+void HttpServ::check_rpc_client_addresses(struct mg_connection& nc)
+{
+    const auto& allowed_clients = node_.server_settings().rpc_client_addresses;
+    if (allowed_clients.empty()) {
+        return;
+    }
+
+    const auto remote_ip = get_remote_address_from_nc(nc);
+
+    for (const auto& item : allowed_clients) {
+        auto clients = bc::split(item, ", ", true);
+        auto pos = std::find(clients.begin(), clients.end(), remote_ip);
+        if (pos == clients.end()) {
+            throw explorer::connection_exception{remote_ip
+                + " is not allowed with config item server.rpc_client_addresses"};
+        }
+    }
 }
 
 }// mgbubble

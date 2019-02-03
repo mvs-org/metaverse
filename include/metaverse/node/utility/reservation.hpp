@@ -50,7 +50,7 @@ public:
         uint32_t block_timeout_seconds);
 
     /// Ensure there are no remaining reserved hashes.
-    ~reservation();
+    virtual ~reservation();
 
     /// The sequential identifier of this reservation.
     size_t slot() const;

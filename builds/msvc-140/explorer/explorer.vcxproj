@@ -61,7 +61,6 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deleteaccount.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deletelocalasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deletemultisig.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deposit.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didchangeaddress.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getlocked.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getrandom.hpp" />
@@ -193,7 +192,6 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deleteaccount.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deletelocalasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deletemultisig.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deposit.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didchangeaddress.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getlocked.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getrandom.cpp" />

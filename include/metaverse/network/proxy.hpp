@@ -58,7 +58,7 @@ public:
         uint32_t protocol_version);
 
     /// Validate proxy stopped.
-    ~proxy();
+    virtual ~proxy();
 
     /// This class is not copyable.
     proxy(const proxy&) = delete;

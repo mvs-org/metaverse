@@ -1,7 +1,6 @@
 # for C library
 ADD_SUBDIRECTORY(math/external)
 
-INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/src/lib/consensus/clone")
 FILE(GLOB_RECURSE bitcoin_SOURCES "*.cpp")
 
 ADD_DEFINITIONS(-DBC_STATIC=1)

@@ -27,7 +27,6 @@
 #include <metaverse/explorer/extensions/base_helper.hpp>
 #include <metaverse/consensus/libdevcore/SHA3.h>
 #include <boost/algorithm/string.hpp>
-#include <regex>
 
 namespace libbitcoin {
 namespace explorer {
