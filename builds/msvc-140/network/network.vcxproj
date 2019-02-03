@@ -133,7 +133,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>USE_UPNP;MINIUPNP_STATICLIB;NDEBUG;_LIB;BC_STATIC;BCT_STATIC;BOOST_ASIO_ENABLE_CANCELIO;_SCL_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;USE_UPNP;MINIUPNP_STATICLIB;_LIB;BC_STATIC;BCT_STATIC;BOOST_ASIO_ENABLE_CANCELIO;_SCL_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalIncludeDirectories>..\..\..\..\miniupnp;..\..\..\include;..\..\..\..\boost_1_63_0</AdditionalIncludeDirectories>
