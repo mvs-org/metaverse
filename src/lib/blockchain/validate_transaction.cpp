@@ -1576,8 +1576,11 @@ code validate_transaction::check_transaction_basic() const
     const auto is_testnet = chain.chain_settings().use_testnet_rules;
 
     if (tx.version >= transaction_version::check_output_script) {
-        for (auto& i : tx.outputs) {
-            if (i.script.pattern() == chain::script_pattern::non_standard) {
+        for (size_t i = 0; i < tx.outputs.size(); ++i) {
+            if (i == 0 && tx.is_coinstake()) {
+                continue;
+            }
+            if (tx.outputs[i].script.pattern() == chain::script_pattern::non_standard) {
                 return error::script_not_standard;
             }
         }

@@ -1040,6 +1040,14 @@ miner::block_ptr miner::create_new_block_pos(
     log::info(LOG_HEADER)
         << "create a PoS block at height " << block_height
         << ", header hash is " << encode_hash(pblock->header.hash());
+
+#ifdef MVS_DEBUG
+    for (auto& tx : pblock->transactions) {
+        log::info(LOG_HEADER) << encode_hash(tx.hash());
+        log::info(LOG_HEADER) << tx.to_string(1);
+    }
+#endif
+
     return pblock;
 }
 
@@ -1160,7 +1168,7 @@ miner::transaction_ptr miner::create_coinstake_tx(
 {
     blockchain::block_chain_impl& block_chain = node_.chain_impl();
     transaction_ptr coinstake = std::make_shared<message::transaction_message>();
-    coinstake->version = chain::transaction_version::first;
+    coinstake->version = bc::relative_locktime_min_version;
     bool enable_collect_split = setting_.collect_split_stake;
 
     uint64_t nCredit = 0;
@@ -1179,9 +1187,10 @@ miner::transaction_ptr miner::create_coinstake_tx(
             coinstake->outputs.clear();
 
             nCredit = stake.data.value;
+            auto input_sequence = stake.data.get_lock_sequence(max_input_sequence);
 
             // generate inputs
-            coinstake->inputs.emplace_back(stake.point, stake.data.script, max_input_sequence);
+            coinstake->inputs.emplace_back(stake.point, stake.data.script, input_sequence);
 
             // generate outputs
             coinstake->outputs.emplace_back(0, chain::script(), ATTACH_NULL_TYPE);
@@ -1209,7 +1218,9 @@ miner::transaction_ptr miner::create_coinstake_tx(
                 break;
             }
 
-            coinstake->inputs.emplace_back(stake.point, stake.data.script, max_input_sequence);
+            auto input_sequence = stake.data.get_lock_sequence(max_input_sequence);
+
+            coinstake->inputs.emplace_back(stake.point, stake.data.script, input_sequence);
             nCredit += stake.data.value;
         }
     }
