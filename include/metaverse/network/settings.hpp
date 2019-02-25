@@ -54,14 +54,15 @@ public:
     uint32_t host_pool_capacity;
     bool relay_transactions;
     bool enable_re_seeding;
+    bool upnp_map_port;
+    bool be_found;
+    bool use_ipv6;
     boost::filesystem::path hosts_file;
     boost::filesystem::path debug_file;
     boost::filesystem::path error_file;
     config::authority self;
     config::authority::list blacklists;
     config::endpoint::list peers;
-    bool upnp_map_port;
-    bool be_found;
     config::endpoint::list seeds;
 
     /// Helpers.

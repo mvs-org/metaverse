@@ -2641,7 +2641,7 @@ code block_chain_impl::broadcast_transaction(const chain::transaction& tx)
         //send_mutex.unlock();
         //ret = true;
         log::trace("broadcast_transaction") << encode_hash(tx_ptr->hash()) << " confirmed";
-    }, [&valid_mutex, &ret, tx_ptr](const code& ec, std::shared_ptr<transaction_message>, chain::point::indexes idx_vec){
+    }, [&valid_mutex, &ret, tx_ptr](const code& ec, transaction_ptr, chain::point::indexes idx_vec){
         log::debug("broadcast_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.size();
         log::debug("broadcast_transaction") << "ec.message=" << ec.message();
         ret = ec;

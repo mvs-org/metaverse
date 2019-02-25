@@ -46,6 +46,7 @@ settings::settings()
     enable_re_seeding(true),
     upnp_map_port(true),
     be_found(true),
+    use_ipv6(true),
     hosts_file("hosts.cache"),
     debug_file("debug.log"),
     error_file("error.log"),
