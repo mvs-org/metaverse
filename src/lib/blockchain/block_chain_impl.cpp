@@ -207,6 +207,18 @@ bool block_chain_impl::check_pos_utxo_capability(
 
 bool block_chain_impl::pos_exist_before(const uint64_t& height) const
 {
+#ifndef PRIVATE_CHAIN
+    if (!settings_.use_testnet_rules) {
+        // block 1924146 is pos genesis block on mainnet.
+        if (height > 1924146) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+#endif
+
     auto pos = pos_enabled_height;
     while (pos++ < height) {
         chain::header header;
