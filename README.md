@@ -1,9 +1,3 @@
-<p align="center">
-  <a href="https://www.myetpwallet.com/">
-    <img src="https://mvs.org/images/mvs2018/MVSLogo.png" alt="">
-  </a>
-</p>
-
 Metaverse Core Integration/staging Tree
 =========================
 [![Build Status](https://travis-ci.org/mvs-org/metaverse.svg?branch=master)](https://travis-ci.org/mvs-org/metaverse)
