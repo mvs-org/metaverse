@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://www.myetpwallet.com/">
-    <img src="https://mvs.org/images/metaverselogo.png" alt="">
+    <img src="https://mvs.org/images/mvs2018/MVSLogo.png" alt="">
   </a>
 </p>
 
