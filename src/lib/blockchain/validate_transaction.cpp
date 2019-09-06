@@ -714,6 +714,12 @@ code validate_transaction::check_asset_issue_transaction() const
                 return error::asset_cert_error;
             }
 
+            if (check_asset_cert_exist(domain, asset_cert_ns::domain)) {
+              log::debug(LOG_BLOCKCHAIN) << "domain problem: "
+                                         << domain << " domain is already registered.";
+              return error::asset_cert_exist;
+            }
+
             if (num_cert_domain_or_naming < 1) {
                 // no valid domain or naming cert
                 log::debug(LOG_BLOCKCHAIN) << "issue asset: not cert provided!";
