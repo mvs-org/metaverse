@@ -87,6 +87,7 @@ settings::settings(bc::settings context)
 
 #ifndef PRIVATE_CHAIN
             libbitcoin::pos_enabled_height      = 990000;
+            libbitcoin::domain_enabled_height   = 1900000;
 #endif
             break;
         }

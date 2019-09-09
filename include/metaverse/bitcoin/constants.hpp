@@ -102,6 +102,7 @@ extern const uint64_t nova_enabled_height;
 // Relative PoS & DPoS constants.
 //-----------------------------------------------------------------------------
 extern uint64_t pos_enabled_height;
+extern uint64_t domain_enabled_height;
 
 extern const bool enable_max_successive_height;
 extern const uint32_t pow_max_successive_height;

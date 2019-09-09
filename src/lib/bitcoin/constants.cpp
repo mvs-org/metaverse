@@ -31,6 +31,7 @@ namespace libbitcoin {
 
 uint32_t coinbase_maturity                      = 10;
 uint64_t pos_enabled_height                     = 5000;
+uint64_t domain_enabled_height                  = 0;
 
 const uint64_t future_blocktime_fork_height     = 0;
 const uint64_t nova_enabled_height              = 0;
@@ -39,6 +40,7 @@ const uint64_t nova_enabled_height              = 0;
 
 uint32_t coinbase_maturity                      = 1000;
 uint64_t pos_enabled_height                     = 1924000; // hard-fork-of-MPC1
+uint64_t domain_enabled_height                  = 2800000; // hard-fork-of-MPC1.5
 
 const uint64_t future_blocktime_fork_height     = 1030000;
 const uint64_t nova_enabled_height              = 1270000;
