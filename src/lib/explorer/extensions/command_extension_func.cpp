@@ -97,6 +97,7 @@
 #include <metaverse/explorer/extensions/commands/getpublickey.hpp>
 #include <metaverse/explorer/extensions/commands/listmultisig.hpp>
 #include <metaverse/explorer/extensions/commands/sendrawtx.hpp>
+#include <metaverse/explorer/extensions/commands/validaterawtx.hpp>
 #include <metaverse/explorer/extensions/commands/signmultisigtx.hpp>
 #include <metaverse/explorer/extensions/commands/signrawtx.hpp>
 #include <metaverse/explorer/extensions/commands/didchangeaddress.hpp>
@@ -163,6 +164,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<decoderawtx>());
     func(make_shared<signrawtx>());
     func(make_shared<sendrawtx>());
+    func(make_shared<validaterawtx>());
 
     os <<"\r\n";
     // multi-sig
@@ -313,6 +315,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<signrawtx>();
     if (symbol == sendrawtx::symbol())
         return make_shared<sendrawtx>();
+    if (symbol == validaterawtx::symbol())
+        return make_shared<validaterawtx>();
 
     // multi-sig
     if (symbol == getpublickey::symbol())

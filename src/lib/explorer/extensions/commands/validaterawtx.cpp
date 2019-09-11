@@ -19,6 +19,7 @@
  */
 
 #include <metaverse/explorer/json_helper.hpp>
+#include <metaverse/explorer/extensions/commands/validaterawtx.hpp>
 #include <metaverse/explorer/extensions/commands/sendrawtx.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
@@ -30,7 +31,7 @@ namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
 
-bool sort_multi_sigs(tx_type& tx_) {
+bool sort_multi_sigs_v(tx_type& tx_) {
     bc::chain::script input_script;
     bc::chain::script redeem_script;
 
@@ -124,7 +125,7 @@ bool sort_multi_sigs(tx_type& tx_) {
     return true;
 }
 
-void check_forbidden_transaction(blockchain::block_chain_impl& blockchain, chain::transaction& tx)
+void check_forbidden_transaction_v(blockchain::block_chain_impl& blockchain, chain::transaction& tx)
 {
     uint64_t last_height = 0;
     if (!blockchain.get_last_height(last_height)) {
@@ -140,48 +141,45 @@ void check_forbidden_transaction(blockchain::block_chain_impl& blockchain, chain
     }
 }
 
-console_result sendrawtx::invoke(Json::Value& jv_output,
+console_result show_error(Json::Value& jv_output, std::string message){
+    jv_output["valid"] = false;
+    jv_output["message"] = message;
+    return console_result::okay;
+}
+
+console_result validaterawtx::invoke(Json::Value& jv_output,
                                  libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     tx_type tx_ = argument_.transaction;
 
-    check_forbidden_transaction(blockchain, tx_);
+    check_forbidden_transaction_v(blockchain, tx_);
 
     uint64_t outputs_etp_val = tx_.total_output_value();
     uint64_t inputs_etp_val = 0;
     if (!blockchain.get_tx_inputs_etp_value(tx_, inputs_etp_val))
-        throw tx_validate_exception{"get transaction inputs etp value error!"};
+        return show_error(jv_output, "get transaction inputs etp value error!");
 
     // check raw tx fee range
     if (inputs_etp_val <= outputs_etp_val) {
-        throw tx_validate_exception{"no enough transaction fee"};
+        return show_error(jv_output, "no enough transaction fee");
     }
     base_transfer_common::check_fee_in_valid_range(inputs_etp_val - outputs_etp_val);
 
     code ec = blockchain.validate_transaction(tx_);
     if (ec.value() != error::success) {
-        if (!sort_multi_sigs(tx_)) {
-            throw tx_validate_exception{"validate multi-sig transaction failure:" + ec.message()};
+        if (!sort_multi_sigs_v(tx_)) {
+            return show_error(jv_output, "validate multi-sig transaction failure: " + ec.message());
         }
-
-        ec = blockchain.validate_transaction(tx_);
-        if (ec.value() != error::success) {
-            throw tx_validate_exception{"validate transaction failure: " + ec.message()};
-        }
+        return show_error(jv_output, ec.message());
     }
 
-    ec = blockchain.broadcast_transaction(tx_);
-    if (ec.value() != error::success) {
-        throw tx_broadcast_exception{"broadcast transaction failure: " + ec.message()};
+    if (option_.decode) {
+        jv_output["tx"] = config::json_helper(get_api_version()).prop_tree(tx_, true);
     }
 
-    if (get_api_version() <= 2) {
-        jv_output["hash"] = encode_hash(tx_.hash());
-    }
-    else {
-        jv_output = encode_hash(tx_.hash());
-    }
+    jv_output["valid"] = true;
+    jv_output["hash"] = encode_hash(tx_.hash());
 
     return console_result::okay;
 }
