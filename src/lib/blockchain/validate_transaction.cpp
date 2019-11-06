@@ -636,6 +636,17 @@ code validate_transaction::check_asset_issue_transaction() const
                     if (domain != cert_info.get_symbol()) {
                         return error::asset_issue_error;
                     }
+
+                    // Verify legit domain issuance
+                    asset_cert&& cert_info = output.get_asset_cert();
+                    uint64_t current_blockheight = 0;
+                    chain.get_last_height(current_blockheight);
+                    if (current_blockheight >= domain_enabled_height && cert_info.is_newly_generated() && check_asset_cert_exist(domain, asset_cert_ns::domain)) {
+                        log::debug(LOG_BLOCKCHAIN) << "domain problem: "
+                                            << domain << " domain is already registered.";
+                        return error::asset_cert_exist;
+                    }
+
                 }
 
                 if (!check_same(cert_owner, cert_info.get_owner())) {
@@ -714,19 +725,12 @@ code validate_transaction::check_asset_issue_transaction() const
                 return error::asset_cert_error;
             }
 
-            uint64_t current_blockheight = 0;
-            chain.get_last_height(current_blockheight);
-            if (current_blockheight >= domain_enabled_height && check_asset_cert_exist(domain, asset_cert_ns::domain)) {
-              log::debug(LOG_BLOCKCHAIN) << "domain problem: "
-                                         << domain << " domain is already registered.";
-              return error::asset_cert_exist;
-            }
-
             if (num_cert_domain_or_naming < 1) {
                 // no valid domain or naming cert
                 log::debug(LOG_BLOCKCHAIN) << "issue asset: not cert provided!";
                 return error::asset_cert_not_provided;
             }
+
         }
     }
 
