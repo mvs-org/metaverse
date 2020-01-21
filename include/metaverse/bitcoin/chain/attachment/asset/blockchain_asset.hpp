@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019-2020 metaverse developers (see AUTHORS)
+ * Copyright (c) 2011-2020 metaverse developers (see AUTHORS)
  *
  * This file is part of mvs-node.
  *

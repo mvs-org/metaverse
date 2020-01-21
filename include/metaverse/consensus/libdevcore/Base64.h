@@ -1,7 +1,7 @@
 /*
    base64.cpp and base64.h
 
-   Copyright (c) 2019-2020 René Nyffenegger
+   Copyright (c) 2004-2020 René Nyffenegger
 
    This source code is provided 'as-is', without any express or implied
    warranty. In no event will the author be held liable for any damages
