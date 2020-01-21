@@ -1,6 +1,6 @@
 /* OpenBSD: pkcs5_pbkdf2.c, v 1.9 2015/02/05 12:59:57 millert */
 /**
- * Copyright (c) 2008 Damien Bergamini <damien.bergamini@free.fr>
+ * Copyright (c) 2020 Damien Bergamini <damien.bergamini@free.fr>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

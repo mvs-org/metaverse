@@ -216,7 +216,7 @@ static inline void fixNumericLocaleInput(char* begin, char* end) {
 // //////////////////////////////////////////////////////////////////////
 
 // Copyright 2019-2020 Baptiste Lepilleur and The JsonCpp Authors
-// Copyright (C) 2016 InfoTeCS JSC. All rights reserved.
+// Copyright (c) 2020 InfoTeCS JSC. All rights reserved.
 // Distributed under MIT license, or public domain if desired and
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE

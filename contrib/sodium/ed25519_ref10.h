@@ -1,7 +1,7 @@
 
 /*
-Copyright (c) 2018 Amir Hossein Alikhah Mishamandani
-Copyright (c) 2018 Algorand LLC
+Copyright (c) 2020 Amir Hossein Alikhah Mishamandani
+Copyright (c) 2020 Algorand LLC
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
