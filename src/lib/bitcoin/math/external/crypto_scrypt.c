@@ -1,5 +1,5 @@
 /**
- * Copyright 2009 Colin Percival
+ * Copyright 2020 Colin Percival
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
