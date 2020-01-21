@@ -180,7 +180,7 @@ MG_INTERNAL int mg_sntp_parse_reply(const char *buf, int len,
 #line 1 "common/cs_dbg.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -267,7 +267,7 @@ void cs_log_printf(const char *fmt, ...);
 #line 1 "common/cs_dbg.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -536,7 +536,7 @@ int cs_base64_decode(const unsigned char *s, int len, char *dst) {
 #line 1 "common/cs_dirent.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -733,7 +733,7 @@ typedef int cs_dirent_dummy;
 #line 1 "common/cs_time.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -783,7 +783,7 @@ double cs_time(void) {
 #line 1 "common/cs_endian.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -1142,7 +1142,7 @@ void mbuf_remove(struct mbuf *mb, size_t n) {
 #line 1 "common/mg_str.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -1881,7 +1881,7 @@ int mg_avprintf(char **buf, size_t size, const char *fmt, va_list ap) {
 #line 1 "mongoose/src/tun.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -2965,7 +2965,7 @@ double mg_time(void) {
 #line 1 "mongoose/src/net_if_socket.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -2993,7 +2993,7 @@ extern struct mg_iface_vtable mg_socket_iface_vtable;
 #line 1 "mongoose/src/net_if_tun.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -3074,7 +3074,7 @@ struct mg_iface *mg_find_iface(struct mg_mgr *mgr,
 #line 1 "mongoose/src/net_if_socket.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -3825,7 +3825,7 @@ struct mg_iface_vtable mg_default_iface_vtable = MG_SOCKET_IFACE_VTABLE;
 #line 1 "mongoose/src/net_if_tun.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -3998,7 +3998,7 @@ struct mg_iface_vtable mg_tun_iface_vtable = MG_TUN_IFACE_VTABLE;
 #line 1 "mongoose/src/ssl_if_openssl.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -4286,7 +4286,7 @@ const char *mg_set_ssl(struct mg_connection *nc, const char *cert,
 #line 1 "mongoose/src/ssl_if_mbedtls.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -7647,7 +7647,7 @@ void mg_register_http_endpoint(struct mg_connection *nc, const char *uri_path,
 #line 1 "mongoose/src/http_cgi.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -8140,7 +8140,7 @@ MG_INTERNAL void mg_http_free_proto_data_cgi(struct mg_http_proto_data_cgi *d) {
 #line 1 "mongoose/src/http_ssi.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -8336,7 +8336,7 @@ MG_INTERNAL void mg_handle_ssi_request(struct mg_connection *nc,
 #line 1 "mongoose/src/http_webdav.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -11785,7 +11785,7 @@ struct mg_connection *mg_sntp_get_time(struct mg_mgr *mgr,
 #line 1 "common/platforms/cc3200/cc3200_libc.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -11909,7 +11909,7 @@ int _isatty(int fd) {
 #line 1 "common/platforms/msp432/msp432_libc.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -11930,7 +11930,7 @@ int gettimeofday(struct timeval *tp, void *tzp) {
 #line 1 "common/platforms/nrf5/nrf5_libc.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -11947,7 +11947,7 @@ int gettimeofday(struct timeval *tp, void *tzp) {
 #line 1 "common/platforms/simplelink/sl_fs_slfs.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -11984,7 +11984,7 @@ void fs_slfs_set_new_file_size(const char *name, size_t size);
 #line 1 "common/platforms/simplelink/sl_fs_slfs.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -12204,7 +12204,7 @@ void fs_slfs_set_new_file_size(const char *name, size_t size) {
 #line 1 "common/platforms/simplelink/sl_fs.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -12607,7 +12607,7 @@ int sl_fs_init(void) {
 #line 1 "common/platforms/simplelink/sl_socket.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -12713,7 +12713,7 @@ void mg_run_in_task(void (*cb)(struct mg_mgr *mgr, void *arg), void *cb_arg) {
 #line 1 "common/platforms/simplelink/sl_net_if.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -12741,7 +12741,7 @@ extern struct mg_iface_vtable mg_simplelink_iface_vtable;
 #line 1 "common/platforms/simplelink/sl_net_if.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -13209,7 +13209,7 @@ struct mg_iface_vtable mg_default_iface_vtable = MG_SL_IFACE_VTABLE;
 #line 1 "common/platforms/simplelink/sl_ssl_if.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -13316,7 +13316,7 @@ int sl_set_ssl_opts(struct mg_connection *nc) {
 #line 1 "common/platforms/lwip/mg_lwip_net_if.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -13367,7 +13367,7 @@ void mg_lwip_mgr_schedule_poll(struct mg_mgr *mgr);
 #line 1 "common/platforms/lwip/mg_lwip_net_if.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -13906,7 +13906,7 @@ struct mg_iface_vtable mg_default_iface_vtable = MG_LWIP_IFACE_VTABLE;
 #line 1 "common/platforms/lwip/mg_lwip_ev_mgr.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -14103,7 +14103,7 @@ uint32_t mg_lwip_get_poll_delay_ms(struct mg_mgr *mgr) {
 #line 1 "common/platforms/lwip/mg_lwip_ssl_if.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -14385,7 +14385,7 @@ static void mg_gmt_time_string(char *buf, size_t buf_len, time_t *t) {
 #line 1 "common/platforms/pic32_harmony/pic32_harmony_net_if.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -14413,7 +14413,7 @@ extern struct mg_iface_vtable mg_pic32_harmony_iface_vtable;
 #line 1 "common/platforms/pic32_harmony/pic32_harmony_net_if.c"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 

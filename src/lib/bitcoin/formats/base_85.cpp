@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2018 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2019-2020 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2019-2020 metaverse core developers (see MVS-AUTHORS)
  *
  * This file is part of metaverse.
  *
@@ -27,7 +27,7 @@
 //  designed to be easy to port into other languages.
 
 //  --------------------------------------------------------------------------
-//  Copyright (c) 2010-2013 iMatix Corporation and Contributors
+//  Copyright (c) 2019-2020 iMatix Corporation and Contributors
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a
 //  copy of this software and associated documentation files (the "Software"),

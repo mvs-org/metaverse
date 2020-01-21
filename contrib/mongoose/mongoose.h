@@ -2,8 +2,8 @@
 #line 1 "mongoose/src/common.h"
 #endif
 /*
- * Copyright (c) 2004-2013 Sergey Lyubka
- * Copyright (c) 2013-2015 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Sergey Lyubka
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  *
  * This software is dual-licensed: you can redistribute it and/or modify
@@ -450,7 +450,7 @@ typedef struct stat cs_stat_t;
 #line 1 "common/platforms/platform_esp8266.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -501,7 +501,7 @@ typedef struct stat cs_stat_t;
 #line 1 "common/platforms/platform_cc3100.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -550,7 +550,7 @@ int inet_pton(int af, const char *src, void *dst);
 #line 1 "common/platforms/platform_cc3200.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -685,7 +685,7 @@ struct dirent *readdir(DIR *dir);
 #line 1 "common/platforms/platform_msp432.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -792,7 +792,7 @@ int _stat(const char *pathname, struct stat *st);
 #line 1 "common/platforms/platform_tm4c129.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -852,7 +852,7 @@ typedef struct stat cs_stat_t;
 #line 1 "common/platforms/platform_mbed.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -921,7 +921,7 @@ int inet_pton(int af, const char *src, void *dst);
 #line 1 "common/platforms/platform_nrf51.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 #ifndef CS_COMMON_PLATFORMS_PLATFORM_NRF51_H_
@@ -966,7 +966,7 @@ int gettimeofday(struct timeval *tp, void *tzp);
 #line 1 "common/platforms/platform_nrf52.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 #ifndef CS_COMMON_PLATFORMS_PLATFORM_NRF52_H_
@@ -1013,7 +1013,7 @@ int gettimeofday(struct timeval *tp, void *tzp);
 #line 1 "common/platforms/simplelink/cs_simplelink.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -1318,7 +1318,7 @@ const char *strerror();
 #line 1 "common/platforms/platform_nxp_lpc.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -1373,7 +1373,7 @@ typedef struct stat cs_stat_t;
 #line 1 "common/platforms/platform_nxp_kinetis.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -1407,7 +1407,7 @@ typedef struct stat cs_stat_t;
 #line 1 "common/platforms/platform_pic32_harmony.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -1441,7 +1441,7 @@ char* inet_ntoa(struct in_addr in);
 #line 1 "common/platforms/lwip/mg_lwip.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -1508,7 +1508,7 @@ void mg_lwip_set_keepalive_params(struct mg_connection *nc, int idle,
 #line 1 "common/cs_time.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -1531,7 +1531,7 @@ double cs_time(void);
 #line 1 "common/mg_str.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -2654,7 +2654,7 @@ struct {								\
 #line 1 "mongoose/src/features.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -2825,7 +2825,7 @@ struct {								\
 #line 1 "mongoose/src/net_if.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 
@@ -2958,7 +2958,7 @@ void mg_if_timer(struct mg_connection *c, double now);
 #line 1 "mongoose/src/ssl_if.h"
 #endif
 /*
- * Copyright (c) 2014-2016 Cesanta Software Limited
+ * Copyright (c) 2019-2020 Cesanta Software Limited
  * All rights reserved
  */
 

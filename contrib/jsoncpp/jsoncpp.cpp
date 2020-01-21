@@ -15,7 +15,7 @@ jurisdictions which recognize such a disclaimer. In such jurisdictions,
 this software is released into the Public Domain.
 
 In jurisdictions which do not recognize Public Domain property (e.g. Germany as of
-2010), this software is Copyright (c) 2007-2010 by Baptiste Lepilleur and
+2010), this software is Copyright (c) 2019-2020 by Baptiste Lepilleur and
 The JsonCpp Authors, and is released under the terms of the MIT License (see below).
 
 In jurisdictions which recognize Public Domain property, the user of this
@@ -31,7 +31,7 @@ described in clear, concise terms at:
 The full text of the MIT License follows:
 
 ========================================================================
-Copyright (c) 2007-2010 Baptiste Lepilleur and The JsonCpp Authors
+Copyright (c) 2019-2020 Baptiste Lepilleur and The JsonCpp Authors
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation

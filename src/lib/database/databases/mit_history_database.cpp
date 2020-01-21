@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2019-2020 metaverse core developers (see MVS-AUTHORS)
  *
  * This file is part of mvsd.
  *
