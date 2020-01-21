@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018 - 2019 Amir Hossein Alikhah Mishamandani
+Copyright (c) 2019 - 2020 Amir Hossein Alikhah Mishamandani
 Copyright (c) 2018 Algorand LLC
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

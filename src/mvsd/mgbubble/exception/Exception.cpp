@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2019-2020 metaverse core developers (see MVS-AUTHORS).
- * Copyright (C) 2013, 2016 Swirly Cloud Limited.
+ * Copyright (c) 2019, 2020 Swirly Cloud Limited.
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation; either version 2 of the

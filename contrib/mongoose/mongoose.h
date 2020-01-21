@@ -1900,7 +1900,7 @@ int mg_avprintf(char **buf, size_t size, const char *fmt, va_list ap);
 #endif
 /* clang-format off */
 /*-
- * Copyright (c) 1991, 1993
+ * Copyright (c) 2019, 2020
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
