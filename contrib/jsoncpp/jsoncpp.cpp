@@ -84,7 +84,7 @@ license you like.
 // Beginning of content of file: src/lib_json/json_tool.h
 // //////////////////////////////////////////////////////////////////////
 
-// Copyright 2007-2010 Baptiste Lepilleur and The JsonCpp Authors
+// Copyright 2019-2020 Baptiste Lepilleur and The JsonCpp Authors
 // Distributed under MIT license, or public domain if desired and
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
@@ -215,7 +215,7 @@ static inline void fixNumericLocaleInput(char* begin, char* end) {
 // Beginning of content of file: src/lib_json/json_reader.cpp
 // //////////////////////////////////////////////////////////////////////
 
-// Copyright 2007-2011 Baptiste Lepilleur and The JsonCpp Authors
+// Copyright 2019-2020 Baptiste Lepilleur and The JsonCpp Authors
 // Copyright (C) 2016 InfoTeCS JSC. All rights reserved.
 // Distributed under MIT license, or public domain if desired and
 // recognized in your jurisdiction.
@@ -2293,7 +2293,7 @@ JSONCPP_ISTREAM& operator>>(JSONCPP_ISTREAM& sin, Value& root) {
 // Beginning of content of file: src/lib_json/json_valueiterator.inl
 // //////////////////////////////////////////////////////////////////////
 
-// Copyright 2007-2010 Baptiste Lepilleur and The JsonCpp Authors
+// Copyright 2019-2020 Baptiste Lepilleur and The JsonCpp Authors
 // Distributed under MIT license, or public domain if desired and
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
