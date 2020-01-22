@@ -419,6 +419,17 @@ initialize_icu_packages()
     fi
 }
 
+# ZeroMQ - replace strncopy with memcopy to fix error
+patch_zmq_bug()
+{
+    sed -i "s/strncpy (u.base.group, group_, length_)/memcpy (u.base.group, group_, length_)/" src/msg.cpp
+}
+# Boost - add cast 
+patch_boost_bug()
+{
+    sed -i "s/= 1u /= static_cast<limb_type>(1u) /g" boost/multiprecision/cpp_int.hpp
+}
+
 # Because ZLIB doesn't actually parse its --disable-shared option.
 # Because ZLIB doesn't follow GNU recommentation for unknown arguments.
 patch_zlib_configuration()
@@ -483,6 +494,12 @@ build_from_tarball()
     # Extract the source locally.
     wget --output-document $ARCHIVE $URL
     tar --extract --file $ARCHIVE --$COMPRESSION --strip-components=1
+    
+    # If it's ZMQ, fix bugs (during cmake)
+    if [[ $ARCHIVE == $ZMQ_ARCHIVE ]]; then
+	patch_zmq_bug
+    fi
+
     push_directory "$PUSH_DIR"
 
     # Enable static only zlib build.
@@ -610,6 +627,9 @@ build_from_tarball_boost()
     # Extract the source locally.
     wget --output-document $ARCHIVE $URL
     tar --extract --file $ARCHIVE --$COMPRESSION --strip-components=1
+
+    # Patch bug in boost
+    patch_boost_bug
 
     initialize_boost_configuration
     initialize_boost_icu_configuration
