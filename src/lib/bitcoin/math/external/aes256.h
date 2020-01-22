@@ -2,7 +2,7 @@
  *   Byte-oriented AES-256 implementation.
  *   All lookup tables replaced with 'on the fly' calculations.
  *
- *   Copyright (c) 2007-2009 Ilya O. Levin, http://www.literatecode.com
+ *   Copyright (c) 2007-2020 Ilya O. Levin, http://www.literatecode.com
  *   Other contributors: Hal Finney
  *
  *   Permission to use, copy, modify, and distribute this software for any

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018 metaverse core developers (see MVS-AUTHORS) - Metaverse.
+ * Copyright (c) 2016-2020 metaverse core developers (see MVS-AUTHORS) - Metaverse.
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation; either version 2 of the
