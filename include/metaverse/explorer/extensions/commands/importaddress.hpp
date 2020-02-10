@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers
+ * Copyright (c) 2016-2020 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
