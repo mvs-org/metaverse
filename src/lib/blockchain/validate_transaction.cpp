@@ -953,6 +953,7 @@ code validate_transaction::check_asset_mit_transaction() const
     std::string asset_address;
     uint64_t num_mit_transfer = 0;
     uint64_t num_mit_register = 0;
+    std::string cert_owner;
     for (auto& output : tx.outputs)
     {
         if (output.is_asset_mit_register()) {
@@ -985,6 +986,20 @@ code validate_transaction::check_asset_mit_transaction() const
             asset_symbol = asset_info.get_symbol();
         }
         else if (output.is_etp()) {
+        }
+        else if (output.is_asset_cert()) {
+            asset_cert&& cert_info = output.get_asset_cert();
+            if (cert_info.get_type() == asset_cert_ns::domain) {
+                if (!check_same(cert_owner, cert_info.get_owner())) {
+                    return error::mit_register_error;
+                }
+            } 
+            else {
+                log::debug(LOG_BLOCKCHAIN) << "MIT: "
+                                           << " the cert is not domain. "
+                                           << cert_info.get_type() << " != " << asset_cert_ns::domain;
+                return error::mit_register_error;
+            }
         }
         else if (!output.is_message()) {
             log::debug(LOG_BLOCKCHAIN) << "MIT: illegal output, "
@@ -2014,7 +2029,7 @@ bool validate_transaction::check_asset_certs(const transaction& tx) const
                 has_asset_issue = true;
             }
         }
-        else if (!output.is_etp() && !output.is_message()) {
+        else if (!output.is_etp() && !output.is_message() && !output.is_asset_mit_register()) {
             // asset cert transfer tx only related to asset_cert and etp output
             log::debug(LOG_BLOCKCHAIN) << "cert tx mix other illegal output";
             return false;
