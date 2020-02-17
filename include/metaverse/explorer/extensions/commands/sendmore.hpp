@@ -101,7 +101,7 @@ public:
 	    value<colon_delimited2_item<uint64_t, uint64_t>>(&option_.exclude),
             "Exclude utxo whose value is between this range [begin:end) the "
             "limit of which is split by a colon."
-		)
+	)
         (
             "fee,f",
             value<uint64_t>(&option_.fee)->default_value(10000),
