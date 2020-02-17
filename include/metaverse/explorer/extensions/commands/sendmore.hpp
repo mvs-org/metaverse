@@ -97,9 +97,9 @@ public:
             "The memo to descript transaction"
         )
         (
-			"exclude,e",
-			value<colon_delimited2_item<uint64_t, uint64_t>>(&option_.exclude),
-			"Exclude utxo whose value is between this range [begin:end) the "
+	    "exclude,e",
+	    value<colon_delimited2_item<uint64_t, uint64_t>>(&option_.exclude),
+            "Exclude utxo whose value is between this range [begin:end) the "
             "limit of which is split by a colon."
 		)
         (
