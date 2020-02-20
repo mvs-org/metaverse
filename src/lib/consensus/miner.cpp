@@ -123,7 +123,7 @@ bool miner::get_input_etp(const chain::transaction& tx, const std::vector<transa
         uint64_t input_value = 0;
         if (block_chain.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
 
-            if (block_chain.calc_number_of_blocks(prev_height, last_height) < 3u) {
+            if (block_chain.calc_number_of_blocks(prev_height, last_height) < transaction_maturity) {
                 // maturity of each input requires 12 blocks.
                 return false;
             }
