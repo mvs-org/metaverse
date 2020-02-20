@@ -115,11 +115,19 @@ bool miner::get_input_etp(const chain::transaction& tx, const std::vector<transa
 {
     total_inputs = 0;
     blockchain::block_chain_impl& block_chain = node_.chain_impl();
+    uint64_t last_height = 0;
+    block_chain.get_last_height(last_height);
     for (auto& input : tx.inputs) {
         chain::transaction prev_tx;
         uint64_t prev_height = 0;
         uint64_t input_value = 0;
         if (block_chain.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
+
+            if (block_chain.calc_number_of_blocks(prev_height, last_height) < 3u) {
+                // maturity of each input requires 12 blocks.
+                return false;
+            }
+
             input_value = prev_tx.outputs[input.previous_output.index].value;
             previous_out_map[input.previous_output] =
                 std::make_pair(prev_height, prev_tx.outputs[input.previous_output.index]);
@@ -137,9 +145,7 @@ bool miner::get_input_etp(const chain::transaction& tx, const std::vector<transa
                     std::make_pair(max_uint64, (*it)->outputs[input.previous_output.index]);
             }
             else {
-#ifdef MVS_DEBUG
-                log::debug(LOG_HEADER) << "previous transaction not ready: " << encode_hash(hash);
-#endif
+                log::warning(LOG_HEADER) << encode_hash(tx.hash())<< " previous transaction not ready: " << encode_hash(hash);
                 return false;
             }
         }
@@ -191,9 +197,7 @@ bool miner::get_transaction(
 
             // check fees
             if (fee < min_tx_fee || !blockchain::validate_transaction::check_special_fees(setting_.use_testnet_rules, tx, fee)) {
-#ifdef MVS_DEBUG
-                log::debug(LOG_HEADER) << "check fees failed, delete_tx " << encode_hash(hash);
-#endif
+                log::warning(LOG_HEADER) << "check fees failed, pool delete_tx " << encode_hash(hash);
                 i = transactions.erase(i);
                 // delete it from pool if not enough fee
                 node_.pool().delete_tx(hash);
@@ -205,9 +209,7 @@ bool miner::get_transaction(
                 // check double spending
                 for (const auto& input : tx.inputs) {
                     if (node_.chain_impl().get_spends_output(input.previous_output)) {
-#ifdef MVS_DEBUG
-                        log::debug(LOG_HEADER) << "check double spending failed, delete_tx " << encode_hash(hash);
-#endif
+                        log::warning(LOG_HEADER) << "check double spending failed, pool delete_tx " << encode_hash(hash);
                         i = transactions.erase(i);
                         node_.pool().delete_tx(hash);
                         transaction_is_ok = false;
