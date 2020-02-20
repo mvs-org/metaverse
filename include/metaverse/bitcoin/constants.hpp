@@ -49,6 +49,7 @@ BC_CONSTEXPR uint8_t byte_bits = 8;
 
 // Consensus constants.
 extern uint32_t coinbase_maturity;
+BC_CONSTEXPR uint32_t transaction_maturity = 3;
 BC_CONSTEXPR uint32_t max_input_sequence = max_uint32;
 
 BC_CONSTEXPR uint32_t total_reward = 100000000;
