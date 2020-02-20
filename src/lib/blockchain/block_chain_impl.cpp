@@ -3331,7 +3331,7 @@ bool block_chain_impl::is_utxo_spendable(const chain::transaction& tx, uint32_t 
     }
 
     if (transaction_maturity > calc_number_of_blocks(tx_height, latest_height)){
-        log::debug(LOG_BLOCKCHAIN) << "transaction is maturity" <<
+        log::debug(LOG_BLOCKCHAIN) << "transaction is not mature" <<
             " transaction hash =" << encode_hash(tx.hash()) <<
             " tx_height=" << tx_height <<
             " latest_height=" << latest_height;
