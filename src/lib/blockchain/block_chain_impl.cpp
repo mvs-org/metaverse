@@ -3330,6 +3330,14 @@ bool block_chain_impl::is_utxo_spendable(const chain::transaction& tx, uint32_t 
         return false;
     }
 
+    if (transaction_maturity > calc_number_of_blocks(tx_height, latest_height)){
+        log::debug(LOG_BLOCKCHAIN) << "transaction is maturity" <<
+            " transaction hash =" << encode_hash(tx.hash()) <<
+            " tx_height=" << tx_height <<
+            " latest_height=" << latest_height;
+        return false;
+    }
+
     const auto output = tx.outputs[index];
 
     if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
