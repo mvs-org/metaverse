@@ -481,7 +481,7 @@ build_from_tarball()
     push_directory "$EXTRACT"
 
     # Extract the source locally.
-    wget --output-document $ARCHIVE $URL
+    wget -c --output-document $ARCHIVE $URL
     tar --extract --file $ARCHIVE --$COMPRESSION --strip-components=1
     push_directory "$PUSH_DIR"
 
@@ -608,7 +608,7 @@ build_from_tarball_boost()
     push_directory "$EXTRACT"
 
     # Extract the source locally.
-    wget --output-document $ARCHIVE $URL
+    wget -c --output-document $ARCHIVE $URL
     tar --extract --file $ARCHIVE --$COMPRESSION --strip-components=1
 
     initialize_boost_configuration
