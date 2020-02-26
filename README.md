@@ -188,3 +188,5 @@ Run `mvs-cli` commands via `docker exec` command. Example:
 ```bash
 docker exec metaverse mvs-cli getinfo
 ```
+
+# Build for raspberry pi
