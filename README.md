@@ -24,11 +24,11 @@ Further Read: [Documents](http://docs.mvs.org)
 # Build MVS
 
 ## Compiler requirements
-| Compilier | Minimum Version |  
-| ---------| ---------------- | 
-| gcc/g++ |   5.0             |  
-| clang++ |   3.4 (8.0.0)     |  
-| MSVC    |   19.0 (VS2015)   |  
+| Compilier | Minimum Version |
+| ---------| ---------------- |
+| gcc/g++ |   5.0             |
+| clang++ |   3.4 (8.0.0)     |
+| MSVC    |   19.0 (VS2015)   |
 
 C++ compiler support [C++14](http://en.cppreference.com/w/cpp/compiler_support). 
 Using `c++ -v` to check c++ version.
@@ -190,3 +190,33 @@ docker exec metaverse mvs-cli getinfo
 ```
 
 # Build for raspberry pi
+
+Cross compile mvs using Docker in ubuntu 16.04
+
+you need to change to **root** when executing the flowing command.
+
+## env
+
+check versin first, linux kerne and docker version:
+
+```
+host docker >= 17.05.0-ce
+host kernel >= 4.8
+```
+
+install qemu:
+
+```
+apt-get install qemu-user-staic
+```
+
+## way1
+
+Clone the mvs source.
+then enter mvs source directory, then run:
+
+```
+./cross-build.sh // form arm 64 (eg: aarch64, armv8(and abover))
+```
+
+When everything ok, the binary file and .so/.a file will be found in output directory.
