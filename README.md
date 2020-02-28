@@ -217,7 +217,7 @@ then enter mvs source directory, then run:
 
 ```
 // for arm 64 (eg: aarch64, armv8(and abover))
-./cross-build.sh
+sudo bash ./cross-build.sh arm64
 ```
 
 When everything ok, the binary file and .so/.a file will be found in output directory.
