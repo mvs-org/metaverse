@@ -1001,6 +1001,8 @@ code validate_transaction::check_asset_mit_transaction() const
                 return error::mit_register_error;
             }
         }
+        else if (output.is_asset_transfer()) {
+        }
         else if (!output.is_message()) {
             log::debug(LOG_BLOCKCHAIN) << "MIT: illegal output, "
                                        << asset_symbol << " : " << output.to_string(1);
@@ -1027,6 +1029,8 @@ code validate_transaction::check_asset_mit_transaction() const
 
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
         if (prev_output.is_etp()) {
+        }
+        else if (prev_output.is_asset()) {
         }
         else if (prev_output.is_asset_mit()) {
             auto&& asset_info = prev_output.get_asset_mit();
