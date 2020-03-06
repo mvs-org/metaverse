@@ -984,15 +984,7 @@ code validate_transaction::check_asset_mit_transaction() const
             auto&& asset_info = output.get_asset_mit();
             asset_symbol = asset_info.get_symbol();
         }
-        else if (output.is_etp()) {
-            if (!check_same(asset_address, output.get_script_address())) {
-                log::debug(LOG_BLOCKCHAIN) << "MIT: "
-                                           << " address is not same. "
-                                           << asset_address << " != " << output.get_script_address();
-                return error::mit_register_error;
-            }
-        }
-        else if (output.is_asset_transfer()) {
+        else if (output.is_etp() || output.is_asset_transfer()) {
         }
         else if (!output.is_message()) {
             log::debug(LOG_BLOCKCHAIN) << "MIT: illegal output, "
@@ -1019,15 +1011,7 @@ code validate_transaction::check_asset_mit_transaction() const
         }
 
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
-        if (prev_output.is_etp()) {
-            auto&& asset_address_in = prev_output.get_script_address();
-            if (asset_address != asset_address_in) {
-                log::debug(LOG_BLOCKCHAIN) << "MIT: invalid input address to pay fee: "
-                                            << asset_address_in << " != " << asset_address;
-                return error::validate_inputs_failed;
-            }
-        }
-        else if (prev_output.is_asset()) {
+        if (prev_output.is_etp() || prev_output.is_asset()) {
         }
         else if (prev_output.is_asset_mit()) {
             auto&& asset_info = prev_output.get_asset_mit();
