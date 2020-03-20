@@ -12,6 +12,6 @@
  * For interpretation of the versioning scheme see: http://semver.org
  */
 
-#define MVS_VERSION "0.9.0"
+#define MVS_VERSION "0.9.1"
 
 #endif
