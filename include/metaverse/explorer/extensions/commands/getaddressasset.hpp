@@ -79,6 +79,16 @@ public:
             "If specified, then only get deposited assets. Default is not specified."
         )
         (
+            "utxo,u",
+            value<bool>(&option_.utxo)->zero_tokens()->default_value(false),
+            "If specified, list all utxos. Default is not specified."
+        )
+        (
+            "range,r",
+            value<colon_delimited2_item<uint64_t, uint64_t>>(&option_.range),
+            "Pick utxo whose value is between this range [begin:end)."
+        )
+        (
             "symbol,s",
             value<std::string>(&option_.symbol)->default_value(""),
             "Asset symbol."
@@ -109,6 +119,8 @@ public:
 
         bool is_cert;
         bool deposited;
+        bool utxo;
+        colon_delimited2_item<uint64_t, uint64_t> range = {0, 0};
         std::string symbol;
     } option_;
 

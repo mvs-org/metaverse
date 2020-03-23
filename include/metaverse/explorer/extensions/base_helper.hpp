@@ -169,6 +169,7 @@ struct utxo_balance {
     uint64_t output_height;
     uint64_t unspent_balance;
     uint64_t frozen_balance;
+    std::string symbol;
 };
 
 struct balances {

@@ -33,6 +33,19 @@ using namespace bc::explorer::config;
 
 /************************ getaddressasset *************************/
 
+Json::Value to_json_value(const utxo_balance& balance)
+{
+    Json::Value json_balance;
+    json_balance["available"] = (balance.unspent_balance - balance.frozen_balance);
+    json_balance["balance"] = balance.unspent_balance;
+    json_balance["frozen"] = balance.frozen_balance;
+    json_balance["utxo_block"] = balance.output_height;
+    json_balance["utxo_hash"] = balance.output_hash;
+    json_balance["utxo_index"] = balance.output_index;
+    json_balance["symbol"] = balance.symbol;
+    return json_balance;
+}
+
 console_result getaddressasset::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
@@ -84,7 +97,7 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
             json_value.append(asset_data);
         }
     }
-    else {
+    else if (!option_.utxo) {
         json_key = "assets";
 
         auto sh_vec = std::make_shared<chain::asset_balances::list>();
@@ -101,6 +114,30 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
             Json::Value asset_data = json_helper.prop_list(elem, *issued_asset);
             asset_data["status"] = "unspent";
             json_value.append(asset_data);
+        }
+    }
+    else {
+        json_key = "assets";
+
+        // range check
+        if (!option_.range.is_valid()) {
+            throw argument_legality_exception("invalid range option! "
+                + option_.range.encode_colon_delimited());
+        }
+        auto utxo_balances = std::make_shared<utxo_balance::list>();
+        sync_fetch_asset_balance(address,  true, blockchain, utxo_balances);
+        for (const auto& balance : *utxo_balances) {
+            if (option_.range.is_in_range(balance.unspent_balance)) {
+                if (!option_.symbol.empty() && option_.symbol != balance.symbol)
+                    continue;
+
+                auto issued_asset = blockchain.get_issued_asset(balance.symbol);
+                if (!issued_asset) {
+                    continue;
+                }
+
+                json_value.append(to_json_value(balance));
+            }
         }
     }
 
