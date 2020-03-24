@@ -207,7 +207,7 @@ host kernel >= 4.8
 install qemu:
 
 ```
-apt-get install qemu-user-staic
+apt-get install qemu-user-static
 ```
 
 ## way1
