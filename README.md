@@ -207,7 +207,7 @@ host kernel >= 4.8
 install qemu:
 
 ```
-apt-get install qemu-user-staic
+apt-get install qemu-user-static
 ```
 
 ## way1
@@ -216,7 +216,8 @@ Clone the mvs source.
 then enter mvs source directory, then run:
 
 ```
-./cross-build.sh // form arm 64 (eg: aarch64, armv8(and abover))
+// for arm 64 (eg: aarch64, armv8(and abover))
+sudo bash ./cross-build.sh arm64
 ```
 
 When everything ok, the binary file and .so/.a file will be found in output directory.
