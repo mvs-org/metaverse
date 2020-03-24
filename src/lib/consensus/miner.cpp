@@ -1114,7 +1114,7 @@ miner::transaction_ptr miner::create_pos_genesis_tx(uint64_t block_height, uint3
     const std::string text(fmt.str());
 
     transaction_ptr genesis_tx = std::make_shared<message::transaction_message>();
-
+    genesis_tx->version = chain::transaction_version::first;
     genesis_tx->inputs.resize(1);
     genesis_tx->inputs[0].previous_output = chain::output_point(null_hash, max_uint32);
     genesis_tx->inputs[0].script.operations = {{chain::opcode::raw_data, {text.begin(), text.end()}}};
