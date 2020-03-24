@@ -207,6 +207,18 @@ bool block_chain_impl::check_pos_utxo_capability(
 
 bool block_chain_impl::pos_exist_before(const uint64_t& height) const
 {
+#ifndef PRIVATE_CHAIN
+    if (!settings_.use_testnet_rules) {
+        // block 1924146 is pos genesis block on mainnet.
+        if (height > 1924146) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+#endif
+
     auto pos = pos_enabled_height;
     while (pos++ < height) {
         chain::header header;
@@ -2641,7 +2653,7 @@ code block_chain_impl::broadcast_transaction(const chain::transaction& tx)
         //send_mutex.unlock();
         //ret = true;
         log::trace("broadcast_transaction") << encode_hash(tx_ptr->hash()) << " confirmed";
-    }, [&valid_mutex, &ret, tx_ptr](const code& ec, std::shared_ptr<transaction_message>, chain::point::indexes idx_vec){
+    }, [&valid_mutex, &ret, tx_ptr](const code& ec, transaction_ptr, chain::point::indexes idx_vec){
         log::debug("broadcast_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.size();
         log::debug("broadcast_transaction") << "ec.message=" << ec.message();
         ret = ec;
@@ -3327,6 +3339,14 @@ bool block_chain_impl::is_utxo_spendable(const chain::transaction& tx, uint32_t 
 {
     BITCOIN_ASSERT(index < tx.outputs.size());
     if (index >= tx.outputs.size()){
+        return false;
+    }
+
+    if (transaction_maturity > calc_number_of_blocks(tx_height, latest_height)){
+        log::debug(LOG_BLOCKCHAIN) << "transaction is not mature" <<
+            " transaction hash =" << encode_hash(tx.hash()) <<
+            " tx_height=" << tx_height <<
+            " latest_height=" << latest_height;
         return false;
     }
 
