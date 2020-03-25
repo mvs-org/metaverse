@@ -169,7 +169,7 @@ struct utxo_balance {
     uint64_t output_height;
     uint64_t unspent_balance;
     uint64_t frozen_balance;
-    std::string symbol;
+    std::string symbol="";
 };
 
 struct balances {
@@ -233,6 +233,9 @@ void sync_fetch_deposited_balance(wallet::payment_address& address,
 void sync_fetch_asset_balance(const std::string& address, bool sum_all,
     bc::blockchain::block_chain_impl& blockchain,
     std::shared_ptr<chain::asset_balances::list> sh_asset_vec);
+void sync_fetch_asset_balance(const std::string& address, bool sum_all,
+    bc::blockchain::block_chain_impl& blockchain,
+    std::shared_ptr<utxo_balance::list> sh_asset_utxo_vec);
 
 void sync_fetch_asset_deposited_balance(const std::string& address,
     bc::blockchain::block_chain_impl& blockchain,
