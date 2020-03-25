@@ -33,7 +33,7 @@ using namespace bc::explorer::config;
 
 /************************ getaddressasset *************************/
 
-Json::Value to_json_value(const utxo_balance& balance)
+static Json::Value to_json_value(const utxo_balance& balance)
 {
     Json::Value json_balance;
     json_balance["available"] = (balance.unspent_balance - balance.frozen_balance);
