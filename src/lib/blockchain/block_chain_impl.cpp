@@ -3335,14 +3335,14 @@ uint32_t block_chain_impl::get_median_time_past(uint64_t height) const
     return times.empty() ? 0 : times[times.size() / 2];
 }
 
-bool block_chain_impl::is_utxo_spendable(const chain::transaction& tx, uint32_t index, uint64_t tx_height, uint64_t latest_height) const
+bool block_chain_impl::is_utxo_spendable(const chain::transaction& tx, uint32_t index, uint64_t tx_height, uint64_t latest_height, uint64_t confirmations) const
 {
     BITCOIN_ASSERT(index < tx.outputs.size());
     if (index >= tx.outputs.size()){
         return false;
     }
 
-    if (transaction_maturity > calc_number_of_blocks(tx_height, latest_height)){
+    if (confirmations > calc_number_of_blocks(tx_height, latest_height)){
         log::debug(LOG_BLOCKCHAIN) << "transaction is not mature" <<
             " transaction hash =" << encode_hash(tx.hash()) <<
             " tx_height=" << tx_height <<
