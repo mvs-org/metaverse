@@ -93,6 +93,11 @@ public:
             value<std::string>(&option_.symbol)->default_value(""),
             "Asset symbol."
         )
+        (
+            "utxominimumconfirmations,c",
+            value<uint64_t>(&option_.utxo_min_confirm)->default_value(3),
+            "Create transaction with the utxo minimum confirmations. defaults to 3"
+        )
         ;
 
         return options;
@@ -122,6 +127,7 @@ public:
         bool utxo;
         colon_delimited2_item<uint64_t, uint64_t> range = {0, 0};
         std::string symbol;
+        uint64_t utxo_min_confirm;
     } option_;
 
 };

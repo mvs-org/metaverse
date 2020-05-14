@@ -235,7 +235,8 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
     std::shared_ptr<chain::asset_balances::list> sh_asset_vec);
 void sync_fetch_asset_balance(const std::string& address, bool sum_all,
     bc::blockchain::block_chain_impl& blockchain,
-    std::shared_ptr<utxo_balance::list> sh_asset_utxo_vec);
+    std::shared_ptr<utxo_balance::list> sh_asset_utxo_vec,
+    uint64_t utxo_min_confirm);
 
 void sync_fetch_asset_deposited_balance(const std::string& address,
     bc::blockchain::block_chain_impl& blockchain,
