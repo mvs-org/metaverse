@@ -363,7 +363,12 @@ Json::Value json_helper::prop_attenuation_model_param(const std::string& param_s
                 }
             }
             else {
-                uint64_t num = std::stoull(value);
+                uint64_t num = std::numeric_limits<uint64_t>::max();
+                if (value[0] >= '0' && value[0] <= '9') {
+                    num = stoull(value);
+                } else {
+                    tree[key] = value;
+                }
                 auto display_key = chain::attenuation_model::get_name_of_key(key);
                 tree[display_key] = num;
             }

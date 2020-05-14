@@ -167,6 +167,11 @@ options_metadata parser::load_settings()
         "The magic number for message headers, defaults to 0x6d73766d."
     )
     (
+        "network.use_ipv6",
+        value<bool>(&configured.network.use_ipv6),
+        "Use IPV6, defaults to true."
+    )
+    (
         "network.inbound_port",
         value<uint16_t>(&configured.network.inbound_port),
         "The port for incoming connections, defaults to 5251."
@@ -231,11 +236,11 @@ options_metadata parser::load_settings()
         value<bool>(&configured.network.relay_transactions),
         "Request that peers relay transactions, defaults to true."
     )
-            (
-                    "network.enable_re_seeding",
-                    value<bool>(&configured.network.enable_re_seeding),
-                    "Re-connect the seed nodes to refresh local hosts cache, when the actual number of outgoing network connection <= 1. defaults to true."
-            )
+    (
+        "network.enable_re_seeding",
+        value<bool>(&configured.network.enable_re_seeding),
+        "Re-connect the seed nodes to refresh local hosts cache, when the actual number of outgoing network connection <= 1. defaults to true."
+    )
     (
         "network.hosts_file",
         value<path>(&configured.network.hosts_file),

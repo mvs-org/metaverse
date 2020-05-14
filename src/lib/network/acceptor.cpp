@@ -89,7 +89,9 @@ code acceptor::safe_listen(uint16_t port)
         return error::operation_failed;
 
     boost_code error;
-    asio::endpoint endpoint(asio::tcp::v6(), settings_.inbound_port);
+    asio::endpoint endpoint(
+        settings_.use_ipv6 ? asio::tcp::v6() : asio::tcp::v4(),
+        settings_.inbound_port);
 
     acceptor_->open(endpoint.protocol(), error);
 
