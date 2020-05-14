@@ -63,7 +63,7 @@ Json::Value to_json_value(const balances& addr_balance, uint8_t api_version)
     return json_balance;
 }
 
-Json::Value to_json_value(const utxo_balance& balance)
+static Json::Value to_json_value(const utxo_balance& balance)
 {
     Json::Value json_balance;
     json_balance["available"] = (balance.unspent_balance - balance.frozen_balance);
