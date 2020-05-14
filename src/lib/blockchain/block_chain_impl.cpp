@@ -3342,6 +3342,13 @@ bool block_chain_impl::is_utxo_spendable(const chain::transaction& tx, uint32_t 
         return false;
     }
 
+    if (confirmations > 0 && 0 == tx_height) {
+        log::debug(LOG_BLOCKCHAIN) << "transaction is not mature" <<
+            " transaction hash =" << encode_hash(tx.hash()) <<
+            " tx_height=" << tx_height <<
+            " latest_height=" << latest_height;
+        return false;
+    }
     if (confirmations > calc_number_of_blocks(tx_height, latest_height)){
         log::debug(LOG_BLOCKCHAIN) << "transaction is not mature" <<
             " transaction hash =" << encode_hash(tx.hash()) <<
