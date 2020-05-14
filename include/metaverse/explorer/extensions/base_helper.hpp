@@ -468,7 +468,7 @@ public:
         std::string&& symbol, std::string&& change,
         std::string&& message, uint64_t fee, uint32_t locktime = 0,
         bool include_input_script = false,
-        uint64_t utxo_min_confirm = 3)
+        uint64_t utxo_min_confirm = transaction_maturity)
         : base_transfer_common(blockchain, std::move(receiver_list), fee,
             std::move(symbol), "", std::move(change), locktime)
         , type_{type}
