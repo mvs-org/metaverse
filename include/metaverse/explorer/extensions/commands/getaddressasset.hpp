@@ -94,7 +94,7 @@ public:
             "Asset symbol."
         )
         (
-            "utxominimumconfirmations,c",
+            "utxominimumconfirmations,x",
             value<uint64_t>(&option_.utxo_min_confirm)->default_value(3),
             "Create transaction with the utxo minimum confirmations. defaults to 3"
         )
