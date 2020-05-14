@@ -125,7 +125,7 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
                 + option_.range.encode_colon_delimited());
         }
         auto utxo_balances = std::make_shared<utxo_balance::list>();
-        sync_fetch_asset_balance(address,  true, blockchain, utxo_balances);
+        sync_fetch_asset_balance(address,  true, blockchain, utxo_balances, option_.utxo_min_confirm);
         for (const auto& balance : *utxo_balances) {
             if (option_.range.is_in_range(balance.unspent_balance)) {
                 if (!option_.symbol.empty() && option_.symbol != balance.symbol)

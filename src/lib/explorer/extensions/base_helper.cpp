@@ -510,7 +510,8 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
 
 void sync_fetch_asset_balance(const std::string& address, bool sum_all,
     bc::blockchain::block_chain_impl& blockchain,
-    std::shared_ptr<utxo_balance::list> sh_asset_utxo_vec)
+    std::shared_ptr<utxo_balance::list> sh_asset_utxo_vec,
+    uint64_t utxo_min_confirm)
 {
     auto&& rows = blockchain.get_address_history(wallet::payment_address(address));
 
@@ -558,9 +559,15 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
                     auto available_amount = attenuation_model::get_available_asset_amount(
                             asset_amount, diff_height, attenuation_model_param);
                     locked_amount = asset_amount - available_amount;
+                    if (utxo_min_confirm > diff_height){
+                        continue;
+                    }
                 }
                 else if (asset_amount
                     && chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
+                    if (utxo_min_confirm > blockchain.calc_number_of_blocks(tx_height, height)){
+                        continue;
+                    }
                     auto is_spendable = blockchain.is_utxo_spendable(tx_temp, row.output.index, tx_height, height);
                     if (!is_spendable) {
                         // utxo already in block but is locked with sequence and not mature
@@ -568,6 +575,9 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
                     }
                 }
 
+                if (utxo_min_confirm > blockchain.calc_number_of_blocks(tx_height, height)){
+                        continue;
+                }
                 sh_asset_utxo_vec->emplace_back(utxo_balance{
                     encode_hash(row.output.hash), row.output.index,
                     row.output_height, asset_amount, locked_amount, symbol});
