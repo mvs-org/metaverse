@@ -508,6 +508,81 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
     }
 }
 
+void sync_fetch_asset_balance(const std::string& address, bool sum_all,
+    bc::blockchain::block_chain_impl& blockchain,
+    std::shared_ptr<utxo_balance::list> sh_asset_utxo_vec)
+{
+    auto&& rows = blockchain.get_address_history(wallet::payment_address(address));
+
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+
+    uint64_t height = 0;
+    blockchain.get_last_height(height);
+
+    for (auto& row: rows)
+    {
+        uint64_t unspent_balance = 0;
+        uint64_t frozen_balance = 0;
+
+        // spend unconfirmed (or no spend attempted)
+        if ((row.spend.hash == null_hash)
+                && blockchain.get_transaction(tx_temp, tx_height, row.output.hash))
+        {
+            BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
+            const auto& output = tx_temp.outputs.at(row.output.index);
+            if (output.get_script_address() != address) {
+                continue;
+            }
+            if (output.is_asset())
+            {
+                const auto& symbol = output.get_asset_symbol();
+                if (bc::wallet::symbol::is_forbidden(symbol)) {
+                    // swallow forbidden symbol
+                    continue;
+                }
+
+                auto asset_amount = output.get_asset_amount();
+
+                if (asset_amount == 0) {
+                    continue;
+                }
+
+                uint64_t locked_amount = 0;
+                if (asset_amount
+                    && operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
+                    const auto& attenuation_model_param = output.get_attenuation_model_param();
+                    auto diff_height = row.output_height
+                        ? blockchain.calc_number_of_blocks(row.output_height, height)
+                        : 0;
+                    auto available_amount = attenuation_model::get_available_asset_amount(
+                            asset_amount, diff_height, attenuation_model_param);
+                    locked_amount = asset_amount - available_amount;
+                }
+                else if (asset_amount
+                    && chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
+                    auto is_spendable = blockchain.is_utxo_spendable(tx_temp, row.output.index, tx_height, height);
+                    if (!is_spendable) {
+                        // utxo already in block but is locked with sequence and not mature
+                        locked_amount = asset_amount;
+                    }
+                }
+
+                sh_asset_utxo_vec->emplace_back(utxo_balance{
+                    encode_hash(row.output.hash), row.output.index,
+                    row.output_height, asset_amount, locked_amount, symbol});
+            }
+        }
+    }
+
+    if (sh_asset_utxo_vec->size() > 1) {
+        auto sort_by_amount_descend = [](const utxo_balance& b1, const utxo_balance& b2){
+            return b1.unspent_balance > b2.unspent_balance;
+        };
+        std::sort(sh_asset_utxo_vec->begin(), sh_asset_utxo_vec->end(), sort_by_amount_descend);
+    }
+}
+
 void sync_fetch_locked_balance(const std::string& address,
     bc::blockchain::block_chain_impl& blockchain,
     std::shared_ptr<locked_balance::list> sh_vec,
