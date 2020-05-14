@@ -130,7 +130,8 @@ console_result createrawtx::invoke(Json::Value& jv_output,
                              std::move(option_.symbol), std::move(change_address),
                              std::move(option_.message),
                              option_.fee, option_.locktime,
-                             option_.include_input_script);
+                             option_.include_input_script,
+                             option_.utxo_min_confirm);
         break;
     }
 

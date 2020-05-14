@@ -379,6 +379,8 @@ public:
 
     virtual bool include_input_script() const { return false; }
 
+    virtual uint64_t utxo_min_confirm() const { return transaction_maturity;}
+
 protected:
     bc::blockchain::block_chain_impl& blockchain_;
     tx_type                           tx_; // target transaction
@@ -469,13 +471,15 @@ public:
         std::vector<std::string>&& from_vec, receiver_record::list&& receiver_list,
         std::string&& symbol, std::string&& change,
         std::string&& message, uint64_t fee, uint32_t locktime = 0,
-        bool include_input_script = false)
+        bool include_input_script = false,
+        uint64_t utxo_min_confirm = transaction_maturity)
         : base_transfer_common(blockchain, std::move(receiver_list), fee,
             std::move(symbol), "", std::move(change), locktime)
         , type_{type}
         , message_{std::move(message)}
         , from_vec_{std::move(from_vec)}
         , include_input_script_(include_input_script)
+        , utxo_min_confirm_(utxo_min_confirm)
     {}
 
     virtual ~base_transaction_constructor()
@@ -492,12 +496,14 @@ public:
     void send_tx() override {}
 
     bool include_input_script() const override { return include_input_script_; }
+    uint64_t utxo_min_confirm() const override { return utxo_min_confirm_;}
 
 protected:
     utxo_attach_type                  type_{utxo_attach_type::invalid};
     std::string                       message_;
     std::vector<std::string>          from_vec_; // from address vector
     bool include_input_script_; // set input's script for offline sign
+    uint64_t utxo_min_confirm_;
 };
 
 class BCX_API sending_etp : public base_transfer_helper

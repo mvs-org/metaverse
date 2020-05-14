@@ -1113,7 +1113,7 @@ bool base_transfer_common::get_spendable_output(
         }
     }
 
-    return blockchain_.is_utxo_spendable(tx_temp, row.output.index, row.output_height, height);
+    return blockchain_.is_utxo_spendable(tx_temp, row.output.index, row.output_height, height, utxo_min_confirm());
 }
 
 // only consider etp and asset and cert.

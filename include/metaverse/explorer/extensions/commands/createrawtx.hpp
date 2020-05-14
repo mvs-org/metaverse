@@ -113,6 +113,11 @@ public:
             "fee,f",
             value<uint64_t>(&option_.fee)->default_value(10000),
             "Transaction fee. defaults to 10000 ETP bits"
+        )
+        (
+            "utxominimumconfirmations,c",
+            value<uint64_t>(&option_.utxo_min_confirm)->default_value(transaction_maturity),
+            "Create transaction with the utxo minimum confirmations. defaults to 3"
         );
 
         return options;
@@ -144,6 +149,7 @@ public:
         uint64_t fee;
         uint32_t locktime;
         bool include_input_script;
+        uint64_t utxo_min_confirm;
 
     } option_;
 

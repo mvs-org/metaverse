@@ -448,7 +448,7 @@ public:
 
     uint32_t get_median_time_past(uint64_t height) const;
     bool is_utxo_spendable(const chain::transaction& tx, uint32_t index,
-                           uint64_t tx_height, uint64_t latest_height) const;
+                           uint64_t tx_height, uint64_t latest_height, uint64_t confirmations = transaction_maturity) const;
 
     static bool is_valid_symbol(const std::string& symbol, uint32_t tx_version);
     static bool is_valid_did_symbol(const std::string& symbol,  bool check_sensitive = false);
