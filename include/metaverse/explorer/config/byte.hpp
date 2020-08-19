@@ -61,6 +61,7 @@ public:
      * @param[in]  other  The object to copy into self on construct.
      */
     byte(const byte& other);
+    byte& operator=(const byte& other) = default;
 
     /**
      * Overload cast to internal type.

@@ -41,10 +41,8 @@ QRENCODE_ARCHIVE="qrencode-3.4.4.tar.bz2"
 
 # Boost archive.
 #------------------------------------------------------------------------------
-BOOST_URL="https://raw.githubusercontent.com/jowenshaw/boost-tarball/master/boost_1_58_0.tar.bz2"
-# the following URL is not stable, sometimes it is unable to connect.
-#BOOST_URL="http://downloads.sourceforge.net/project/boost/boost/1.58.0/boost_1_58_0.tar.bz2"
-BOOST_ARCHIVE="boost_1_58_0.tar.bz2"
+BOOST_URL="https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz"
+BOOST_ARCHIVE="boost_1_69_0.tar.gz"
 
 # miniupnpc archive
 #------------------------------------------------------------------------------
@@ -639,10 +637,10 @@ build_from_tarball_boost()
     if [ ! -f $ARCHIVE ];then
         # Extract the source locally.
         wget -c --output-document $ARCHIVE $URL
-        tar --extract --file $ARCHIVE --$COMPRESSION --strip-components=1
     else
         display_heading_message "Skip download $ARCHIVE"
     fi
+    tar --extract --file $ARCHIVE --$COMPRESSION --strip-components=1
 
     initialize_boost_configuration
     initialize_boost_icu_configuration
@@ -795,7 +793,7 @@ build_all()
 {
     build_from_tarball $UPNPC_URL $UPNPC_ARCHIVE gzip . $PARALLEL "$BUILD_UPNPC" "${UPNPC_OPTIONS[@]}" "$@"
     build_from_tarball $ZMQ_URL $ZMQ_ARCHIVE gzip . $PARALLEL "yes" "${ZMQ_OPTIONS[@]}" "$@"
-    build_from_tarball_boost $BOOST_URL $BOOST_ARCHIVE bzip2 . $PARALLEL "$BUILD_BOOST" "${BOOST_OPTIONS[@]}"
+    build_from_tarball_boost $BOOST_URL $BOOST_ARCHIVE gzip . $PARALLEL "$BUILD_BOOST" "${BOOST_OPTIONS[@]}"
     build_from_github mvs-org secp256k1 master $PARALLEL ${SECP256K1_OPTIONS[@]} "$@"
 }
 

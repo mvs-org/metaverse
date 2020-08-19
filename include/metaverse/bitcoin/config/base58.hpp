@@ -58,6 +58,7 @@ public:
      * @param[in]  other  The object to copy into self on construct.
      */
     base58(const base58& other);
+    base58& operator=(const base58& other) = default;
 
     /**
      * Overload cast to internal type.

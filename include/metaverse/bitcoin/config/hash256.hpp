@@ -52,6 +52,7 @@ public:
      * @param[in]  other  The object to copy into self on construct.
      */
     hash256(const hash256& other);
+    hash256& operator=(const hash256& other) = default;
 
     /**
      * Initialization constructor.

@@ -58,6 +58,7 @@ public:
      * @param[in]  other  The object to copy into self on construct.
      */
     hash160(const hash160& other);
+    hash160& operator=(const hash160& other) = default;
 
     /**
      * Overload cast to internal type.

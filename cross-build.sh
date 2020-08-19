@@ -46,7 +46,6 @@ prepare_qemu(){
     sudo apt-get install qemu-user-static
 }
 
-# 环境准备
 docker_prepare(){
     arch=$@
 
