@@ -58,6 +58,7 @@ public:
      * @param[in]  other  The object to copy into self on construct.
      */
     base64(const base64& other);
+    base64& operator=(const base64& other) = default;
 
     /**
      * Overload cast to internal type.

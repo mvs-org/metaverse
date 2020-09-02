@@ -71,6 +71,7 @@ public:
      * @param[in]  other  The object to copy into self on construct.
      */
     checkpoint(const checkpoint& other);
+    checkpoint& operator=(const checkpoint& other) = default;
 
     /**
      * Initialization constructor.

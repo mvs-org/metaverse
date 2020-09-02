@@ -58,6 +58,7 @@ public:
      * @param[in]  other  The object to copy into self on construct.
      */
     encoding(const encoding& other);
+    encoding& operator=(const encoding& other) = default;
 
     /**
      * Return a reference to the data member.

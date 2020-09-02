@@ -66,6 +66,7 @@ public:
      * @param[in]  other  The object to copy into self on construct.
      */
     sodium(const sodium& other);
+    sodium& operator=(const sodium&) = default;
 
     /**
      * Getter.

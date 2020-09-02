@@ -268,7 +268,8 @@ public:
         return CScriptNum(-m_value);
     }
 
-    inline CScriptNum& operator=( const int64_t& rhs)
+    CScriptNum& operator=( const CScriptNum&) = default;
+    CScriptNum& operator=( const int64_t& rhs)
     {
         m_value = rhs;
         return *this;
@@ -392,8 +393,7 @@ protected:
         return *this;
     }
 public:
-    CScript() { }
-    CScript(const CScript& b) : CScriptBase(b.begin(), b.end()) { }
+    CScript() = default;
     CScript(const_iterator pbegin, const_iterator pend) : CScriptBase(pbegin, pend) { }
     CScript(std::vector<unsigned char>::const_iterator pbegin, std::vector<unsigned char>::const_iterator pend) : CScriptBase(pbegin, pend) { }
     CScript(const unsigned char* pbegin, const unsigned char* pend) : CScriptBase(pbegin, pend) { }
