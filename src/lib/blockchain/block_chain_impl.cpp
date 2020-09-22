@@ -666,7 +666,7 @@ void block_chain_impl::fetch_block_locator(block_locator_fetch_handler handler)
                 locator);
 
         const auto indexes = block_locator_indexes(top_height);
-        for (const auto index: indexes)
+        for (const auto& index: indexes)
         {
             hash_digest hash;
             auto found = false;
@@ -2369,7 +2369,7 @@ std::shared_ptr<did_detail::list> block_chain_impl::get_registered_dids()
         return nullptr;
 
     auto sp_blockchain_vec = database_.dids.get_blockchain_dids();
-    for (const auto &each : *sp_blockchain_vec){
+    for (const auto& each : *sp_blockchain_vec){
         if (each.get_status() == blockchain_did::address_current){
             sp_vec->emplace_back(each.get_did());
         }

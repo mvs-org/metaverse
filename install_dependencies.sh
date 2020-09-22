@@ -46,8 +46,8 @@ BOOST_ARCHIVE="boost_1_69_0.tar.gz"
 
 # miniupnpc archive
 #------------------------------------------------------------------------------
-UPNPC_URL="http://miniupnp.tuxfamily.org/files/miniupnpc-2.0.tar.gz"
-UPNPC_ARCHIVE="miniupnpc-2.0.tar.gz"
+UPNPC_URL="http://miniupnp.free.fr/files/miniupnpc-2.1.tar.gz"
+UPNPC_ARCHIVE="miniupnpc-2.1.tar.gz"
 
 
 # Define utility functions.

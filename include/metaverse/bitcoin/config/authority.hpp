@@ -57,6 +57,7 @@ public:
      * @param[in]  other  The object to copy into self on construct.
      */
     authority(const authority& other);
+    authority& operator=(const authority& other) = default;
 
     /**
      * Initialization constructor.

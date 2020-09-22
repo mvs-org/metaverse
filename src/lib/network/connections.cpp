@@ -66,7 +66,7 @@ void connections::stop(const code& ec)
     ///////////////////////////////////////////////////////////////////////////
 
     // Channel stop handlers should remove channels from list.
-    for (const auto channel: channels)
+    for (const auto& channel: channels)
         channel->stop(ec);
 }
 

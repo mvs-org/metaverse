@@ -329,7 +329,7 @@ bool protocol_block_in::handle_receive_not_found(const code& ec,
 
     // The peer cannot locate a block that it told us it had.
     // This only results from reorganization assuming peer is proper.
-    for (const auto hash: hashes)
+    for (const auto& hash: hashes)
     {
         log::trace(LOG_NODE)
             << "Block not_found [" << encode_hash(hash) << "] from ["
@@ -454,7 +454,7 @@ bool protocol_block_in::handle_reorganized(const code& ec, size_t fork_point,
 
     // Report the blocks that originated from this peer.
     // If originating peer is dropped there will be no report here.
-    for (const auto block: incoming)
+    for (const auto& block: incoming)
         if (block->originator() == nonce())
             log::trace(LOG_NODE)
                 << "Block [" << encode_hash(block->header.hash()) << "] from ["

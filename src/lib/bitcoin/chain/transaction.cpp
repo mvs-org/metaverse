@@ -211,11 +211,11 @@ std::string transaction::to_string(uint32_t flags) const
         << "\tlocktime = " << locktime << "\n"
         << "Inputs:\n";
 
-    for (const auto input: inputs)
+    for (const auto& input: inputs)
         value << input.to_string(flags);
 
     value << "Outputs:\n";
-    for (const auto output: outputs)
+    for (const auto& output: outputs)
         value << output.to_string(flags);
 
     value << "\n";
