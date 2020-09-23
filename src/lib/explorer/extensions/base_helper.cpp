@@ -1216,9 +1216,15 @@ void base_transfer_common::sync_fetchutxo(
 
             // check cert symbol
             if (cert_type == asset_cert_ns::domain) {
-                auto&& domain = asset_cert::get_domain(symbol_);
-                if (domain != asset_symbol)
-                    continue;
+                if (symbol_.size() > 0) {
+                    auto&& domain = asset_cert::get_domain(symbol_); 
+                    if (domain != asset_symbol)
+                        continue;
+                } else {
+                    if (payment_domain_set_.find(asset_symbol) == payment_domain_set_.end()) {
+                        continue;
+                    }
+                }
             }
             else if (cert_type == asset_cert_ns::witness) {
                 auto&& primary = asset_cert::get_primary_witness_symbol(symbol_);
