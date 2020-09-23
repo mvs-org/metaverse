@@ -58,6 +58,7 @@ public:
      * @param[in]  other  The object to copy into self on construct.
      */
     base2(const base2& other);
+    base2& operator=(const base2& other) = default;
 
     /**
      * Get number of bits in value.

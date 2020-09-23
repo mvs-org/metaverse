@@ -96,8 +96,6 @@ public:
     explicit RefAlreadyExistsException(string_view what) noexcept : AlreadyExistsException{what}
     {
     }
-    RefAlreadyExistsException() noexcept = default;
-
     ~RefAlreadyExistsException() noexcept override;
 
     // Copy.

@@ -63,6 +63,7 @@ public:
      * @param[in]  other  The object to copy into self on construct.
      */
     transaction(const transaction& other);
+    transaction& operator=(const transaction& other) = default;
 
     /**
      * Return a reference to the data member.

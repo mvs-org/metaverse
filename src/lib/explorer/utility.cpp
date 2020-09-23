@@ -77,7 +77,7 @@ std::vector<std::string> numbers_to_strings(
     const chain::point::indexes& indexes)
 {
     std::vector<std::string> stringlist;
-    for (const auto index: indexes)
+    for (const auto& index: indexes)
         stringlist.push_back(std::to_string(index));
 
     return stringlist;

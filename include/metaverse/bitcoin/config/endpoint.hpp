@@ -57,6 +57,7 @@ public:
      * @param[in]  other  The object to copy into self on construct.
      */
     endpoint(const endpoint& other);
+    endpoint& operator=(const endpoint& other) = default;
 
     /**
      * Initialization constructor.

@@ -130,7 +130,7 @@ static std::string escape(const std::string& in, bool (*is_valid)(char))
 {
     std::ostringstream stream;
     stream << std::hex << std::uppercase << std::setfill('0');
-    for (const auto c: in)
+    for (const auto c : in)
     {
         if (is_valid(c))
             stream << c;

@@ -130,7 +130,8 @@ console_result createrawtx::invoke(Json::Value& jv_output,
                              std::move(option_.symbol), std::move(change_address),
                              std::move(option_.message),
                              option_.fee, option_.locktime,
-                             option_.include_input_script);
+                             option_.include_input_script,
+                             option_.utxo_min_confirm);
         break;
     }
 
@@ -142,7 +143,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
 
     chain::history::list utxo_list;
     std::unordered_map<chain::input_point, uint32_t> utxo_seq_map; //((hash, index), sequence)
-    for (const std::string utxo : option_.utxos) {
+    for (const std::string& utxo : option_.utxos) {
         const auto utxo_stru = bc::split(utxo, ":");
         if ((utxo_stru.size() != 2) && (utxo_stru.size() != 3)) {
             throw argument_legality_exception{"invalid utxo: " + utxo};

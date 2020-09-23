@@ -188,7 +188,7 @@ history_compact::list history_database::get(const short_hash& key,
     const auto start = rows_multimap_.lookup(key);
     const auto records = record_multimap_iterable(rows_list_, start);
 
-    for (const auto index: records)
+    for (const auto& index: records)
     {
         // Stop once we reach the limit (if specified).
         if (limit > 0 && result.size() >= limit)

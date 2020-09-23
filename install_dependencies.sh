@@ -10,6 +10,7 @@
 # The default build directory.
 #------------------------------------------------------------------------------
 BUILD_DIR="build-mvs-dependencies"
+BUILD_FILE="built.txt"
 
 # ICU archive.
 #------------------------------------------------------------------------------
@@ -40,15 +41,13 @@ QRENCODE_ARCHIVE="qrencode-3.4.4.tar.bz2"
 
 # Boost archive.
 #------------------------------------------------------------------------------
-BOOST_URL="https://raw.githubusercontent.com/jowenshaw/boost-tarball/master/boost_1_58_0.tar.bz2"
-# the following URL is not stable, sometimes it is unable to connect.
-#BOOST_URL="http://downloads.sourceforge.net/project/boost/boost/1.58.0/boost_1_58_0.tar.bz2"
-BOOST_ARCHIVE="boost_1_58_0.tar.bz2"
+BOOST_URL="https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz"
+BOOST_ARCHIVE="boost_1_69_0.tar.gz"
 
 # miniupnpc archive
 #------------------------------------------------------------------------------
-UPNPC_URL="http://miniupnp.tuxfamily.org/files/miniupnpc-2.0.tar.gz"
-UPNPC_ARCHIVE="miniupnpc-2.0.tar.gz"
+UPNPC_URL="http://miniupnp.free.fr/files/miniupnpc-2.1.tar.gz"
+UPNPC_ARCHIVE="miniupnpc-2.1.tar.gz"
 
 
 # Define utility functions.
@@ -122,6 +121,7 @@ make_current_directory()
     make_jobs $JOBS
     sudo make install
     configure_links
+    touch $BUILD_FILE
 }
 
 # make_jobs jobs [make_options]
@@ -232,6 +232,7 @@ for OPTION in "$@"; do
         (--build-boost)    BUILD_BOOST="yes";;
         (--build-upnpc)    BUILD_UPNPC="yes";;
         (--build-dir=*)    BUILD_DIR="${OPTION#*=}";;
+        (--build-arm)      BOOST_ARM="architecture=arm";;
 
         # Standard build options.
         (--prefix=*)       PREFIX="${OPTION#*=}";;
@@ -480,9 +481,25 @@ build_from_tarball()
     create_directory "$EXTRACT"
     push_directory "$EXTRACT"
 
+    # return if already compiled
+    if [ -f $BUILD_FILE ];then
+        echo "already build, skip..."
+        pop_directory
+        pop_directory
+        return
+    fi
+
+    # skip download if exist
     # Extract the source locally.
-    wget --output-document $ARCHIVE $URL
-    tar --extract --file $ARCHIVE --$COMPRESSION --strip-components=1
+    if [ ! -f $ARCHIVE ];then
+        wget -c --output-document $ARCHIVE $URL
+        tar --extract --file $ARCHIVE --$COMPRESSION --strip-components=1
+    else
+        display_heading_message "Skip Download $ARCHIVE"
+    fi
+
+    display_heading_message "Compile $ARCHIVE"
+    
     push_directory "$PUSH_DIR"
 
     # Enable static only zlib build.
@@ -498,11 +515,13 @@ build_from_tarball()
         make_jobs $JOBS --silent
         sudo INSTALLPREFIX=$PREFIX make install
         configure_links
+        touch $BUILD_FILE
     else
         configure_options "${CONFIGURATION[@]}"
         make_jobs $JOBS --silent
         sudo make install
         configure_links
+        touch $BUILD_FILE
     fi
 
     # Enable shared only zlib build.
@@ -607,8 +626,20 @@ build_from_tarball_boost()
     create_directory "$EXTRACT"
     push_directory "$EXTRACT"
 
-    # Extract the source locally.
-    wget --output-document $ARCHIVE $URL
+    # return if already compiled
+    if [ -f $BUILD_FILE ];then
+        echo "already build, skip..."
+        pop_directory
+        pop_directory
+        return
+    fi
+    
+    if [ ! -f $ARCHIVE ];then
+        # Extract the source locally.
+        wget -c --output-document $ARCHIVE $URL
+    else
+        display_heading_message "Skip download $ARCHIVE"
+    fi
     tar --extract --file $ARCHIVE --$COMPRESSION --strip-components=1
 
     initialize_boost_configuration
@@ -616,6 +647,7 @@ build_from_tarball_boost()
 
     display_message "Libbitcoin boost configuration."
     display_message "--------------------------------------------------------------------"
+    display_message "arm                   : $BOOST_ARM"
     display_message "variant               : release"
     display_message "threading             : multi"
     display_message "toolset               : $CC"
@@ -648,6 +680,7 @@ build_from_tarball_boost()
         "--with-icu=$ICU_PREFIX"
 
     sudo ./b2 install \
+        "$BOOST_ARM" \
         "variant=release" \
         "threading=multi" \
         "$BOOST_TOOLSET" \
@@ -668,6 +701,8 @@ build_from_tarball_boost()
         "--prefix=$PREFIX" \
         "$@"
 
+    touch $BUILD_FILE
+
     pop_directory
     pop_directory
 }
@@ -686,10 +721,20 @@ build_from_github()
 
     FORK="$ACCOUNT/$REPO"
     display_heading_message "Download $FORK/$BRANCH"
+    if [ ! -d $REPO ];then
+        # Clone the repository locally.
+        git clone --depth 1 --branch $BRANCH --single-branch "https://github.com/$FORK"
+    else
+        display_heading_message "Skip clone $REPO"
+    fi
 
-    # Clone the repository locally.
-    git clone --depth 1 --branch $BRANCH --single-branch "https://github.com/$FORK"
-
+    # return if already compiled
+    if [ -f $REPO/$BUILD_FILE ];then
+        echo "already build, skip..."
+        pop_directory
+        return
+    fi
+    
     # Join generated and command line options.
     local CONFIGURATION=("${OPTIONS[@]}" "$@")
 
@@ -748,7 +793,7 @@ build_all()
 {
     build_from_tarball $UPNPC_URL $UPNPC_ARCHIVE gzip . $PARALLEL "$BUILD_UPNPC" "${UPNPC_OPTIONS[@]}" "$@"
     build_from_tarball $ZMQ_URL $ZMQ_ARCHIVE gzip . $PARALLEL "yes" "${ZMQ_OPTIONS[@]}" "$@"
-    build_from_tarball_boost $BOOST_URL $BOOST_ARCHIVE bzip2 . $PARALLEL "$BUILD_BOOST" "${BOOST_OPTIONS[@]}"
+    build_from_tarball_boost $BOOST_URL $BOOST_ARCHIVE gzip . $PARALLEL "$BUILD_BOOST" "${BOOST_OPTIONS[@]}"
     build_from_github mvs-org secp256k1 master $PARALLEL ${SECP256K1_OPTIONS[@]} "$@"
 }
 

@@ -169,6 +169,7 @@ struct utxo_balance {
     uint64_t output_height;
     uint64_t unspent_balance;
     uint64_t frozen_balance;
+    std::string symbol="";
 };
 
 struct balances {
@@ -232,6 +233,10 @@ void sync_fetch_deposited_balance(wallet::payment_address& address,
 void sync_fetch_asset_balance(const std::string& address, bool sum_all,
     bc::blockchain::block_chain_impl& blockchain,
     std::shared_ptr<chain::asset_balances::list> sh_asset_vec);
+void sync_fetch_asset_balance(const std::string& address, bool sum_all,
+    bc::blockchain::block_chain_impl& blockchain,
+    std::shared_ptr<utxo_balance::list> sh_asset_utxo_vec,
+    uint64_t utxo_min_confirm);
 
 void sync_fetch_asset_deposited_balance(const std::string& address,
     bc::blockchain::block_chain_impl& blockchain,
@@ -302,7 +307,8 @@ public:
         receiver_record::list&& receiver_list, uint64_t fee,
         std::string&& symbol, std::string&& from, std::string&& change,
         uint32_t locktime = 0, uint32_t sequence = bc::max_input_sequence,
-        exclude_range_t exclude_etp_range = {0, 0})
+        exclude_range_t exclude_etp_range = {0, 0},
+        std::set<std::string>&& payment_domain_set = std::set<std::string>())
         : blockchain_{blockchain}
         , symbol_{std::move(symbol)}
         , from_{std::move(from)}
@@ -312,6 +318,7 @@ public:
         , locktime_(locktime)
         , sequence_(sequence)
         , exclude_etp_range_(exclude_etp_range)
+        , payment_domain_set_(std::move(payment_domain_set))
     {
     };
 
@@ -375,6 +382,8 @@ public:
 
     virtual bool include_input_script() const { return false; }
 
+    virtual uint64_t utxo_min_confirm() const { return transaction_maturity;}
+
 protected:
     bc::blockchain::block_chain_impl& blockchain_;
     tx_type                           tx_; // target transaction
@@ -392,6 +401,7 @@ protected:
     uint8_t                           unspent_did_{0};
     uint8_t                           payment_mit_{0};
     uint8_t                           unspent_mit_{0};
+    std::set<std::string>             payment_domain_set_;
     std::vector<receiver_record>      receiver_list_;
     std::vector<address_asset_record> from_list_;
     uint32_t                          locktime_;
@@ -410,10 +420,11 @@ public:
         std::string&& change = std::string(""),
         uint32_t locktime = 0,
         uint32_t sequence = bc::max_input_sequence,
-        exclude_range_t exclude_etp_range = {0, 0})
+        exclude_range_t exclude_etp_range = {0, 0}, 
+        std::set<std::string>&& payment_domain_set = std::set<std::string>())
         : base_transfer_common(blockchain, std::move(receiver_list), fee,
             std::move(symbol), std::move(from),
-            std::move(change), locktime, sequence, exclude_etp_range)
+            std::move(change), locktime, sequence, exclude_etp_range, std::move(payment_domain_set))
         , cmd_{cmd}
         , name_{std::move(name)}
         , passwd_{std::move(passwd)}
@@ -465,13 +476,15 @@ public:
         std::vector<std::string>&& from_vec, receiver_record::list&& receiver_list,
         std::string&& symbol, std::string&& change,
         std::string&& message, uint64_t fee, uint32_t locktime = 0,
-        bool include_input_script = false)
+        bool include_input_script = false,
+        uint64_t utxo_min_confirm = transaction_maturity)
         : base_transfer_common(blockchain, std::move(receiver_list), fee,
             std::move(symbol), "", std::move(change), locktime)
         , type_{type}
         , message_{std::move(message)}
         , from_vec_{std::move(from_vec)}
         , include_input_script_(include_input_script)
+        , utxo_min_confirm_(utxo_min_confirm)
     {}
 
     virtual ~base_transaction_constructor()
@@ -488,12 +501,14 @@ public:
     void send_tx() override {}
 
     bool include_input_script() const override { return include_input_script_; }
+    uint64_t utxo_min_confirm() const override { return utxo_min_confirm_;}
 
 protected:
     utxo_attach_type                  type_{utxo_attach_type::invalid};
     std::string                       message_;
     std::vector<std::string>          from_vec_; // from address vector
     bool include_input_script_; // set input's script for offline sign
+    uint64_t utxo_min_confirm_;
 };
 
 class BCX_API sending_etp : public base_transfer_helper
@@ -769,11 +784,12 @@ public:
     registering_mit(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol, std::map<std::string, std::string>&& mit_map,
+        std::set<std::string>&& payment_domain_set,
         receiver_record::list&& receiver_list,
         uint64_t fee, uint32_t locktime = 0)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list),
-            fee, std::move(symbol), "", locktime)
+            fee, std::move(symbol), "", locktime, bc::max_input_sequence, {0,0}, std::move(payment_domain_set))
         , mit_map_(mit_map)
     {}
 

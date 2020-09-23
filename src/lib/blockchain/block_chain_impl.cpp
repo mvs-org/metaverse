@@ -207,6 +207,18 @@ bool block_chain_impl::check_pos_utxo_capability(
 
 bool block_chain_impl::pos_exist_before(const uint64_t& height) const
 {
+#ifndef PRIVATE_CHAIN
+    if (!settings_.use_testnet_rules) {
+        // block 1924146 is pos genesis block on mainnet.
+        if (height > 1924146) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+#endif
+
     auto pos = pos_enabled_height;
     while (pos++ < height) {
         chain::header header;
@@ -654,7 +666,7 @@ void block_chain_impl::fetch_block_locator(block_locator_fetch_handler handler)
                 locator);
 
         const auto indexes = block_locator_indexes(top_height);
-        for (const auto index: indexes)
+        for (const auto& index: indexes)
         {
             hash_digest hash;
             auto found = false;
@@ -2357,7 +2369,7 @@ std::shared_ptr<did_detail::list> block_chain_impl::get_registered_dids()
         return nullptr;
 
     auto sp_blockchain_vec = database_.dids.get_blockchain_dids();
-    for (const auto &each : *sp_blockchain_vec){
+    for (const auto& each : *sp_blockchain_vec){
         if (each.get_status() == blockchain_did::address_current){
             sp_vec->emplace_back(each.get_did());
         }
@@ -2641,7 +2653,7 @@ code block_chain_impl::broadcast_transaction(const chain::transaction& tx)
         //send_mutex.unlock();
         //ret = true;
         log::trace("broadcast_transaction") << encode_hash(tx_ptr->hash()) << " confirmed";
-    }, [&valid_mutex, &ret, tx_ptr](const code& ec, std::shared_ptr<transaction_message>, chain::point::indexes idx_vec){
+    }, [&valid_mutex, &ret, tx_ptr](const code& ec, transaction_ptr, chain::point::indexes idx_vec){
         log::debug("broadcast_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.size();
         log::debug("broadcast_transaction") << "ec.message=" << ec.message();
         ret = ec;
@@ -3323,10 +3335,25 @@ uint32_t block_chain_impl::get_median_time_past(uint64_t height) const
     return times.empty() ? 0 : times[times.size() / 2];
 }
 
-bool block_chain_impl::is_utxo_spendable(const chain::transaction& tx, uint32_t index, uint64_t tx_height, uint64_t latest_height) const
+bool block_chain_impl::is_utxo_spendable(const chain::transaction& tx, uint32_t index, uint64_t tx_height, uint64_t latest_height, uint64_t confirmations) const
 {
     BITCOIN_ASSERT(index < tx.outputs.size());
     if (index >= tx.outputs.size()){
+        return false;
+    }
+
+    if (confirmations > 0 && 0 == tx_height) {
+        log::debug(LOG_BLOCKCHAIN) << "transaction is not mature" <<
+            " transaction hash =" << encode_hash(tx.hash()) <<
+            " tx_height=" << tx_height <<
+            " latest_height=" << latest_height;
+        return false;
+    }
+    if (confirmations > calc_number_of_blocks(tx_height, latest_height)){
+        log::debug(LOG_BLOCKCHAIN) << "transaction is not mature" <<
+            " transaction hash =" << encode_hash(tx.hash()) <<
+            " tx_height=" << tx_height <<
+            " latest_height=" << latest_height;
         return false;
     }
 
