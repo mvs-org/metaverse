@@ -73,10 +73,10 @@ settings::settings(bc::settings context)
             use_testnet_rules = true;
 
             basic_checkpoints.reserve(1);
-            basic_checkpoints.push_back({ "c359a1cc3dfb8b97111c3e602f1f6de31306926f9ec779cb9ea002edbee91741", 0 });
+            basic_checkpoints.push_back({ "c0ffeecc3dfb8b97111c3e602f1f6de31306926f9ec779cb9ea002edbee91741", 0 });
 
             checkpoints.reserve(1);
-            checkpoints.push_back({ "c359a1cc3dfb8b97111c3e602f1f6de31306926f9ec779cb9ea002edbee91741", 0 });
+            checkpoints.push_back({ "c0ffeecc3dfb8b97111c3e602f1f6de31306926f9ec779cb9ea002edbee91741", 0 });
 
             bc::wallet::ec_private::mainnet_p2kh = 0x7f;
             bc::wallet::ec_public::mainnet_p2kh = 0x7f;
@@ -86,7 +86,7 @@ settings::settings(bc::settings context)
             libbitcoin::coinbase_maturity       = 1;
 
 #ifndef PRIVATE_CHAIN
-            libbitcoin::pos_enabled_height      = 990000;
+            libbitcoin::pos_enabled_height      = 250;
 #endif
             break;
         }
