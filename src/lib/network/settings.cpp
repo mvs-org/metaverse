@@ -81,16 +81,14 @@ settings::settings(bc::settings context)
 
         case bc::settings::testnet:
         {
-            identifier = 0x73766d74;
+            identifier = 0x73766d73;
             inbound_port = 15251;
 
-            seeds.reserve(6);
-            seeds.push_back({ "test-asia.metaverse.live", 15251 });
-            seeds.push_back({ "test-americas.metaverse.live", 15251 });
-            seeds.push_back({ "test-europe.metaverse.live", 15251 });
-            seeds.push_back({ "test-asia.mvs.live", 15251 });
-            seeds.push_back({ "test-americas.mvs.live", 15251 });
-            seeds.push_back({ "test-europe.mvs.live", 15251 });
+            seeds.reserve(4);
+            seeds.push_back({ "seed-testnet.mvs.org", 15251 });
+            seeds.push_back({ "seed-testnet-europe.mvs.org", 15251 });
+            seeds.push_back({ "seed-testnet-americas.mvs.org", 15251 });
+            seeds.push_back({ "seed-testnet-asia.mvs.org", 15251 });
             break;
         }
 
