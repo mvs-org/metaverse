@@ -687,7 +687,7 @@ bool witness::is_dpos_enabled()
 #endif
 
     if (instance_->is_testnet()) {
-        return false;
+        return true;
     }
     else {
         return false;
