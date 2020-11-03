@@ -111,7 +111,7 @@ class String {
     }
     return result;
   }
-  constexpr void assign(const char* rdata, std::size_t rlen) const noexcept
+  constexpr void assign(const char* rdata, std::size_t rlen) noexcept
   {
     len_ = std::min(MaxN, rlen);
     if (len_ > 0) {

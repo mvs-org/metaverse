@@ -1216,9 +1216,15 @@ void base_transfer_common::sync_fetchutxo(
 
             // check cert symbol
             if (cert_type == asset_cert_ns::domain) {
-                auto&& domain = asset_cert::get_domain(symbol_);
-                if (domain != asset_symbol)
-                    continue;
+                if (symbol_.size() > 0) {
+                    auto&& domain = asset_cert::get_domain(symbol_); 
+                    if (domain != asset_symbol)
+                        continue;
+                } else {
+                    if (payment_domain_set_.find(asset_symbol) == payment_domain_set_.end()) {
+                        continue;
+                    }
+                }
             }
             else if (cert_type == asset_cert_ns::witness) {
                 auto&& primary = asset_cert::get_primary_witness_symbol(symbol_);
@@ -2175,7 +2181,7 @@ chain::attachment issuing_asset::populate_output_attachment(const receiver_recor
         BITCOIN_ASSERT(cert_info.has_content());
     }
 
-    return attach;
+    return std::move(attach);
 }
 
 void sending_asset::sum_payment_amount()
@@ -2288,7 +2294,7 @@ chain::attachment secondary_issuing_asset::populate_output_attachment(const rece
         attach.set_attach(ass);
     }
 
-    return attach;
+    return move(attach);
 }
 
 void issuing_asset_cert::sum_payment_amount()
@@ -2470,7 +2476,7 @@ chain::attachment registering_mit::populate_output_attachment(const receiver_rec
         attach.set_attach(ass);
     }
 
-    return attach;
+    return move(attach);
 }
 
 chain::attachment transferring_mit::populate_output_attachment(const receiver_record& record)
@@ -2487,7 +2493,7 @@ chain::attachment transferring_mit::populate_output_attachment(const receiver_re
         attach.set_attach(ass);
     }
 
-    return attach;
+    return move(attach);
 }
 
 chain::operation::stack lock_sending::get_script_operations(const receiver_record& record) const

@@ -133,9 +133,39 @@ console_result registermit::invoke (Json::Value& jv_output,
         throw address_dismatch_account_exception{"target did does not match account. " + to_did};
     }
 
+    std::string cert_symbol;
+    chain::asset_cert_type cert_type = asset_cert_ns::none;
+    std::set<std::string> payment_domain_set;
+
     // receiver
     std::vector<receiver_record> receiver;
     for (auto& pair : mit_map) {
+        // domain cert check
+        auto&& domain = chain::asset_cert::get_domain(pair.first);
+        if (chain::asset_cert::is_valid_domain(domain)) {
+            bool exist = blockchain.is_asset_cert_exist(domain, asset_cert_ns::domain);
+            if (exist) {
+                // if domain cert exists then check whether it belongs to the account.
+                auto cert = blockchain.get_account_asset_cert(auth_.name, domain, asset_cert_ns::domain);
+                if (cert) {
+                    cert_symbol = domain;
+                    cert_type = cert->get_type();
+
+                    payment_domain_set.insert(domain);
+                    receiver.push_back(
+                    {  
+                        to_address, cert_symbol, 0, 0, cert_type,
+                        utxo_attach_type::asset_cert,
+                        chain::attachment("", to_did)
+                    });
+                }
+                else {
+                    throw asset_cert_notfound_exception{
+                        "Domain cert " + pair.first + " exists on the blockchain and is not owned by " + auth_.name};
+                }
+            }
+        }
+
         receiver.push_back(
             {
                 to_address, pair.first, 0, 0, 0,
@@ -147,7 +177,7 @@ console_result registermit::invoke (Json::Value& jv_output,
     auto helper = registering_mit(
                       *this, blockchain,
                       std::move(auth_.name), std::move(auth_.auth),
-                      std::move(to_address), "", std::move(mit_map),
+                      std::move(to_address), "", std::move(mit_map), std::move(payment_domain_set),
                       std::move(receiver), argument_.fee);
 
     helper.exec();

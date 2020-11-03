@@ -182,7 +182,7 @@ bool p2p_node::handle_reorganized(const code& ec, size_t fork_point,
         return false;
     }
 
-    for (const auto block: outgoing)
+    for (const auto& block: outgoing)
         log::debug(LOG_NODE)
             << "Reorganization discarded block ["
             << encode_hash(block->header.hash()) << "]";

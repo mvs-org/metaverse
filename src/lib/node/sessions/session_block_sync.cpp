@@ -91,7 +91,7 @@ void session_block_sync::handle_started(const code& ec, result_handler handler)
     const auto complete = synchronize(handler, table.size(), NAME);
     std::function<void(const code&)> func = complete;
     // This is the end of the start sequence.
-    for (const auto row: table)
+    for (const auto& row: table)
         new_connection(connector, row, [func](const code& ec){
         func(ec);
     });

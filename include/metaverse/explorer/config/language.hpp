@@ -61,6 +61,7 @@ public:
      * @param[in]  other  The object to copy into self on construct.
      */
     language(const language& other);
+    language& operator=(const language& other) = default;
 
     /**
      * Overload cast to internal type.

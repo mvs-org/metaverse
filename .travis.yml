@@ -1,7 +1,7 @@
 language: cpp
 
 sudo: required
-dist: trusty
+dist: focal
 
 matrix:
   include:
@@ -11,20 +11,19 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - sourceline: 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main'
+            - sourceline: 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
-            - clang-5.0
+            - clang
             - cmake
             - cmake-data
-            - g++-5
             - libgmp-dev
       env:
-        - CMAKE_BUILD_TYPE=DEBUG
-        - CMAKE_C_COMPILER=clang-5.0
-        - CMAKE_CXX_COMPILER=clang++-5.0
+        - CMAKE_BUILD_TYPE=RELEASE
+        - CMAKE_C_COMPILER=clang-10
+        - CMAKE_CXX_COMPILER=clang++-10
         - ENABLE_SHARED_LIBS=OFF
-        - USE_UPNP=ON
+        - USE_UPNP=OFF
 
     - os: linux
       compiler: clang
@@ -32,76 +31,62 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - sourceline: 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main'
+            - sourceline: 'deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
-            - clang-5.0
+            - clang
             - cmake
             - cmake-data
-            - g++-5
             - libgmp-dev
       env:
-        - CMAKE_BUILD_TYPE=RELEASE
-        - CMAKE_C_COMPILER=clang-5.0
-        - CMAKE_CXX_COMPILER=clang++-5.0
+        - CMAKE_BUILD_TYPE=DEBUG
+        - CMAKE_C_COMPILER=clang-10
+        - CMAKE_CXX_COMPILER=clang++-10
         - ENABLE_SHARED_LIBS=OFF
         - USE_UPNP=ON
 
     - os: linux
       compiler: g++
+      arch: arm64
       addons:
         apt:
-          sources:
-            - ubuntu-toolchain-r-test
           packages:
             - cmake
             - cmake-data
-            - g++-5
+            - g++-9
             - libgmp-dev
       env:
-        - CMAKE_BUILD_TYPE=DEBUG
-        - CMAKE_C_COMPILER=gcc-5
-        - CMAKE_CXX_COMPILER=g++-5
+        - CMAKE_BUILD_TYPE=RELEASE
+        - CMAKE_C_COMPILER=gcc-9
+        - CMAKE_CXX_COMPILER=g++-9
         - ENABLE_SHARED_LIBS=OFF
-        - USE_UPNP=ON
+        - USE_UPNP=OFF
 
     - os: linux
       compiler: g++
       addons:
         apt:
-          sources:
-            - ubuntu-toolchain-r-test
           packages:
             - cmake
             - cmake-data
-            - g++-5
+            - g++-9
             - libgmp-dev
       env:
-        - CMAKE_BUILD_TYPE=RELEASE
-        - CMAKE_C_COMPILER=gcc-5
-        - CMAKE_CXX_COMPILER=g++-5
-        - ENABLE_SHARED_LIBS=OFF
-        - USE_UPNP=ON
-
-    - os: osx
-      osx_image: xcode8.3
-      compiler: clang++
-      env:
         - CMAKE_BUILD_TYPE=DEBUG
-        - CMAKE_C_COMPILER=clang
-        - CMAKE_CXX_COMPILER=clang++
+        - CMAKE_C_COMPILER=gcc-9
+        - CMAKE_CXX_COMPILER=g++-9
         - ENABLE_SHARED_LIBS=OFF
         - USE_UPNP=ON
 
     - os: osx
-      osx_image: xcode8.3
+      osx_image: xcode11.6
       compiler: clang++
       env:
         - CMAKE_BUILD_TYPE=RELEASE
         - CMAKE_C_COMPILER=clang
         - CMAKE_CXX_COMPILER=clang++
         - ENABLE_SHARED_LIBS=OFF
-        - USE_UPNP=ON
+        - USE_UPNP=OFF
 
 before_install:
   - BUILD_PACKAGES="";

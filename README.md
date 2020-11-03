@@ -16,11 +16,11 @@ Metaverse(MVS) is a decentralised system based on the blockchain technology, thr
 # Building MVS
 
 ## Compiler requirements
-| Compilier | Minimum Version |
-| ---------| ---------------- |
-| gcc/g++ |   5.0             |
-| clang++ |   3.4 (8.0.0)     |
-| MSVC    |   19.0 (VS2015)   |
+| Compilier | Minimum Version | Recommanded Version |
+| ---------| ---------------- | ------------------- |
+| gcc/g++ |   5.0             | 9.0.0+  |
+| clang++ |   3.4 (8.0.0)     | 10.0.0+ |
+| MSVC    |   19.0 (VS2015)   | VS2019  |
 
 C++ compiler support [C++14](http://en.cppreference.com/w/cpp/compiler_support) standard or newer.
 Dependencies of MVS binaris are **static linked** (including libstdc++).

@@ -562,7 +562,7 @@ void transaction_pool::delete_confirmed_in_blocks(const block_list& blocks)
     if (stopped() || buffer_.empty())
         return;
 
-    for (const auto block : blocks)
+    for (const auto& block : blocks)
         for (const auto& tx : block->transactions)
             delete_single(tx.hash(), error::success);
 }
@@ -573,7 +573,7 @@ void transaction_pool::delete_spent_in_blocks(const block_list& blocks)
     if (stopped() || buffer_.empty())
         return;
 
-    for (const auto block : blocks)
+    for (const auto& block : blocks)
         for (const auto& tx : block->transactions)
             for (const auto& input : tx.inputs)
                 delete_dependencies(input.previous_output,

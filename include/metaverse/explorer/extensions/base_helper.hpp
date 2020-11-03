@@ -307,7 +307,8 @@ public:
         receiver_record::list&& receiver_list, uint64_t fee,
         std::string&& symbol, std::string&& from, std::string&& change,
         uint32_t locktime = 0, uint32_t sequence = bc::max_input_sequence,
-        exclude_range_t exclude_etp_range = {0, 0})
+        exclude_range_t exclude_etp_range = {0, 0},
+        std::set<std::string>&& payment_domain_set = std::set<std::string>())
         : blockchain_{blockchain}
         , symbol_{std::move(symbol)}
         , from_{std::move(from)}
@@ -317,6 +318,7 @@ public:
         , locktime_(locktime)
         , sequence_(sequence)
         , exclude_etp_range_(exclude_etp_range)
+        , payment_domain_set_(std::move(payment_domain_set))
     {
     };
 
@@ -399,6 +401,7 @@ protected:
     uint8_t                           unspent_did_{0};
     uint8_t                           payment_mit_{0};
     uint8_t                           unspent_mit_{0};
+    std::set<std::string>             payment_domain_set_;
     std::vector<receiver_record>      receiver_list_;
     std::vector<address_asset_record> from_list_;
     uint32_t                          locktime_;
@@ -417,10 +420,11 @@ public:
         std::string&& change = std::string(""),
         uint32_t locktime = 0,
         uint32_t sequence = bc::max_input_sequence,
-        exclude_range_t exclude_etp_range = {0, 0})
+        exclude_range_t exclude_etp_range = {0, 0}, 
+        std::set<std::string>&& payment_domain_set = std::set<std::string>())
         : base_transfer_common(blockchain, std::move(receiver_list), fee,
             std::move(symbol), std::move(from),
-            std::move(change), locktime, sequence, exclude_etp_range)
+            std::move(change), locktime, sequence, exclude_etp_range, std::move(payment_domain_set))
         , cmd_{cmd}
         , name_{std::move(name)}
         , passwd_{std::move(passwd)}
@@ -780,11 +784,12 @@ public:
     registering_mit(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol, std::map<std::string, std::string>&& mit_map,
+        std::set<std::string>&& payment_domain_set,
         receiver_record::list&& receiver_list,
         uint64_t fee, uint32_t locktime = 0)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list),
-            fee, std::move(symbol), "", locktime)
+            fee, std::move(symbol), "", locktime, bc::max_input_sequence, {0,0}, std::move(payment_domain_set))
         , mit_map_(mit_map)
     {}
 

@@ -66,7 +66,7 @@ public:
         // We cannot use a synchronizer here because handler closure in loop.
         auto counter = std::make_shared<std::atomic<size_t>>(channels_.size());
 
-        for (const auto channel: safe_copy())
+        for (const auto& channel : safe_copy())
         {
             const auto handle_send = [=](code ec)
             {
@@ -85,7 +85,7 @@ public:
     template <class Message>
     void subscribe(message_handler<Message>&& handler)
     {
-        for (const auto channel: safe_copy())
+        for (const auto& channel : safe_copy())
         {
             auto handler_copy = handler;
             channel->subscribe(std::move(handler_copy));//by jianglh
