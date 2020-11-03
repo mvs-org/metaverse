@@ -184,7 +184,11 @@ void validate_transaction::reset(uint64_t last_height)
     value_in_ = 0;
     asset_amount_in_ = 0;
     asset_certs_in_.clear();
-    old_symbol_in_ = "";
+
+    old_asset_symbol_in_ = "";
+    old_did_symbol_in_ = "";
+    old_mit_symbol_in_ = "";
+
     old_cert_symbol_in_ = "";
 }
 
@@ -985,13 +989,7 @@ code validate_transaction::check_asset_mit_transaction() const
             auto&& asset_info = output.get_asset_mit();
             asset_symbol = asset_info.get_symbol();
         }
-        else if (output.is_etp()) {
-            if (!check_same(asset_address, output.get_script_address())) {
-                log::debug(LOG_BLOCKCHAIN) << "MIT: "
-                                           << " address is not same. "
-                                           << asset_address << " != " << output.get_script_address();
-                return error::mit_register_error;
-            }
+        else if (output.is_etp() || output.is_asset_transfer()) {
         }
         else if (output.is_asset_cert()) {
             asset_cert&& cert_info = output.get_asset_cert();
@@ -1032,13 +1030,7 @@ code validate_transaction::check_asset_mit_transaction() const
         }
 
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
-        if (prev_output.is_etp()) {
-            auto&& asset_address_in = prev_output.get_script_address();
-            if (asset_address != asset_address_in) {
-                log::debug(LOG_BLOCKCHAIN) << "MIT: invalid input address to pay fee: "
-                                            << asset_address_in << " != " << asset_address;
-                return error::validate_inputs_failed;
-            }
+        if (prev_output.is_etp() || prev_output.is_asset()) {
         }
         else if (prev_output.is_asset_mit()) {
             auto&& asset_info = prev_output.get_asset_mit();
@@ -1807,7 +1799,7 @@ bool validate_transaction::connect_input( const transaction& previous_tx, uint64
         asset_transfer_amount = previous_output.get_asset_amount();
 
         // 2. do asset symbol check
-        if (!check_same(old_symbol_in_, new_symbol_in)) {
+        if (!check_same(old_asset_symbol_in_, new_symbol_in)) {
             return false;
         }
         // check forbidden symbol
@@ -1822,13 +1814,13 @@ bool validate_transaction::connect_input( const transaction& previous_tx, uint64
         }
     }
     else if (previous_output.is_asset_mit()) {
-        if (!check_same(old_symbol_in_, previous_output.get_asset_mit_symbol())) {
+        if (!check_same(old_mit_symbol_in_, previous_output.get_asset_mit_symbol())) {
             return false;
         }
     }
     else if (previous_output.is_did()) {
         // 1. do did symbol check
-        if (!check_same(old_symbol_in_, previous_output.get_did_symbol())) {
+        if (!check_same(old_did_symbol_in_, previous_output.get_did_symbol())) {
             return false;
         }
     }
@@ -1963,11 +1955,14 @@ bool validate_transaction::check_asset_symbol(const transaction& tx) const
 {
     for (const auto& output : tx.outputs) {
         if (output.is_asset()) {
-            if (old_symbol_in_ != output.get_asset_symbol()) {
+            if (old_asset_symbol_in_ != output.get_asset_symbol()) {
                 return false;
             }
         }
         else if (output.is_asset_cert()) { // asset cert related
+            continue;
+        }
+        else if (output.is_asset_mit_transfer()) {
             continue;
         }
         else if (!output.is_etp() && !output.is_message()) {
@@ -2088,11 +2083,11 @@ bool validate_transaction::check_asset_mit(const transaction& tx) const
             }
 
             auto&& asset_info = output.get_asset_mit();
-            if (old_symbol_in_ != asset_info.get_symbol()) {
+            if (old_mit_symbol_in_ != asset_info.get_symbol()) {
                 return false;
             }
         }
-        else if (!output.is_etp() && !output.is_message()) {
+        else if (!output.is_etp() && !output.is_asset_transfer() && !output.is_message()) {
             return false;
         }
     }
@@ -2104,7 +2099,7 @@ bool validate_transaction::check_did_symbol_match(const transaction& tx) const
 {
     for (const auto& output : tx.outputs) {
         if (output.is_did()) {
-            if (old_symbol_in_ != output.get_did_symbol()) {
+            if (old_did_symbol_in_ != output.get_did_symbol()) {
                 return false;
             }
         }
