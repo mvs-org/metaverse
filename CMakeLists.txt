@@ -21,14 +21,14 @@ IF(NOT CMAKE_EXPORT_COMPILE_COMMANDS)
 ENDIF()
 
 # --------------- Compiler Settings ------------------
-# Common Definitions 
+# Common Definitions
 
 IF(${CMAKE_CXX_COMPILER} MATCHES .*android.*)
     SET(ANDROID 1)
 ENDIF()
 
 SET(COMMON_WARN "-Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-type-limits -Wno-deprecated-declarations")
-if (NOT ANDROID) 
+if (NOT ANDROID)
 		SET(COMMON_WARN "${COMMON_WARN} -Werror")
 endif()
 SET(COMMON_FLAGS "-fvisibility=hidden")
@@ -67,7 +67,6 @@ SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/lib")
 
 FILE(MAKE_DIRECTORY "${EXECUTABLE_OUTPUT_PATH}")
 FILE(MAKE_DIRECTORY "${LIBRARY_OUTPUT_PATH}")
-FILE(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/share/doc/html")
 
 SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/etc")
 SET(CMAKE_INSTALL_PREFIX "/usr/local/")
@@ -98,28 +97,6 @@ program_options regex thread)
 
 FIND_PACKAGE(secp256k1 REQUIRED)
 FIND_PACKAGE(ZeroMQ 4.2.0 REQUIRED)
-
-# ---------------- Doxygen --------------------
-FIND_PROGRAM(ENV_EXECUTABLE env QUIET)
-FIND_PROGRAM(DOT_EXECUTABLE dot QUIET)
-FIND_PACKAGE(Doxygen QUIET)          # Optional.
-
-IF(DOXYGEN_FOUND)
-  CONFIGURE_FILE("${PROJECT_SOURCE_DIR}/Doxyfile.in"
-    "${PROJECT_BINARY_DIR}/Doxyfile")
-
-  ADD_CUSTOM_TARGET(doc
-    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-    COMMAND "${CMAKE_COMMAND}" -E make_directory "${PROJECT_BINARY_DIR}/share"
-    COMMAND "${DOXYGEN_EXECUTABLE}" "${PROJECT_BINARY_DIR}/Doxyfile"
-    SOURCES "${PROJECT_BINARY_DIR}/Doxyfile")
-
-  ADD_CUSTOM_COMMAND(TARGET doc POST_BUILD
-    COMMAND "${CMAKE_COMMAND}" -E copy "${PROJECT_SOURCE_DIR}/doc/CNAME"
-            "${PROJECT_BINARY_DIR}/share/doc/html/")
-
-  INSTALL(DIRECTORY "${PROJECT_BINARY_DIR}/share/doc/" DESTINATION share/doc)
-ENDIF()
 
 # ------------------ MVS Includes --------------------
 INCLUDE_DIRECTORIES("${Boost_INCLUDE_DIRS}")
