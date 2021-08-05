@@ -1,7 +1,7 @@
 #!/bin/bash
 ###############################################################################
-#  Copyright (c) 2014-2015 libbitcoin-explorer developers (see COPYING).
-#  Copyright (c) 2016-2018 MVS Core Developers
+#  Copyright (c) 2014-2021 libbitcoin-explorer developers (see COPYING).
+#  Copyright (c) 2016-2021 MVS Core Developers
 #
 ###############################################################################
 
@@ -41,7 +41,7 @@ QRENCODE_ARCHIVE="qrencode-3.4.4.tar.bz2"
 
 # Boost archive.
 #------------------------------------------------------------------------------
-BOOST_URL="https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz"
+BOOST_URL="https://boostorg.jfrog.io/artifactory/main/release/1.69.0/source/boost_1_69_0.tar.gz"
 BOOST_ARCHIVE="boost_1_69_0.tar.gz"
 
 # miniupnpc archive

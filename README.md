@@ -68,7 +68,7 @@ $ sudo make install && sudo ldconfig
 
 ## secp256k1 
 ```bash
-$ git clone https://github.com/mvs-live/secp256k1
+$ git clone https://github.com/mvs-org/secp256k1
 $ cd secp256k1
 $ ./autogen.sh
 $ ./configure --enable-module-recovery
