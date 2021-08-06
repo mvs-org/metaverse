@@ -4,7 +4,6 @@
 #include <array>
 #include <thread>
 #include <random>
-#include <boost/detail/endian.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/throw_exception.hpp>
 #include <metaverse/macros_define.hpp>
@@ -18,6 +17,13 @@
 #include <metaverse/bitcoin/utility/log.hpp>
 #include <metaverse/bitcoin/chain/header.hpp>
 #include <metaverse/bitcoin/formats/base_16.hpp>
+
+#if BOOST_VERSION < 107300
+#include <boost/detail/endian.hpp>
+#else
+#include "boost_endian_compat.h"
+#include <boost/predef/other/endian.h>
+#endif
 
 using namespace libbitcoin;
 using namespace std;

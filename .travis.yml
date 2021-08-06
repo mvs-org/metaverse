@@ -7,6 +7,7 @@ matrix:
   include:
     - os: linux
       compiler: clang
+      arch: arm64
       addons:
         apt:
           sources:
@@ -18,6 +19,7 @@ matrix:
             - cmake
             - cmake-data
             - libgmp-dev
+            - libboost1.71-all-dev
       env:
         - CMAKE_BUILD_TYPE=RELEASE
         - CMAKE_C_COMPILER=clang-10
@@ -38,6 +40,7 @@ matrix:
             - cmake
             - cmake-data
             - libgmp-dev
+            - libboost1.71-all-dev
       env:
         - CMAKE_BUILD_TYPE=DEBUG
         - CMAKE_C_COMPILER=clang-10
@@ -55,6 +58,7 @@ matrix:
             - cmake-data
             - g++-9
             - libgmp-dev
+            - libboost1.71-all-dev
       env:
         - CMAKE_BUILD_TYPE=RELEASE
         - CMAKE_C_COMPILER=gcc-9
@@ -71,6 +75,7 @@ matrix:
             - cmake-data
             - g++-9
             - libgmp-dev
+            - libboost1.71-all-dev
       env:
         - CMAKE_BUILD_TYPE=DEBUG
         - CMAKE_C_COMPILER=gcc-9
@@ -89,21 +94,23 @@ matrix:
         - USE_UPNP=OFF
 
 before_install:
-  - BUILD_PACKAGES="";
+  - export MVS_PACKAGES="";
     if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+       export IS_TRAVIS_OSX=true;
        export CC=clang;
        export CXX=clang++;
-       export IS_TRAVIS_OSX=true;
     else
        export IS_TRAVIS_LINUX=true;
        export CC=gcc;
        export CXX=g++;
-       BUILD_PACKAGES="$BUILD_PACKAGES --build-boost";
     fi;
-    if [ "$USE_UPNP" = "ON" ]; then
-       BUILD_PACKAGES="$BUILD_PACKAGES --build-upnpc";
+
+install:
+  - if [ "$USE_UPNP" = "ON" ]; then
+       MVS_PACKAGES="$MVS_PACKAGES --build-upnpc";
     fi;
-    ./install_dependencies.sh $BUILD_PACKAGES;
+
+    ./install_dependencies.sh $MVS_PACKAGES;
 
 before_script:
   - mkdir build
