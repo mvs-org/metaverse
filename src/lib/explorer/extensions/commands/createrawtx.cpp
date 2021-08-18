@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2020 mvs developers
+ * Copyright (c) 2016-2021 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -143,7 +143,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
 
     chain::history::list utxo_list;
     std::unordered_map<chain::input_point, uint32_t> utxo_seq_map; //((hash, index), sequence)
-    for (const std::string utxo : option_.utxos) {
+    for (const std::string& utxo : option_.utxos) {
         const auto utxo_stru = bc::split(utxo, ":");
         if ((utxo_stru.size() != 2) && (utxo_stru.size() != 3)) {
             throw argument_legality_exception{"invalid utxo: " + utxo};

@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2011-2020 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2020 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2011-2021 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2021 metaverse core developers (see MVS-AUTHORS)
  *
  * This file is part of metaverse.
  *
@@ -66,7 +66,7 @@ void connections::stop(const code& ec)
     ///////////////////////////////////////////////////////////////////////////
 
     // Channel stop handlers should remove channels from list.
-    for (const auto channel: channels)
+    for (const auto& channel: channels)
         channel->stop(ec);
 }
 

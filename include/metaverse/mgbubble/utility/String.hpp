@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 metaverse core developers (see MVS-AUTHORS) - Metaverse.
+ * Copyright (c) 2016-2021 metaverse core developers (see MVS-AUTHORS) - Metaverse.
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation; either version 2 of the
@@ -111,7 +111,7 @@ class String {
     }
     return result;
   }
-  constexpr void assign(const char* rdata, std::size_t rlen) const noexcept
+  constexpr void assign(const char* rdata, std::size_t rlen) noexcept
   {
     len_ = std::min(MaxN, rlen);
     if (len_ > 0) {

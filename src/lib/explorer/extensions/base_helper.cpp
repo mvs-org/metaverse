@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2020 mvs developers
+ * Copyright (c) 2016-2021 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -2175,7 +2175,7 @@ chain::attachment issuing_asset::populate_output_attachment(const receiver_recor
         BITCOIN_ASSERT(cert_info.has_content());
     }
 
-    return attach;
+    return std::move(attach);
 }
 
 void sending_asset::sum_payment_amount()
@@ -2288,7 +2288,7 @@ chain::attachment secondary_issuing_asset::populate_output_attachment(const rece
         attach.set_attach(ass);
     }
 
-    return attach;
+    return move(attach);
 }
 
 void issuing_asset_cert::sum_payment_amount()
@@ -2470,7 +2470,7 @@ chain::attachment registering_mit::populate_output_attachment(const receiver_rec
         attach.set_attach(ass);
     }
 
-    return attach;
+    return move(attach);
 }
 
 chain::attachment transferring_mit::populate_output_attachment(const receiver_record& record)
@@ -2487,7 +2487,7 @@ chain::attachment transferring_mit::populate_output_attachment(const receiver_re
         attach.set_attach(ass);
     }
 
-    return attach;
+    return move(attach);
 }
 
 chain::operation::stack lock_sending::get_script_operations(const receiver_record& record) const

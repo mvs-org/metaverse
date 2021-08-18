@@ -1,7 +1,7 @@
 #!/bin/bash
 ###############################################################################
-#  Copyright (c) 2014-2015 libbitcoin-explorer developers (see COPYING).
-#  Copyright (c) 2016-2018 MVS Core Developers
+#  Copyright (c) 2014-2021 libbitcoin-explorer developers (see COPYING).
+#  Copyright (c) 2016-2021 MVS Core Developers
 #
 ###############################################################################
 
@@ -41,13 +41,13 @@ QRENCODE_ARCHIVE="qrencode-3.4.4.tar.bz2"
 
 # Boost archive.
 #------------------------------------------------------------------------------
-BOOST_URL="https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz"
-BOOST_ARCHIVE="boost_1_69_0.tar.gz"
+BOOST_URL="https://boostorg.jfrog.io/artifactory/main/release/1.71.0/source/boost_1_71_0.tar.gz"
+BOOST_ARCHIVE="boost_1_71_0.tar.gz"
 
 # miniupnpc archive
 #------------------------------------------------------------------------------
-UPNPC_URL="http://miniupnp.tuxfamily.org/files/miniupnpc-2.0.tar.gz"
-UPNPC_ARCHIVE="miniupnpc-2.0.tar.gz"
+UPNPC_URL="http://miniupnp.free.fr/files/miniupnpc-2.1.tar.gz"
+UPNPC_ARCHIVE="miniupnpc-2.1.tar.gz"
 
 
 # Define utility functions.
@@ -191,6 +191,10 @@ if [[ $PARALLEL ]]; then
     display_message "Using shell-defined PARALLEL value."
 elif [[ $OS == Linux ]]; then
     PARALLEL=`nproc`
+    ARCH=`dpkg --print-architecture` #HOTFIX: travis returns 80 by command 'nproc'
+    if [[ $ARCH == arm64 ]]; then
+	PARALLEL=2
+    fi
 elif [[ ($OS == Darwin) || ($OS == OpenBSD) ]]; then
     PARALLEL=`sysctl -n hw.ncpu`
 else

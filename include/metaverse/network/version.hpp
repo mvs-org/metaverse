@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2014-2020 libbitcoin-network developers (see COPYING).
+// Copyright (c) 2014-2021 libbitcoin-network developers (see COPYING).
 //
 //        GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY
 //

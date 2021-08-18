@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2011-2020 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2020 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2011-2021 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2021 metaverse core developers (see MVS-AUTHORS)
  *
  * This file is part of metaverse-node.
  *
@@ -182,7 +182,7 @@ bool p2p_node::handle_reorganized(const code& ec, size_t fork_point,
         return false;
     }
 
-    for (const auto block: outgoing)
+    for (const auto& block: outgoing)
         log::debug(LOG_NODE)
             << "Reorganization discarded block ["
             << encode_hash(block->header.hash()) << "]";

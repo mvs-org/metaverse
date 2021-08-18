@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2011-2020 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2020 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2011-2021 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2021 metaverse core developers (see MVS-AUTHORS)
  *
  * This file is part of metaverse.
  *
@@ -456,7 +456,7 @@ organizer::replace_chain(uint64_t fork_index, block_detail::list& orphan_chain)
     auto arrival_index = fork_index;
 
     block_detail::list pushed_blocks;
-    for (const auto arrival_block: orphan_chain)
+    for (const auto& arrival_block: orphan_chain)
     {
         orphan_pool_.remove(arrival_block);
 
@@ -487,7 +487,7 @@ organizer::replace_chain(uint64_t fork_index, block_detail::list& orphan_chain)
     num_of_pushed_blocks = pushed_blocks.size();
 
     // Add the old blocks back to the pool (as processed with orphan height).
-    for (const auto replaced_block: released_blocks)
+    for (const auto& replaced_block: released_blocks)
     {
         replaced_block->set_processed();
         orphan_pool_.add(replaced_block);

@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2011-2020 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2020 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2011-2021 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2021 metaverse core developers (see MVS-AUTHORS)
  *
  * This file is part of metaverse-explorer.
  *
@@ -77,7 +77,7 @@ std::vector<std::string> numbers_to_strings(
     const chain::point::indexes& indexes)
 {
     std::vector<std::string> stringlist;
-    for (const auto index: indexes)
+    for (const auto& index: indexes)
         stringlist.push_back(std::to_string(index));
 
     return stringlist;

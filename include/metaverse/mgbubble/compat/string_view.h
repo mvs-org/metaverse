@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2020 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2016-2021 metaverse core developers (see MVS-AUTHORS)
  *
  * This file is part of metaverse.
  *
@@ -20,21 +20,72 @@
 #ifndef MVS___STRING_VIEW__
 #define MVS___STRING_VIEW__
 
-#ifdef _WIN32
-#include <boost/utility/string_view_fwd.hpp>
-#include <boost/utility/string_view.hpp>
-#define string_view boost::string_view
+// Standard library support for std::string_view.
+#if !defined(MVS_HAS_STD_STRING_VIEW)
+# if !defined(MVS_DISABLE_STD_STRING_VIEW)
+#  if defined(__clang__)
+#   if (__cplusplus >= 201703)
+#    if __has_include(<string_view>)
+#     define MVS_HAS_STD_STRING_VIEW 1
+#    endif // __has_include(<string_view>)
+#   endif // (__cplusplus >= 201703)
+#  endif // defined(__clang__)
+#  if defined(__GNUC__)
+#   if (__GNUC__ >= 7)
+#    if (__cplusplus >= 201703)
+#     define MVS_HAS_STD_STRING_VIEW 1
+#    endif // (__cplusplus >= 201703)
+#   endif // (__GNUC__ >= 7)
+#  endif // defined(__GNUC__)
+#  if defined(MVS_MSVC)
+#   if (_MSC_VER >= 1910 && _HAS_CXX17)
+#    define MVS_HAS_STD_STRING_VIEW
+#   endif // (_MSC_VER >= 1910 && _HAS_CXX17)
+#  endif // defined(MVS_MSVC)
+# endif // !defined(MVS_DISABLE_STD_STRING_VIEW)
+#endif // !defined(MVS_HAS_STD_STRING_VIEW)
 
-#else
+// Standard library support for std::experimental::string_view.
+// Note: libc++ 7.0 keeps <experimental/string_view> header but deprecates it
+// with an #error directive.
+#if !defined(MVS_HAS_STD_EXPERIMENTAL_STRING_VIEW)
+# if !defined(MVS_DISABLE_STD_EXPERIMENTAL_STRING_VIEW)
+#  if defined(__clang__)
+#   if (__cplusplus >= 201402)
+#    if __has_include(<string_view>)
+#     define MVS_HAS_STD_STRING_VIEW 1
+#    endif // __has_include(<string_view>)
+#    if __has_include(<experimental/string_view>)
+#     //if (__clang_major__ < 7)
+#      define MVS_HAS_STD_EXPERIMENTAL_STRING_VIEW 1
+#     //endif // if (__clang_major__ < 7)
+#    endif // __has_include(<experimental/string_view>)
+#   endif // (__cplusplus >= 201402)
+#  endif // defined(__clang__)
+#  if defined(__GNUC__)
+#   if ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)) || (__GNUC__ > 4)
+#    if (__cplusplus >= 201402)
+#     define MVS_HAS_STD_EXPERIMENTAL_STRING_VIEW 1
+#    endif // (__cplusplus >= 201402)
+#   endif // ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)) || (__GNUC__ > 4)
+#  endif // defined(__GNUC__)
+# endif // !defined(MVS_DISABLE_STD_EXPERIMENTAL_STRING_VIEW)
+#endif // !defined(MVS_HAS_STD_EXPERIMENTAL_STRING_VIEW)
 
+#if MVS_HAS_STD_EXPERIMENTAL_STRING_VIEW
 #include <experimental/string_view>
-namespace mgbubble{
+namespace std {
+using string_view = std::experimental::string_view;
+}
+namespace mgbubble {
+using std::string_view;
+}
 
-using std::experimental::basic_string_view;
-using std::experimental::string_view;
-
-} // namespace mgbubble
-
+#else //MVS_HAS_STD_STRING_VIEW
+#include <string_view>
+namespace mgbubble {
+using std::string_view;
+}
 #endif
 
-#endif
+#endif // MVS___STRING_VIEW__

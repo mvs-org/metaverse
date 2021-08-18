@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2011-2020 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2020 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2011-2021 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2021 metaverse core developers (see MVS-AUTHORS)
  *
  * This file is part of metaverse.
  *
@@ -66,7 +66,7 @@ public:
         // We cannot use a synchronizer here because handler closure in loop.
         auto counter = std::make_shared<std::atomic<size_t>>(channels_.size());
 
-        for (const auto channel: safe_copy())
+        for (const auto& channel : safe_copy())
         {
             const auto handle_send = [=](code ec)
             {
@@ -85,7 +85,7 @@ public:
     template <class Message>
     void subscribe(message_handler<Message>&& handler)
     {
-        for (const auto channel: safe_copy())
+        for (const auto& channel : safe_copy())
         {
             auto handler_copy = handler;
             channel->subscribe(std::move(handler_copy));//by jianglh

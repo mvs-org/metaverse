@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2011-2020 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2020 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2011-2021 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2021 metaverse core developers (see MVS-AUTHORS)
  *
  * This file is part of metaverse.
  *
@@ -188,7 +188,7 @@ history_compact::list history_database::get(const short_hash& key,
     const auto start = rows_multimap_.lookup(key);
     const auto records = record_multimap_iterable(rows_list_, start);
 
-    for (const auto index: records)
+    for (const auto& index: records)
     {
         // Stop once we reach the limit (if specified).
         if (limit > 0 && result.size() >= limit)

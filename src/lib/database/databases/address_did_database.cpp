@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2020 mvs developers (see AUTHORS)
+ * Copyright (c) 2011-2021 mvs developers (see AUTHORS)
  *
  * This file is part of mvsd.
  *
@@ -192,7 +192,7 @@ business_record::list address_did_database::get(const short_hash& key,
     const auto start = rows_multimap_.lookup(key);
     const auto records = record_multimap_iterable(rows_list_, start);
 
-    for (const auto index: records)
+    for (const auto& index: records)
     {
         // Stop once we reach the limit (if specified).
         if (limit > 0 && result.size() >= limit)
@@ -257,7 +257,7 @@ std::shared_ptr<std::vector<business_record>> address_did_database::get(const st
     const auto records = record_multimap_iterable(rows_list_, start);
 
     uint64_t cnt = 0;
-    for (const auto index: records)
+    for (const auto& index: records)
     {
         // Stop once we reach the limit (if specified).
         if (limit > 0 && result->size() >= limit)
@@ -350,7 +350,7 @@ std::shared_ptr<std::vector<business_record>> address_did_database::get(const st
     const auto start = rows_multimap_.lookup(key);
     const auto records = record_multimap_iterable(rows_list_, start);
 
-    for (const auto index: records)
+    for (const auto& index: records)
     {
         // This obtains a remap safe address pointer against the rows file.
         const auto record = rows_list_.get(index);
@@ -404,7 +404,7 @@ std::shared_ptr<std::vector<business_record>> address_did_database::get(size_t i
 
         const auto records = record_multimap_iterable(rows_list_, each);
 
-        for (const auto index: records)
+        for (const auto& index: records)
         {
             // This obtains a remap safe address pointer against the rows file.
             const auto record = rows_list_.get(index);

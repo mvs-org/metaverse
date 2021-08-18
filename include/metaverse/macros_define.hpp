@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2020 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2016-2021 metaverse core developers (see MVS-AUTHORS)
  */
 #ifndef MVS_MACROS_DEFINE_HPP
 #define MVS_MACROS_DEFINE_HPP

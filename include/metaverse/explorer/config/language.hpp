@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2011-2020 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2020 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2011-2021 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2021 metaverse core developers (see MVS-AUTHORS)
  *
  * This file is part of metaverse-explorer.
  *
@@ -61,6 +61,7 @@ public:
      * @param[in]  other  The object to copy into self on construct.
      */
     language(const language& other);
+    language& operator=(const language& other) = default;
 
     /**
      * Overload cast to internal type.

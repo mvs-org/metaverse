@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2020 metaverse developers (see AUTHORS)
+ * Copyright (c) 2011-2021 metaverse developers (see AUTHORS)
  *
  * This file is part of mvs-node.
  *
@@ -62,6 +62,7 @@ public:
         const std::string& pub_key, uint32_t hd_index, uint64_t balance,
         const std::string& alias, const std::string& address, uint8_t status);
     account_address(const account_address& other);
+    account_address& operator=(const account_address& other) = default;
     static uint64_t satoshi_fixed_size();
 
     bool from_data_t(reader& source);

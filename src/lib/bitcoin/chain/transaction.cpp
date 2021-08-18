@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2011-2020 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2020 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2011-2021 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2021 metaverse core developers (see MVS-AUTHORS)
  *
  * This file is part of metaverse.
  *
@@ -211,11 +211,11 @@ std::string transaction::to_string(uint32_t flags) const
         << "\tlocktime = " << locktime << "\n"
         << "Inputs:\n";
 
-    for (const auto input: inputs)
+    for (const auto& input: inputs)
         value << input.to_string(flags);
 
     value << "Outputs:\n";
-    for (const auto output: outputs)
+    for (const auto& output: outputs)
         value << output.to_string(flags);
 
     value << "\n";

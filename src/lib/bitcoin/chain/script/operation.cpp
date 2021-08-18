@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2011-2020 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2020 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2011-2021 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2021 metaverse core developers (see MVS-AUTHORS)
  *
  * This file is part of metaverse.
  *
@@ -575,7 +575,7 @@ operation::stack operation::to_pay_multisig_pattern(uint8_t signatures,
     operation::stack ops(points.size() + 3);
     ops.push_back({ op_m, {} });
 
-    for (const auto point: points)
+    for (const auto& point: points)
     {
         if (!is_public_key(point))
             return{};

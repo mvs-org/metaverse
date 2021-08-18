@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2011-2020 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2020 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2011-2021 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2021 metaverse core developers (see MVS-AUTHORS)
  *
  * This file is part of metaverse.
  *
@@ -130,7 +130,7 @@ static std::string escape(const std::string& in, bool (*is_valid)(char))
 {
     std::ostringstream stream;
     stream << std::hex << std::uppercase << std::setfill('0');
-    for (const auto c: in)
+    for (const auto c : in)
     {
         if (is_valid(c))
             stream << c;

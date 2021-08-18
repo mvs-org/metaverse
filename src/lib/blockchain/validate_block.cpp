@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2011-2020 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2020 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2011-2021 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2021 metaverse core developers (see MVS-AUTHORS)
  *
  * This file is part of metaverse.
  *
@@ -282,7 +282,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     chain::header prev_header = fetch_block(height_ - 1);
     if (current_block_.header.number >= future_blocktime_fork_height) {
-        // 未来区块时间攻击分叉，执行新规则检查
+        // Prevent future blocktime attacks
         if (current_block_.header.number >= pos_enabled_height) {
             if (!check_time_stamp(header.timestamp, asio::seconds(block_timespan_window))) {
                 return error::futuristic_timestamp;
@@ -292,7 +292,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
             return error::futuristic_timestamp;
         }
 
-        // 过去区块时间检查
+        // Check if block timestamp is after last block
         if (current_block_.header.timestamp < prev_header.timestamp) {
             return error::timestamp_too_early;
         }

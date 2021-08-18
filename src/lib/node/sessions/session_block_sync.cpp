@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2011-2020 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2020 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2011-2021 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2021 metaverse core developers (see MVS-AUTHORS)
  *
  * This file is part of metaverse.
  *
@@ -91,7 +91,7 @@ void session_block_sync::handle_started(const code& ec, result_handler handler)
     const auto complete = synchronize(handler, table.size(), NAME);
     std::function<void(const code&)> func = complete;
     // This is the end of the start sequence.
-    for (const auto row: table)
+    for (const auto& row: table)
         new_connection(connector, row, [func](const code& ec){
         func(ec);
     });
