@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:20.04
 #LABEL maintainer="Jeremy Lan <air.petrichor@gmail.com>" version="0.1.1" \
 #  description="This is mvs-org/metaverse image" website="http://mvs.org/" \
 #  , etc..."
@@ -8,15 +8,9 @@ RUN echo 'APT::Install-Recommends 0;' >> /etc/apt/apt.conf.d/01norecommends \
   && apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y sudo wget curl net-tools ca-certificates unzip
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y git-core automake autoconf libtool build-essential pkg-config libtool apt-utils \
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y git-core cmake automake autoconf libtool build-essential pkg-config libtool apt-utils \
     mpi-default-dev libicu-dev libbz2-dev zlib1g-dev openssl libssl-dev libgmp-dev \
   && rm -rf /var/lib/apt/lists/*
-
-
-RUN cd /tmp && wget https://cmake.org/files/v3.9/cmake-3.9.0-Linux-x86_64.sh \
-  && mkdir /opt/cmake && chmod +x /tmp/cmake-3.9.0-Linux-x86_64.sh \
-  && sh /tmp/cmake-3.9.0-Linux-x86_64.sh --prefix=/opt/cmake --skip-license \
-  && ln -s /opt/cmake/bin/cmake /usr/local/bin
 
 COPY ./ /tmp/metaverse/
 
