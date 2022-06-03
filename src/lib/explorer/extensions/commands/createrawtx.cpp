@@ -182,8 +182,10 @@ console_result createrawtx::invoke(Json::Value& jv_output,
         utxo_list.push_back(h);
     }
 
-    if (!utxo_list.empty())
+    if (!utxo_list.empty()) {
+        sp_send_helper->use_specified_rows(true);  //customlized rows, ignore is_payment_satisfied;
         sp_send_helper->sync_fetchutxo("", "", base_transfer_common::FILTER_ALL, utxo_list);
+    }
 
     sp_send_helper->exec();
 
