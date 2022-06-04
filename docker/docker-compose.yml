@@ -11,12 +11,4 @@ services:
       - "8821:8821"
       - "5251:5251"
     volumes:
-      - data:/root/.metaverse
-
-volumes:
-  data:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: './chaindata'
+      - ./chaindata:/root/.metaverse
