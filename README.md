@@ -144,8 +144,6 @@ Where is your built image? It’s in your machine’s local Docker image registr
 docker images
 ```
 
-§§
-
 ## Run && Test
 
 ### Start docker container
