@@ -1134,6 +1134,8 @@ void base_transfer_common::sync_fetchutxo(
     uint64_t height = 0;
     blockchain_.get_last_height(height);
 
+    // Due to use_specified_rows_ member to control 'is_payment_satisfied', not here.
+    // Because sync_fetchutxo will be called in the 'exec' again through from_vec_ to generate tx, thus spec_rows always be empty.
     const auto use_specified_rows = !spec_rows.empty();
     const auto &rows = use_specified_rows
         ? spec_rows
@@ -1173,7 +1175,7 @@ void base_transfer_common::sync_fetchutxo(
             if (etp_amount == 0)
                 continue;
             // enough etp to pay
-            if (unspent_etp_ >= payment_etp_)
+            if (!use_specified_rows_ && unspent_etp_ >= payment_etp_)
                 continue;
         }
         else if ((filter & FILTER_ASSET) && output.is_asset()) { // asset related
@@ -1182,7 +1184,7 @@ void base_transfer_common::sync_fetchutxo(
             if (asset_total_amount == 0)
                 continue;
             // enough asset to pay
-            if (unspent_asset_ >= payment_asset_)
+            if (!use_specified_rows_ && unspent_asset_ >= payment_asset_)
                 continue;
             // check asset symbol
             if (symbol_ != asset_symbol)
@@ -1395,10 +1397,10 @@ void base_transfer_common::sum_payment_amount()
 
 bool base_transfer_common::is_payment_satisfied(filter filter) const
 {
-    if ((filter & FILTER_ETP) && (unspent_etp_ < payment_etp_))
+    if ((filter & FILTER_ETP) && (use_specified_rows_ || unspent_etp_ < payment_etp_))
         return false;
 
-    if ((filter & FILTER_ASSET) && (unspent_asset_ < payment_asset_))
+    if ((filter & FILTER_ASSET) && (use_specified_rows_ || unspent_asset_ < payment_asset_))
         return false;
 
     if ((filter & FILTER_IDENTIFIABLE_ASSET) && (unspent_mit_ < payment_mit_))

@@ -382,6 +382,9 @@ public:
 
     virtual uint64_t utxo_min_confirm() const { return transaction_maturity;}
 
+    auto use_specified_rows(bool value) { use_specified_rows_ = value; }
+    inline auto use_specified_rows() const { return use_specified_rows_; }
+
 protected:
     bc::blockchain::block_chain_impl& blockchain_;
     tx_type                           tx_; // target transaction
@@ -393,6 +396,7 @@ protected:
     uint64_t                          payment_asset_{0};
     uint64_t                          unspent_etp_{0};
     uint64_t                          unspent_asset_{0};
+    bool                              use_specified_rows_{false}; // user can specify much more than just satisfied amount;
     std::vector<chain::asset_cert_type>      payment_asset_cert_;
     std::vector<chain::asset_cert_type>      unspent_asset_cert_;
     uint8_t                           payment_did_{0};
