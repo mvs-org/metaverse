@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  metaverse:
+    container_name: mvsd
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    ports:
+      - "8820:8820"
+      - "8821:8821"
+      - "5251:5251"
+    volumes:
+      - ./chaindata:/root/.metaverse

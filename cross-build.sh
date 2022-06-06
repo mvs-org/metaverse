@@ -71,7 +71,7 @@ docker_build(){
     
     docker run --rm --privileged multiarch/qemu-user-static --reset -p yes || myexit
     echo "building..."
-    docker build -t metaverse -f Dockerfile.cross --build-arg BUILD_FROM=$ARCH .  || myexit
+    docker build -t metaverse -f docker/Dockerfile.cross --build-arg BUILD_FROM=$ARCH .  || myexit
     
     echo "copying..."
     docker run -d --rm --name foobar metaverse || myexit

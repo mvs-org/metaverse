@@ -132,11 +132,11 @@ Install [Docker](https://docs.docker.com/).
 wget qO https://get.docker.com/ | sh
 ```
 
-## Build metaverse image
+## Build Metaverse docker image
 ```
 git clone https://github.com/mvs-org/metaverse.git
 cd metaverse
-docker build -t metaverse -f Dockerfile .
+docker build -t metaverse -f docker/Dockerfile .
 ```
 
 Where is your built image? It’s in your machine’s local Docker image registry:
@@ -160,6 +160,20 @@ curl -X POST --data '{"jsonrpc":"2.0","method":"getinfo","params":[],"id":25}' h
 Run `mvs-cli` commands via `docker exec` command. Example:
 ```bash
 docker exec metaverse mvs-cli getinfo
+```
+
+## Docker Compose
+
+An example docker-compose file can be found at `docker/docker-compose.yml`.
+
+``` bash
+docker-compose -f docker/docker-compose.yml up
+# OR
+cd docker
+docker-compose up -d
+
+# Use CLI
+docker-compose exec mvs-cli getheight
 ```
 
 # Build for raspberry pi
